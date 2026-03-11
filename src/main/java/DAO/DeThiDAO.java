@@ -6,6 +6,7 @@ import java.sql.*;
 import java.util.ArrayList;
 
 public class DeThiDAO {
+
     public static DeThiDAO getInstance() {
         return new DeThiDAO();
     }
@@ -27,11 +28,9 @@ public class DeThiDAO {
                 dt.setTende(rs.getString("tende"));
                 dt.setThoigiantao(rs.getTimestamp("thoigiantao"));
                 dt.setThoigianthi(rs.getInt("thoigianthi"));
-                dt.setHienthibailam(rs.getBoolean("hienthibailam"));
-                dt.setXemdiemthi(rs.getBoolean("xemdiemthi"));
-                dt.setXemdapan(rs.getBoolean("xemdapan"));
+                dt.setTongsocau(rs.getInt("tongsocau"));
                 dt.setTrangthai(rs.getBoolean("trangthai"));
-                
+
                 ketQua.add(dt);
             }
             JDBCUtil.closeConnection(con);

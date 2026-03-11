@@ -45,7 +45,7 @@ public class DeThi extends JPanel implements ActionListener, ItemListener {
         tableDeThi = new JTable();
         scrollTableDeThi = new JScrollPane();
         tblModel = new DefaultTableModel();
-        String[] header = new String[]{"Mã đề", "Tên đề thi", "Mã môn", "Thời gian (phút)", "Người tạo", "Trạng thái"};
+        String[] header = new String[]{"Mã đề", "Tên đề thi", "Mã môn", "Số câu", "Thời gian (phút)", "Người tạo", "Trạng thái"};
         tblModel.setColumnIdentifiers(header);
         tableDeThi.setModel(tblModel);
         tableDeThi.setFocusable(false);
@@ -155,6 +155,7 @@ public class DeThi extends JPanel implements ActionListener, ItemListener {
                 dt.getMade(),
                 dt.getTende(),
                 dt.getMonthi(),
+                dt.getTongsocau(), 
                 dt.getThoigianthi(),
                 dt.getNguoitao(),
                 dt.isTrangthai() ? "Hoạt động" : "Khóa"

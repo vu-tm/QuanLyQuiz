@@ -9,26 +9,27 @@ package DTO;
  * @author Windows
  */
 public class MonHocDTO {
+
     private int mamonhoc;
     private String tenmonhoc;
     private int sotinchi;
-    private int sotietlythuyet;
-    private int sotietthuchanh;
+    private int tongcaudung;
+    private int tongcausai;
     private int trangthai;
 
     public MonHocDTO() {
     }
 
-    public MonHocDTO(int mamonhoc, String tenmonhoc, int sotinchi, int sotietlythuyet, int sotietthuchanh, int trangthai) {
+    public MonHocDTO(int mamonhoc, String tenmonhoc, int sotinchi, int tongcaudung, int tongcausai, int trangthai) {
         this.mamonhoc = mamonhoc;
         this.tenmonhoc = tenmonhoc;
         this.sotinchi = sotinchi;
-        this.sotietlythuyet = sotietlythuyet;
-        this.sotietthuchanh = sotietthuchanh;
+        this.tongcaudung = tongcaudung;
+        this.tongcausai = tongcausai;
         this.trangthai = trangthai;
     }
-            
-    // Getters, Setters
+
+    // Getters and Setters
     public int getMamonhoc() {
         return mamonhoc;
     }
@@ -53,20 +54,20 @@ public class MonHocDTO {
         this.sotinchi = sotinchi;
     }
 
-    public int getSotietlythuyet() {
-        return sotietlythuyet;
+    public int getTongcaudung() {
+        return tongcaudung;
     }
 
-    public void setSotietlythuyet(int sotietlythuyet) {
-        this.sotietlythuyet = sotietlythuyet;
+    public void setTongcaudung(int tongcaudung) {
+        this.tongcaudung = tongcaudung;
     }
 
-    public int getSotietthuchanh() {
-        return sotietthuchanh;
+    public int getTongcausai() {
+        return tongcausai;
     }
 
-    public void setSotietthuchanh(int sotietthuchanh) {
-        this.sotietthuchanh = sotietthuchanh;
+    public void setTongcausai(int tongcausai) {
+        this.tongcausai = tongcausai;
     }
 
     public int getTrangthai() {
@@ -76,5 +77,4 @@ public class MonHocDTO {
     public void setTrangthai(int trangthai) {
         this.trangthai = trangthai;
     }
-    
 }

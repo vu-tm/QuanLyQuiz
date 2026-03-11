@@ -18,15 +18,13 @@ public class DeThiDTO {
     private String tende;
     private Timestamp thoigiantao;
     private int thoigianthi;
-    private boolean hienthibailam;
-    private boolean xemdiemthi;
-    private boolean xemdapan;
+    private int tongsocau;
     private boolean trangthai;
 
     public DeThiDTO() {
     }
-    
-    public DeThiDTO(int made, int makythi, int monthi, String nguoitao, String tende, Timestamp thoigiantao, int thoigianthi, boolean hienthibailam, boolean xemdiemthi, boolean xemdapan, boolean trangthai) {
+
+    public DeThiDTO(int made, int makythi, int monthi, String nguoitao, String tende, Timestamp thoigiantao, int thoigianthi, int tongsocau, boolean trangthai) {
         this.made = made;
         this.makythi = makythi;
         this.monthi = monthi;
@@ -34,12 +32,10 @@ public class DeThiDTO {
         this.tende = tende;
         this.thoigiantao = thoigiantao;
         this.thoigianthi = thoigianthi;
-        this.hienthibailam = hienthibailam;
-        this.xemdiemthi = xemdiemthi;
-        this.xemdapan = xemdapan;
+        this.tongsocau = tongsocau;
         this.trangthai = trangthai;
     }
-    
+
     // Getters and Setters
     public int getMade() {
         return made;
@@ -97,28 +93,12 @@ public class DeThiDTO {
         this.thoigianthi = thoigianthi;
     }
 
-    public boolean isHienthibailam() {
-        return hienthibailam;
+    public int getTongsocau() {
+        return tongsocau;
     }
 
-    public void setHienthibailam(boolean hienthibailam) {
-        this.hienthibailam = hienthibailam;
-    }
-
-    public boolean isXemdiemthi() {
-        return xemdiemthi;
-    }
-
-    public void setXemdiemthi(boolean xemdiemthi) {
-        this.xemdiemthi = xemdiemthi;
-    }
-
-    public boolean isXemdapan() {
-        return xemdapan;
-    }
-
-    public void setXemdapan(boolean xemdapan) {
-        this.xemdapan = xemdapan;
+    public void setTongsocau(int tongsocau) {
+        this.tongsocau = tongsocau;
     }
 
     public boolean isTrangthai() {
@@ -128,5 +108,4 @@ public class DeThiDTO {
     public void setTrangthai(boolean trangthai) {
         this.trangthai = trangthai;
     }
-    
 }

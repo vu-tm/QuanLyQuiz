@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Mar 03, 2026 at 02:53 AM
+-- Generation Time: Mar 11, 2026 at 03:53 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.0.30
 
@@ -140,9 +140,7 @@ CREATE TABLE `dethi` (
   `tende` varchar(255) DEFAULT NULL,
   `thoigiantao` datetime DEFAULT NULL,
   `thoigianthi` int(11) DEFAULT NULL,
-  `hienthibailam` tinyint(1) DEFAULT NULL,
-  `xemdiemthi` tinyint(1) DEFAULT NULL,
-  `xemdapan` tinyint(1) DEFAULT NULL,
+  `tongsocau` int(11) DEFAULT 0,
   `trangthai` tinyint(1) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -222,9 +220,9 @@ CREATE TABLE `monhoc` (
   `mamonhoc` int(11) NOT NULL,
   `tenmonhoc` varchar(255) NOT NULL,
   `sotinchi` int(11) DEFAULT NULL,
-  `sotietlythuyet` int(11) DEFAULT NULL,
-  `sotietthuchanh` int(11) DEFAULT NULL,
-  `trangthai` tinyint(1) DEFAULT NULL
+  `trangthai` tinyint(1) DEFAULT NULL,
+  `tongcaudung` int(11) DEFAULT 0,
+  `tongcausai` int(11) DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------

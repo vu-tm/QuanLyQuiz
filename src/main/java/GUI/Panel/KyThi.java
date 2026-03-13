@@ -7,6 +7,7 @@ import GUI.Component.MainFunction;
 import GUI.Component.PanelBorderRadius;
 import GUI.Component.TableSorter;
 import GUI.Dialog.KyThiDialog;
+import helper.Formater;
 import helper.Validation;
 import java.awt.*;
 import java.awt.event.*;
@@ -208,15 +209,16 @@ public class KyThi extends JPanel implements ActionListener, ItemListener {
         }
     }
 
-    public void loadDataTable(ArrayList<KyThiDTO> result) {
+    public void loadDataTable(ArrayList<KyThiDTO> danhSach) {
         tblModel.setRowCount(0);
-        for (KyThiDTO kt : result) {
+        for (int i = 0; i < danhSach.size(); i++) {
+            KyThiDTO kyThi = danhSach.get(i);
             tblModel.addRow(new Object[]{
-                kt.getMakythi(),
-                kt.getTenkythi(),
-                kt.getThoigianbatdau(),
-                kt.getThoigianketthuc(),
-                kt.getTrangthai() == 1 ? "Hoạt động" : "Tạm dừng"
+                kyThi.getMakythi(),
+                kyThi.getTenkythi(),
+                Formater.FormatTime(kyThi.getThoigianbatdau()),
+                Formater.FormatTime(kyThi.getThoigianketthuc()),
+                kyThi.getTrangthai() == 1 ? "Hoạt động" : "Tạm dừng"
             });
         }
     }

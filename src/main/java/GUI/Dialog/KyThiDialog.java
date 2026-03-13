@@ -4,6 +4,7 @@ import BUS.KyThiBUS;
 import DTO.KyThiDTO;
 import GUI.Component.InputDate;
 import GUI.Component.InputForm;
+import GUI.Component.ButtonCustom;
 import GUI.Panel.KyThi;
 import helper.Validation;
 import java.awt.*;
@@ -15,25 +16,29 @@ import javax.swing.border.EmptyBorder;
 public class KyThiDialog extends JDialog {
     private InputForm tenKyThi;
     private InputDate thoiGianBD, thoiGianKT;
-    private JButton btnLuu, btnHuy;
+    private ButtonCustom btnLuu, btnHuy;
     private KyThiBUS bus = new KyThiBUS();
     private KyThi parent;
     private KyThiDTO currentDTO;
+    private JPanel pnlMain, pnlButtons;
 
     public KyThiDialog(KyThi parent, JFrame owner, String title, boolean modal, String type, KyThiDTO kt) {
         super(owner, title, modal);
         this.parent = parent;
         this.currentDTO = kt;
+        this.setTitle(title);
         init(type);
     }
 
     private void init(String type) {
-        this.setSize(450, 500);
+        this.setSize(500, 550);
         this.setLayout(new BorderLayout());
         this.setLocationRelativeTo(null);
+        this.getContentPane().setBackground(Color.WHITE);
 
-        JPanel pnlMain = new JPanel(new GridLayout(3, 1, 10, 10));
-        pnlMain.setBorder(new EmptyBorder(20, 20, 20, 20));
+        pnlMain = new JPanel();
+        pnlMain.setLayout(new BoxLayout(pnlMain, BoxLayout.Y_AXIS));
+        pnlMain.setBorder(new EmptyBorder(20, 25, 20, 25));
         pnlMain.setBackground(Color.WHITE);
 
         tenKyThi = new InputForm("Tên kỳ thi");
@@ -47,22 +52,31 @@ public class KyThiDialog extends JDialog {
         }
 
         pnlMain.add(tenKyThi);
+        pnlMain.add(Box.createVerticalStrut(15));
         pnlMain.add(thoiGianBD);
+        pnlMain.add(Box.createVerticalStrut(15));
         pnlMain.add(thoiGianKT);
 
-        JPanel pnlButtons = new JPanel();
-        pnlButtons.setBackground(Color.WHITE);
-        btnLuu = new JButton(type.equals("create") ? "Thêm mới" : "Lưu thay đổi");
-        btnHuy = new JButton("Hủy bỏ");
+        JScrollPane scrollPane = new JScrollPane(pnlMain);
+        scrollPane.setBorder(null);
+        this.add(scrollPane, BorderLayout.CENTER);
 
-        if (!type.equals("view")) pnlButtons.add(btnLuu);
+        pnlButtons = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 15));
+        pnlButtons.setBackground(Color.WHITE);
+        pnlButtons.setBorder(new EmptyBorder(0, 0, 10, 0));
+
+        btnLuu = new ButtonCustom(type.equals("create") ? "Thêm mới" : "Lưu thay đổi", "success", 14);
+        btnHuy = new ButtonCustom("Huỷ bỏ", "danger", 14);
+
+        if (!type.equals("view")) {
+            pnlButtons.add(btnLuu);
+        }
         pnlButtons.add(btnHuy);
 
-        this.add(pnlMain, BorderLayout.CENTER);
         this.add(pnlButtons, BorderLayout.SOUTH);
 
         if(type.equals("view")) {
-            tenKyThi.setEditable(false);
+            tenKyThi.setDisable();
             thoiGianBD.setDisable();
             thoiGianKT.setDisable();
         }
@@ -96,12 +110,13 @@ public class KyThiDialog extends JDialog {
         });
 
         btnHuy.addActionListener(e -> dispose());
+        
         this.setVisible(true);
     }
 
     private boolean validateInput() {
         if (Validation.isEmpty(tenKyThi.getText())) {
-            JOptionPane.showMessageDialog(this, "Tên kỳ thi không được để trống!");
+            JOptionPane.showMessageDialog(this, "Tên kỳ thi không được để trống!", "Cảnh báo", JOptionPane.WARNING_MESSAGE);
             return false;
         }
         

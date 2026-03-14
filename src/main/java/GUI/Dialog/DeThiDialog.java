@@ -1,6 +1,8 @@
 package GUI.Dialog;
 
+import BUS.DoKhoBUS;
 import BUS.KyThiBUS;
+import DTO.DoKhoDTO;
 import GUI.Component.InputForm;
 import GUI.Component.SelectForm;
 import GUI.Component.NumericDocumentFilter;
@@ -8,6 +10,7 @@ import GUI.Component.ButtonCustom;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import java.util.stream.Stream;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -23,7 +26,9 @@ public class DeThiDialog extends JDialog {
     private ButtonCustom btnTao, btnHuy;
     private JPanel pnlInfo, pnlSelect, pnlQuestionList, pnlButtons;
     private JScrollPane scrollQuestion;
+
     private KyThiBUS kyThiBUS = new KyThiBUS();
+    private DoKhoBUS doKhoBUS = new DoKhoBUS();
     private int countSelected = 0;
 
     public DeThiDialog(JFrame owner, String title, boolean modal, String type) {
@@ -70,8 +75,12 @@ public class DeThiDialog extends JDialog {
 
         tenDe = new InputForm("Tên đề thi");
 
-        String[] dsKyThi = Stream.concat(Stream.of("Chọn kỳ thi"),
-                kyThiBUS.getAll().stream().map(kt -> kt.getTenkythi())).toArray(String[]::new);
+        ArrayList<DTO.KyThiDTO> listKT = kyThiBUS.getAll();
+        String[] dsKyThi = new String[listKT.size() + 1];
+        dsKyThi[0] = "Chọn kỳ thi";
+        for (int i = 0; i < listKT.size(); i++) {
+            dsKyThi[i + 1] = listKT.get(i).getTenkythi();
+        }
         cbxKyThi = new SelectForm("Kỳ thi", dsKyThi);
 
         JPanel pnlThoiGian = new JPanel(new BorderLayout());
@@ -117,8 +126,15 @@ public class DeThiDialog extends JDialog {
         pnlSearchTool.setBackground(Color.WHITE);
         txtSearch = new JTextField(15);
         txtSearch.setPreferredSize(new Dimension(150, 35));
-        cbxFilterDoKho = new JComboBox<>(new String[]{"Độ khó", "Dễ", "Trung bình", "Khó"});
+        ArrayList<DoKhoDTO> listDK = doKhoBUS.getAll();
+        String[] dsDoKho = new String[listDK.size() + 1];
+        dsDoKho[0] = "Tất cả độ khó";
+        for (int i = 0; i < listDK.size(); i++) {
+            dsDoKho[i + 1] = listDK.get(i).getTendokho();
+        }
+        cbxFilterDoKho = new JComboBox<>(dsDoKho);
         cbxFilterDoKho.setPreferredSize(new Dimension(120, 35));
+
         pnlSearchTool.add(new JLabel("Tìm kiếm:"));
         pnlSearchTool.add(txtSearch);
         pnlSearchTool.add(cbxFilterDoKho);

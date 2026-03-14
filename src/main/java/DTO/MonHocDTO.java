@@ -13,19 +13,15 @@ public class MonHocDTO {
     private int mamonhoc;
     private String tenmonhoc;
     private int sotinchi;
-    private int tongcaudung;
-    private int tongcausai;
     private int trangthai;
 
     public MonHocDTO() {
     }
 
-    public MonHocDTO(int mamonhoc, String tenmonhoc, int sotinchi, int tongcaudung, int tongcausai, int trangthai) {
+    public MonHocDTO(int mamonhoc, String tenmonhoc, int sotinchi, int trangthai) {
         this.mamonhoc = mamonhoc;
         this.tenmonhoc = tenmonhoc;
         this.sotinchi = sotinchi;
-        this.tongcaudung = tongcaudung;
-        this.tongcausai = tongcausai;
         this.trangthai = trangthai;
     }
 
@@ -52,22 +48,6 @@ public class MonHocDTO {
 
     public void setSotinchi(int sotinchi) {
         this.sotinchi = sotinchi;
-    }
-
-    public int getTongcaudung() {
-        return tongcaudung;
-    }
-
-    public void setTongcaudung(int tongcaudung) {
-        this.tongcaudung = tongcaudung;
-    }
-
-    public int getTongcausai() {
-        return tongcausai;
-    }
-
-    public void setTongcausai(int tongcausai) {
-        this.tongcausai = tongcausai;
     }
 
     public int getTrangthai() {

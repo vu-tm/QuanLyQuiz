@@ -18,11 +18,12 @@ public class BaiThiDTO {
     private Timestamp thoigianvaothi;
     private int thoigianlambai;
     private int socaudung;
+    private int socausai; // Thêm mới
 
     public BaiThiDTO() {
     }
 
-    public BaiThiDTO(int mabaithi, int made, String manguoidung, double diemthi, Timestamp thoigianvaothi, int thoigianlambai, int socaudung) {
+    public BaiThiDTO(int mabaithi, int made, String manguoidung, double diemthi, Timestamp thoigianvaothi, int thoigianlambai, int socaudung, int socausai) {
         this.mabaithi = mabaithi;
         this.made = made;
         this.manguoidung = manguoidung;
@@ -30,6 +31,7 @@ public class BaiThiDTO {
         this.thoigianvaothi = thoigianvaothi;
         this.thoigianlambai = thoigianlambai;
         this.socaudung = socaudung;
+        this.socausai = socausai; // Thêm mới
     }
         
     // Getters and Setters
@@ -88,5 +90,12 @@ public class BaiThiDTO {
     public void setSocaudung(int socaudung) {
         this.socaudung = socaudung;
     }
-    
+
+    public int getSocausai() {
+        return socausai;
+    }
+
+    public void setSocausai(int socausai) {
+        this.socausai = socausai;
+    }
 }

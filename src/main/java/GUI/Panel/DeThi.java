@@ -1,6 +1,8 @@
 package GUI.Panel;
 
 import BUS.DeThiBUS;
+import BUS.KyThiBUS;
+import BUS.MonHocBUS;
 import DTO.DeThiDTO;
 import GUI.Component.IntegratedSearch;
 import GUI.Component.MainFunction;
@@ -35,6 +37,8 @@ public class DeThi extends JPanel implements ActionListener, ItemListener {
     DefaultTableModel tblModel;
 
     DeThiBUS dethiBUS = new DeThiBUS();
+    KyThiBUS kyThiBUS = new KyThiBUS();
+    MonHocBUS monHocBUS = new MonHocBUS();
     ArrayList<DeThiDTO> listHienTai = dethiBUS.getAll();
 
     Color BackgroundColor = new Color(240, 247, 250);
@@ -200,12 +204,13 @@ public class DeThi extends JPanel implements ActionListener, ItemListener {
 
     public void loadDataTable(ArrayList<DeThiDTO> result) {
         tblModel.setRowCount(0);
-        for (DeThiDTO dt : result) {
+        for (int i = 0; i < result.size(); i++) {
+            DeThiDTO dt = result.get(i);
             tblModel.addRow(new Object[]{
                 dt.getMade(),
                 dt.getTende(),
-                dt.getMakythi(),
-                dt.getMonthi(),
+                kyThiBUS.getTenById(dt.getMakythi()),
+                monHocBUS.getTenById(dt.getMonthi()),
                 dt.getThoigianthi(),
                 dt.getTongsocau(),
                 dt.getNguoitao(),
@@ -219,9 +224,9 @@ public class DeThi extends JPanel implements ActionListener, ItemListener {
         int index = tableDeThi.getSelectedRow();
         if (index == -1) return null;
         int made = (int) tableDeThi.getValueAt(index, 0);
-        for (DeThiDTO item : listHienTai) {
-            if (item.getMade() == made) {
-                return item;
+        for (int i = 0; i < listHienTai.size(); i++) {
+            if (listHienTai.get(i).getMade() == made) {
+                return listHienTai.get(i);
             }
         }
         return null;

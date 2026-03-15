@@ -35,16 +35,24 @@ public class MonHocBUS {
         return check;
     }
 
+    public String getTenById(int mamonhoc) {
+        for (int i = 0; i < listMonHoc.size(); i++) {
+            if (listMonHoc.get(i).getMamonhoc() == mamonhoc) {
+                return listMonHoc.get(i).getTenmonhoc();
+            }
+        }
+        return "Không xác định";
+    }
+
     public ArrayList<MonHocDTO> search(String text, String type) {
         ArrayList<MonHocDTO> result = new ArrayList<>();
         text = text.toLowerCase();
         for (int i = 0; i < this.listMonHoc.size(); i++) {
             MonHocDTO mh = listMonHoc.get(i);
             boolean match = false;
-            
             switch (type) {
                 case "Tất cả":
-                    match = Integer.toString(mh.getMamonhoc()).contains(text) 
+                    match = Integer.toString(mh.getMamonhoc()).contains(text)
                             || mh.getTenmonhoc().toLowerCase().contains(text);
                     break;
                 case "Mã môn học":

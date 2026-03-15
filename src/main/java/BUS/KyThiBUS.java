@@ -35,6 +35,15 @@ public class KyThiBUS {
         return check;
     }
 
+    public String getTenById(int makythi) {
+        for (int i = 0; i < listKyThi.size(); i++) {
+            if (listKyThi.get(i).getMakythi() == makythi) {
+                return listKyThi.get(i).getTenkythi();
+            }
+        }
+        return "Không xác định";
+    }
+
     public ArrayList<KyThiDTO> search(String text, String type) {
         ArrayList<KyThiDTO> result = new ArrayList<>();
         text = text.toLowerCase();
@@ -43,7 +52,6 @@ public class KyThiBUS {
             String maStr = Integer.toString(kt.getMakythi());
             String tenStr = kt.getTenkythi().toLowerCase();
             boolean match = false;
-            
             switch (type) {
                 case "Tất cả":
                     match = maStr.contains(text) || tenStr.contains(text);

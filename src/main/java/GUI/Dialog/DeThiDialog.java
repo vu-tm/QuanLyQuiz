@@ -146,6 +146,7 @@ public class DeThiDialog extends JDialog {
         // Số câu đã chọn (readonly)
         soCau = new InputForm("Số câu hỏi đã chọn");
         soCau.setEditable(false);
+        soCau.getTxtForm().setFocusable(false);
         soCau.setText("0");
 
         // Nếu đang edit/view, điền sẵn thông tin

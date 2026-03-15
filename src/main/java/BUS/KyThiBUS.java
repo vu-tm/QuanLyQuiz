@@ -1,19 +1,10 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package BUS;
 
-/**
- *
- * @author Windows
- */
 import DAO.KyThiDAO;
 import DTO.KyThiDTO;
 import java.util.ArrayList;
 
 public class KyThiBUS {
-
     private final KyThiDAO kythiDAO = KyThiDAO.getInstance();
     private ArrayList<KyThiDTO> listKyThi;
 
@@ -27,37 +18,45 @@ public class KyThiBUS {
     }
 
     public boolean add(KyThiDTO kt) {
-        return kythiDAO.insert(kt) > 0;
+        boolean check = kythiDAO.insert(kt) > 0;
+        if (check) getAll();
+        return check;
     }
-    
+
     public boolean update(KyThiDTO kt) {
-        return kythiDAO.update(kt) > 0;
+        boolean check = kythiDAO.update(kt) > 0;
+        if (check) getAll();
+        return check;
     }
-    
+
     public boolean delete(int id) {
-        return kythiDAO.delete(id) > 0;
+        boolean check = kythiDAO.delete(id) > 0;
+        if (check) getAll();
+        return check;
     }
-    
+
     public ArrayList<KyThiDTO> search(String text, String type) {
         ArrayList<KyThiDTO> result = new ArrayList<>();
         text = text.toLowerCase();
-
-        for (KyThiDTO kt : this.listKyThi) {
-            String maStr = Integer.toString(kt.getMakythi()).toLowerCase();
+        for (int i = 0; i < this.listKyThi.size(); i++) {
+            KyThiDTO kt = listKyThi.get(i);
+            String maStr = Integer.toString(kt.getMakythi());
             String tenStr = kt.getTenkythi().toLowerCase();
-
-            if (type.equals("Tất cả")) {
-                if (maStr.contains(text) || tenStr.contains(text)) {
-                    result.add(kt);
-                }
-            } else if (type.equals("Mã kỳ thi")) {
-                if (maStr.contains(text)) {
-                    result.add(kt);
-                }
-            } else if (type.equals("Tên kỳ thi")) {
-                if (tenStr.contains(text)) {
-                    result.add(kt);
-                }
+            boolean match = false;
+            
+            switch (type) {
+                case "Tất cả":
+                    match = maStr.contains(text) || tenStr.contains(text);
+                    break;
+                case "Mã kỳ thi":
+                    match = maStr.contains(text);
+                    break;
+                case "Tên kỳ thi":
+                    match = tenStr.contains(text);
+                    break;
+            }
+            if (match) {
+                result.add(kt);
             }
         }
         return result;

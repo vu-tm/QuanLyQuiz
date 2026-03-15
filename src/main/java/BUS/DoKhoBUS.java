@@ -5,11 +5,11 @@ import DTO.DoKhoDTO;
 import java.util.ArrayList;
 
 public class DoKhoBUS {
-    private final DoKhoDAO dkDAO = new DoKhoDAO();
-    public ArrayList<DoKhoDTO> listDoKho = new ArrayList<>();
+    private final DoKhoDAO dkDAO = DoKhoDAO.getInstance();
+    private ArrayList<DoKhoDTO> listDoKho;
 
     public DoKhoBUS() {
-        listDoKho = dkDAO.selectAll();
+        this.listDoKho = dkDAO.selectAll();
     }
 
     public ArrayList<DoKhoDTO> getAll() {
@@ -17,48 +17,57 @@ public class DoKhoBUS {
         return this.listDoKho;
     }
 
-    public Boolean add(DoKhoDTO dk) {
-        boolean check = dkDAO.insert(dk) != 0;
-        if (check) {
-            this.listDoKho.add(dk);
-        }
+    public boolean add(DoKhoDTO dk) {
+        boolean check = dkDAO.insert(dk) > 0;
+        if (check) getAll();
         return check;
     }
 
-    public Boolean delete(int madokho) {
-        boolean check = dkDAO.delete(madokho) != 0;
-        if (check) {
-            getAll();
-        }
+    public boolean delete(int madokho) {
+        boolean check = dkDAO.delete(madokho) > 0;
+        if (check) getAll();
         return check;
     }
 
-    public Boolean update(DoKhoDTO dk) {
-        boolean check = dkDAO.update(dk) != 0;
-        if (check) {
-            getAll();
-        }
+    public boolean update(DoKhoDTO dk) {
+        boolean check = dkDAO.update(dk) > 0;
+        if (check) getAll();
         return check;
     }
 
     public ArrayList<DoKhoDTO> search(String text, String type) {
         ArrayList<DoKhoDTO> result = new ArrayList<>();
         text = text.toLowerCase();
-        for (DoKhoDTO i : this.listDoKho) {
-            if (type.equals("Tất cả")) {
-                if (Integer.toString(i.getMadokho()).contains(text) || i.getTendokho().toLowerCase().contains(text)) {
-                    result.add(i);
-                }
-            } else if (type.equals("Mã độ khó")) {
-                if (Integer.toString(i.getMadokho()).contains(text)) {
-                    result.add(i);
-                }
-            } else if (type.equals("Tên độ khó")) {
-                if (i.getTendokho().toLowerCase().contains(text)) {
-                    result.add(i);
-                }
+        for (int i = 0; i < this.listDoKho.size(); i++) {
+            DoKhoDTO dk = listDoKho.get(i);
+            String maStr = Integer.toString(dk.getMadokho());
+            String tenStr = dk.getTendokho().toLowerCase();
+            boolean match = false;
+            
+            switch (type) {
+                case "Tất cả":
+                    match = maStr.contains(text) || tenStr.contains(text);
+                    break;
+                case "Mã độ khó":
+                    match = maStr.contains(text);
+                    break;
+                case "Tên độ khó":
+                    match = tenStr.contains(text);
+                    break;
+            }
+            if (match) {
+                result.add(dk);
             }
         }
         return result;
+    }
+
+    public String getTenDoKho(int madokho) {
+        for (int i = 0; i < listDoKho.size(); i++) {
+            if (listDoKho.get(i).getMadokho() == madokho) {
+                return listDoKho.get(i).getTendokho();
+            }
+        }
+        return "Không xác định";
     }
 }

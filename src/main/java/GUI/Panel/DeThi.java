@@ -7,13 +7,22 @@ import GUI.Component.MainFunction;
 import GUI.Component.PanelBorderRadius;
 import GUI.Component.TableSorter;
 import GUI.Dialog.DeThiDialog;
+import helper.Validation;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
+import org.apache.poi.xssf.usermodel.XSSFRow;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 public class DeThi extends JPanel implements ActionListener, ItemListener {
 
@@ -25,15 +34,14 @@ public class DeThi extends JPanel implements ActionListener, ItemListener {
     IntegratedSearch search;
     DefaultTableModel tblModel;
 
-    // Khởi tạo BUS
     DeThiBUS dethiBUS = new DeThiBUS();
-    ArrayList<DeThiDTO> listDeThi = dethiBUS.getAll();
+    ArrayList<DeThiDTO> listHienTai = dethiBUS.getAll();
 
     Color BackgroundColor = new Color(240, 247, 250);
 
     public DeThi() {
         initComponent();
-        loadDataTable(listDeThi);
+        loadDataTable(listHienTai);
     }
 
     private void initComponent() {
@@ -41,17 +49,22 @@ public class DeThi extends JPanel implements ActionListener, ItemListener {
         this.setLayout(new BorderLayout(0, 0));
         this.setOpaque(true);
 
-        // Khởi tạo Table
         tableDeThi = new JTable();
         scrollTableDeThi = new JScrollPane();
-        tblModel = new DefaultTableModel();
-        String[] header = new String[]{"Mã đề", "Tên đề thi", "Mã môn", "Số câu", "Thời gian (phút)", "Người tạo", "Trạng thái"};
+
+        tblModel = new DefaultTableModel() {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+
+        String[] header = new String[]{"Mã đề", "Tên đề thi", "Kỳ thi", "Môn học", "Thời gian (phút)", "Tổng câu", "Người tạo", "Trạng thái"};
         tblModel.setColumnIdentifiers(header);
         tableDeThi.setModel(tblModel);
         tableDeThi.setFocusable(false);
         scrollTableDeThi.setViewportView(tableDeThi);
 
-        // Căn giữa nội dung các cột
         DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
         centerRenderer.setHorizontalAlignment(JLabel.CENTER);
         for (int i = 0; i < tableDeThi.getColumnCount(); i++) {
@@ -61,7 +74,6 @@ public class DeThi extends JPanel implements ActionListener, ItemListener {
         tableDeThi.setAutoCreateRowSorter(true);
         TableSorter.configureTableColumnSorter(tableDeThi, 0, TableSorter.INTEGER_COMPARATOR);
 
-        // Padding xung quanh
         pnlBorder1 = new JPanel();
         pnlBorder1.setPreferredSize(new Dimension(0, 10));
         pnlBorder1.setBackground(BackgroundColor);
@@ -84,7 +96,6 @@ public class DeThi extends JPanel implements ActionListener, ItemListener {
         contentCenter.setLayout(new BorderLayout(10, 10));
         this.add(contentCenter, BorderLayout.CENTER);
 
-        // Thanh công cụ functionBar
         functionBar = new PanelBorderRadius();
         functionBar.setPreferredSize(new Dimension(0, 100));
         functionBar.setLayout(new GridLayout(1, 2, 50, 0));
@@ -98,7 +109,6 @@ public class DeThi extends JPanel implements ActionListener, ItemListener {
         }
         functionBar.add(mainFunction);
 
-        // Thanh tìm kiếm
         search = new IntegratedSearch(new String[]{"Tất cả", "Mã đề", "Tên đề", "Người tạo"});
         search.txtSearchForm.addKeyListener(new KeyAdapter() {
             @Override
@@ -106,25 +116,17 @@ public class DeThi extends JPanel implements ActionListener, ItemListener {
                 thucHienTimKiem();
             }
         });
-
-        // Combobox search
         search.cbxChoose.addItemListener(this);
-
-        // Làm mới
-        search.btnReset.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                search.txtSearchForm.setText("");
-                search.cbxChoose.setSelectedIndex(0);
-                listDeThi = dethiBUS.getAll();
-                loadDataTable(listDeThi);
-            }
+        search.btnReset.addActionListener(e -> {
+            search.txtSearchForm.setText("");
+            search.cbxChoose.setSelectedIndex(0);
+            listHienTai = dethiBUS.getAll();
+            loadDataTable(listHienTai);
         });
 
         functionBar.add(search);
         contentCenter.add(functionBar, BorderLayout.NORTH);
 
-        // Phần bảng hiển thị dữ liệu
         main = new PanelBorderRadius();
         main.setLayout(new BorderLayout());
         main.setBackground(Color.WHITE);
@@ -135,11 +137,60 @@ public class DeThi extends JPanel implements ActionListener, ItemListener {
     public void thucHienTimKiem() {
         String kieuTimKiem = (String) search.cbxChoose.getSelectedItem();
         String noiDungTim = search.txtSearchForm.getText();
-        listDeThi = dethiBUS.search(noiDungTim, kieuTimKiem);
-        loadDataTable(listDeThi);
+        listHienTai = dethiBUS.search(noiDungTim, kieuTimKiem);
+        loadDataTable(listHienTai);
     }
 
-    // Hàm bắt buộc khi implement ItemListener
+    public void importExcel() {
+        JFileChooser jf = new JFileChooser();
+        int result = jf.showOpenDialog(null);
+        int countSuccess = 0;
+        int countError = 0;
+
+        if (result == JFileChooser.APPROVE_OPTION) {
+            try {
+                File excelFile = jf.getSelectedFile();
+                FileInputStream excelFIS = new FileInputStream(excelFile);
+                BufferedInputStream excelBIS = new BufferedInputStream(excelFIS);
+                XSSFWorkbook excelJTableImport = new XSSFWorkbook(excelBIS);
+                XSSFSheet excelSheet = excelJTableImport.getSheetAt(0);
+
+                for (int row = 1; row <= excelSheet.getLastRowNum(); row++) {
+                    XSSFRow excelRow = excelSheet.getRow(row);
+                    if (excelRow == null) {
+                        continue;
+                    }
+                    try {
+                        String tenDe = excelRow.getCell(0).getStringCellValue();
+                        if (Validation.isEmpty(tenDe)) {
+                            countError++;
+                            continue;
+                        }
+                        DeThiDTO dt = new DeThiDTO();
+                        dt.setTende(tenDe);
+                        dt.setThoigiantao(new Timestamp(System.currentTimeMillis()));
+                        dt.setNguoitao("admin");
+                        dt.setTrangthai(true);
+                        dt.setTongsocau(0);
+
+                        if (dethiBUS.add(dt)) {
+                            countSuccess++;
+                        } else {
+                            countError++;
+                        }
+                    } catch (Exception e) {
+                        countError++;
+                    }
+                }
+                JOptionPane.showMessageDialog(this, "Nhập thành công " + countSuccess + " dòng. Lỗi " + countError + " dòng.");
+                listHienTai = dethiBUS.getAll();
+                loadDataTable(listHienTai);
+            } catch (IOException ex) {
+                JOptionPane.showMessageDialog(this, "Lỗi đọc file Excel!");
+            }
+        }
+    }
+
     @Override
     public void itemStateChanged(ItemEvent e) {
         if (e.getStateChange() == ItemEvent.SELECTED) {
@@ -149,41 +200,80 @@ public class DeThi extends JPanel implements ActionListener, ItemListener {
 
     public void loadDataTable(ArrayList<DeThiDTO> result) {
         tblModel.setRowCount(0);
-        for (int i = 0; i < result.size(); i++) {
-            DeThiDTO dt = result.get(i);
+        for (DeThiDTO dt : result) {
             tblModel.addRow(new Object[]{
                 dt.getMade(),
                 dt.getTende(),
+                dt.getMakythi(),
                 dt.getMonthi(),
-                dt.getTongsocau(), 
                 dt.getThoigianthi(),
+                dt.getTongsocau(),
                 dt.getNguoitao(),
                 dt.isTrangthai() ? "Hoạt động" : "Khóa"
             });
         }
     }
 
+    // Lấy DeThiDTO theo dòng đang chọn trong bảng
+    private DeThiDTO getSelectedDTO() {
+        int index = tableDeThi.getSelectedRow();
+        if (index == -1) return null;
+        int made = (int) tableDeThi.getValueAt(index, 0);
+        for (DeThiDTO item : listHienTai) {
+            if (item.getMade() == made) {
+                return item;
+            }
+        }
+        return null;
+    }
+
     @Override
     public void actionPerformed(ActionEvent e) {
         JFrame owner = (JFrame) SwingUtilities.getWindowAncestor(this);
-        if (e.getSource() == mainFunction.btn.get("create")) {
-            new DeThiDialog(owner, "Thêm đề thi", true, "create");
-        } else if (e.getSource() == mainFunction.btn.get("update")) {
-            int index = tableDeThi.getSelectedRow();
-            if (index == -1) {
-                JOptionPane.showMessageDialog(this, "Vui lòng chọn đề thi cần sửa");
+        Object source = e.getSource();
+
+        if (source == mainFunction.btn.get("create")) {
+            new DeThiDialog(this, owner, "Thêm đề thi mới", true, "create", null);
+
+        } else if (source == mainFunction.btn.get("update")) {
+            DeThiDTO selected = getSelectedDTO();
+            if (selected == null) {
+                JOptionPane.showMessageDialog(this, "Vui lòng chọn đề thi cần sửa!");
             } else {
-                new DeThiDialog(owner, "Sửa đề thi", true, "update");
+                new DeThiDialog(this, owner, "Chỉnh sửa đề thi", true, "update", selected);
             }
-        } else if (e.getSource() == mainFunction.btn.get("delete")) {
-            int index = tableDeThi.getSelectedRow();
-            if (index == -1) {
-                JOptionPane.showMessageDialog(this, "Vui lòng chọn đề thi cần xóa");
+
+        } else if (source == mainFunction.btn.get("detail")) {
+            DeThiDTO selected = getSelectedDTO();
+            if (selected == null) {
+                JOptionPane.showMessageDialog(this, "Vui lòng chọn đề thi cần xem!");
             } else {
-                int confirm = JOptionPane.showConfirmDialog(this, "Xác nhận xóa đề thi này?", "Xóa", JOptionPane.YES_NO_OPTION);
+                new DeThiDialog(this, owner, "Thông tin chi tiết đề thi", true, "view", selected);
+            }
+
+        } else if (source == mainFunction.btn.get("delete")) {
+            DeThiDTO selected = getSelectedDTO();
+            if (selected == null) {
+                JOptionPane.showMessageDialog(this, "Vui lòng chọn đề thi cần xóa!");
+            } else {
+                int confirm = JOptionPane.showConfirmDialog(this, "Bạn có chắc chắn muốn xóa đề thi này?", "Xác nhận xóa", JOptionPane.YES_NO_OPTION);
                 if (confirm == JOptionPane.YES_OPTION) {
-                    tblModel.removeRow(index);
+                    if (dethiBUS.delete(selected.getMade())) {
+                        JOptionPane.showMessageDialog(this, "Xóa thành công!");
+                        listHienTai = dethiBUS.getAll();
+                        loadDataTable(listHienTai);
+                    }
                 }
+            }
+
+        } else if (source == mainFunction.btn.get("import")) {
+            importExcel();
+
+        } else if (source == mainFunction.btn.get("export")) {
+            try {
+                helper.JTableExporter.exportJTableToExcel(tableDeThi);
+            } catch (IOException ex) {
+                ex.printStackTrace();
             }
         }
     }

@@ -4,6 +4,8 @@ import DTO.DoKhoDTO;
 import config.JDBCUtil;
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class DoKhoDAO {
 
@@ -15,13 +17,13 @@ public class DoKhoDAO {
         int result = 0;
         try {
             Connection con = JDBCUtil.getConnection();
-            String sql = "INSERT INTO `dokho`(`tendokho`, `trangthai`) VALUES (?, 1)";
+            String sql = "INSERT INTO dokho (tendokho, trangthai) VALUES (?, 1)";
             PreparedStatement pst = con.prepareStatement(sql);
             pst.setString(1, t.getTendokho());
             result = pst.executeUpdate();
             JDBCUtil.closeConnection(con);
-        } catch (SQLException e) {
-            e.printStackTrace();
+        } catch (SQLException ex) {
+            Logger.getLogger(DoKhoDAO.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
@@ -30,29 +32,29 @@ public class DoKhoDAO {
         int result = 0;
         try {
             Connection con = JDBCUtil.getConnection();
-            String sql = "UPDATE `dokho` SET `tendokho`=? WHERE `madokho`=?";
+            String sql = "UPDATE dokho SET tendokho = ? WHERE madokho = ?";
             PreparedStatement pst = con.prepareStatement(sql);
             pst.setString(1, t.getTendokho());
             pst.setInt(2, t.getMadokho());
             result = pst.executeUpdate();
             JDBCUtil.closeConnection(con);
-        } catch (SQLException e) {
-            e.printStackTrace();
+        } catch (SQLException ex) {
+            Logger.getLogger(DoKhoDAO.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
 
-    public int delete(int t) {
+    public int delete(int id) {
         int result = 0;
         try {
             Connection con = JDBCUtil.getConnection();
-            String sql = "UPDATE `dokho` SET trangthai=0 WHERE `madokho` = ?";
+            String sql = "UPDATE dokho SET trangthai = 0 WHERE madokho = ?";
             PreparedStatement pst = con.prepareStatement(sql);
-            pst.setInt(1, t);
+            pst.setInt(1, id);
             result = pst.executeUpdate();
             JDBCUtil.closeConnection(con);
-        } catch (SQLException e) {
-            e.printStackTrace();
+        } catch (SQLException ex) {
+            Logger.getLogger(DoKhoDAO.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
@@ -61,19 +63,19 @@ public class DoKhoDAO {
         ArrayList<DoKhoDTO> result = new ArrayList<>();
         try {
             Connection con = JDBCUtil.getConnection();
-            String sql = "SELECT * FROM dokho WHERE trangthai=1";
+            String sql = "SELECT * FROM dokho WHERE trangthai = 1 ORDER BY madokho DESC";
             PreparedStatement pst = con.prepareStatement(sql);
             ResultSet rs = pst.executeQuery();
             while (rs.next()) {
-                int madokho = rs.getInt("madokho");
-                String tendokho = rs.getString("tendokho");
-                int trangthai = rs.getInt("trangthai");
-                DoKhoDTO dk = new DoKhoDTO(madokho, tendokho, trangthai);
+                DoKhoDTO dk = new DoKhoDTO();
+                dk.setMadokho(rs.getInt("madokho"));
+                dk.setTendokho(rs.getString("tendokho"));
+                dk.setTrangthai(rs.getInt("trangthai"));
                 result.add(dk);
             }
             JDBCUtil.closeConnection(con);
-        } catch (Exception e) {
-           e.printStackTrace();
+        } catch (SQLException ex) {
+            Logger.getLogger(DoKhoDAO.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }

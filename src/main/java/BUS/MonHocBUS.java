@@ -6,7 +6,7 @@ import java.util.ArrayList;
 
 public class MonHocBUS {
     private final MonHocDAO mhDAO = MonHocDAO.getInstance();
-    private ArrayList<MonHocDTO> listMonHoc = new ArrayList<>();
+    private ArrayList<MonHocDTO> listMonHoc;
 
     public MonHocBUS() {
         this.listMonHoc = mhDAO.selectAll();
@@ -18,37 +18,44 @@ public class MonHocBUS {
     }
 
     public boolean add(MonHocDTO mh) {
-        return mhDAO.insert(mh) != 0;
+        boolean check = mhDAO.insert(mh) > 0;
+        if (check) getAll();
+        return check;
     }
 
     public boolean update(MonHocDTO mh) {
-        return mhDAO.update(mh) != 0;
+        boolean check = mhDAO.update(mh) > 0;
+        if (check) getAll();
+        return check;
     }
 
     public boolean delete(int mamonhoc) {
-        return mhDAO.delete(mamonhoc) != 0;
+        boolean check = mhDAO.delete(mamonhoc) > 0;
+        if (check) getAll();
+        return check;
     }
 
     public ArrayList<MonHocDTO> search(String text, String type) {
         ArrayList<MonHocDTO> result = new ArrayList<>();
         text = text.toLowerCase();
         for (int i = 0; i < this.listMonHoc.size(); i++) {
-            MonHocDTO mh = this.listMonHoc.get(i);
-            String maStr = Integer.toString(mh.getMamonhoc()).toLowerCase();
-            String tenStr = mh.getTenmonhoc().toLowerCase();
-
-            if (type.equals("Tất cả")) {
-                if (maStr.contains(text) || tenStr.contains(text)) {
-                    result.add(mh);
-                }
-            } else if (type.equals("Mã môn học")) {
-                if (maStr.contains(text)) {
-                    result.add(mh);
-                }
-            } else if (type.equals("Tên môn học")) {
-                if (tenStr.contains(text)) {
-                    result.add(mh);
-                }
+            MonHocDTO mh = listMonHoc.get(i);
+            boolean match = false;
+            
+            switch (type) {
+                case "Tất cả":
+                    match = Integer.toString(mh.getMamonhoc()).contains(text) 
+                            || mh.getTenmonhoc().toLowerCase().contains(text);
+                    break;
+                case "Mã môn học":
+                    match = Integer.toString(mh.getMamonhoc()).contains(text);
+                    break;
+                case "Tên môn học":
+                    match = mh.getTenmonhoc().toLowerCase().contains(text);
+                    break;
+            }
+            if (match) {
+                result.add(mh);
             }
         }
         return result;

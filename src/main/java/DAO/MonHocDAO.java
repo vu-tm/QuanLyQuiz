@@ -4,6 +4,8 @@ import DTO.MonHocDTO;
 import config.JDBCUtil;
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class MonHocDAO {
 
@@ -15,14 +17,14 @@ public class MonHocDAO {
         int result = 0;
         try {
             Connection con = JDBCUtil.getConnection();
-            String sql = "INSERT INTO `monhoc`(`tenmonhoc`, `sotinchi`, `trangthai`) VALUES (?, ?, 1)";
+            String sql = "INSERT INTO monhoc (tenmonhoc, sotinchi, trangthai) VALUES (?, ?, 1)";
             PreparedStatement pst = con.prepareStatement(sql);
             pst.setString(1, t.getTenmonhoc());
             pst.setInt(2, t.getSotinchi());
             result = pst.executeUpdate();
             JDBCUtil.closeConnection(con);
-        } catch (SQLException e) {
-            e.printStackTrace();
+        } catch (SQLException ex) {
+            Logger.getLogger(MonHocDAO.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
@@ -31,30 +33,30 @@ public class MonHocDAO {
         int result = 0;
         try {
             Connection con = JDBCUtil.getConnection();
-            String sql = "UPDATE `monhoc` SET `tenmonhoc`=?, `sotinchi`=? WHERE `mamonhoc`=?";
+            String sql = "UPDATE monhoc SET tenmonhoc = ?, sotinchi = ? WHERE mamonhoc = ?";
             PreparedStatement pst = con.prepareStatement(sql);
             pst.setString(1, t.getTenmonhoc());
             pst.setInt(2, t.getSotinchi());
             pst.setInt(3, t.getMamonhoc());
             result = pst.executeUpdate();
             JDBCUtil.closeConnection(con);
-        } catch (SQLException e) {
-            e.printStackTrace();
+        } catch (SQLException ex) {
+            Logger.getLogger(MonHocDAO.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
 
-    public int delete(int t) {
+    public int delete(int mamonhoc) {
         int result = 0;
         try {
             Connection con = JDBCUtil.getConnection();
-            String sql = "UPDATE `monhoc` SET trangthai=0 WHERE `mamonhoc` = ?";
+            String sql = "UPDATE monhoc SET trangthai = 0 WHERE mamonhoc = ?";
             PreparedStatement pst = con.prepareStatement(sql);
-            pst.setInt(1, t);
+            pst.setInt(1, mamonhoc);
             result = pst.executeUpdate();
             JDBCUtil.closeConnection(con);
-        } catch (SQLException e) {
-            e.printStackTrace();
+        } catch (SQLException ex) {
+            Logger.getLogger(MonHocDAO.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
@@ -63,7 +65,7 @@ public class MonHocDAO {
         ArrayList<MonHocDTO> result = new ArrayList<>();
         try {
             Connection con = JDBCUtil.getConnection();
-            String sql = "SELECT * FROM monhoc WHERE trangthai=1";
+            String sql = "SELECT * FROM monhoc WHERE trangthai = 1 ORDER BY mamonhoc DESC";
             PreparedStatement pst = con.prepareStatement(sql);
             ResultSet rs = pst.executeQuery();
             while (rs.next()) {
@@ -75,25 +77,8 @@ public class MonHocDAO {
                 result.add(mh);
             }
             JDBCUtil.closeConnection(con);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return result;
-    }
-
-    public int getAutoIncrement() {
-        int result = -1;
-        try {
-            Connection con = JDBCUtil.getConnection();
-            String sql = "SELECT `AUTO_INCREMENT` FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'quiz' AND TABLE_NAME = 'monhoc'";
-            PreparedStatement pst = con.prepareStatement(sql);
-            ResultSet rs = pst.executeQuery();
-            if (rs.next()) {
-                result = rs.getInt("AUTO_INCREMENT");
-            }
-            JDBCUtil.closeConnection(con);
         } catch (SQLException ex) {
-            ex.printStackTrace();
+            Logger.getLogger(MonHocDAO.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }

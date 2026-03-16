@@ -165,20 +165,6 @@ public class NguoiDung extends JPanel {
         }
     }
 
-    // SỬA NGƯỜI DÙNG
-    private void suaNguoiDung(String id) {
-        NguoiDungDTO user = bus.getById(id);
-        if (user != null) {
-            Main mainFrame = (Main) SwingUtilities.getWindowAncestor(this);
-            AddNguoiDung editPanel = new AddNguoiDung(user, () -> {
-                mainFrame.setPanel(new NguoiDung());
-            });
-            mainFrame.setPanel(editPanel);
-        } else {
-            JOptionPane.showMessageDialog(this, "Không tìm thấy người dùng!", "Lỗi", JOptionPane.ERROR_MESSAGE);
-        }
-    }
-
     // XOÁ NGƯỜI DÙNG
     private void xoaNguoiDung(String id, String hoten) {
         int confirm = JOptionPane.showConfirmDialog(this,
@@ -197,11 +183,31 @@ public class NguoiDung extends JPanel {
     
     // THÊM NGƯỜI DÙNG
     private void themNguoiDung() {
-        Main mainFrame = (Main) SwingUtilities.getWindowAncestor(this);
-        AddNguoiDung addPanel = new AddNguoiDung(null, () -> {
-            mainFrame.setPanel(new NguoiDung());
-        });
-        mainFrame.setPanel(addPanel);
+        JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
+        AddNguoiDung dialog = new AddNguoiDung(
+            parentFrame,
+            "Thêm người dùng",
+            null,
+            this::loadDataToTable
+        );
+        dialog.setVisible(true);
+    }
+
+    // SỬA NGƯỜI DÙNG
+    private void suaNguoiDung(String id) {
+        NguoiDungDTO user = bus.getById(id);
+        if (user != null) {
+            JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
+            AddNguoiDung dialog = new AddNguoiDung(
+                parentFrame,
+                "Sửa người dùng",
+                user,
+                this::loadDataToTable
+            );
+            dialog.setVisible(true);
+        } else {
+            JOptionPane.showMessageDialog(this, "Không tìm thấy người dùng!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     // ICON THAO TÁC

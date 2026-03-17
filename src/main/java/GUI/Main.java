@@ -8,8 +8,10 @@ import javax.swing.border.EmptyBorder;
 import com.formdev.flatlaf.FlatIntelliJLaf;
 import com.formdev.flatlaf.FlatLaf;
 import com.formdev.flatlaf.fonts.roboto.FlatRobotoFont;
+import DTO.NguoiDungDTO;
 
 public class Main extends JFrame {
+    public static NguoiDungDTO user;
     public JPanel MainContent;
     private MenuTaskbar menuTaskbar;
     Color MainColor = new Color(250, 250, 250);
@@ -68,7 +70,7 @@ public class Main extends JFrame {
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
-            new Main().setVisible(true);
+            new DangNhap().setVisible(true);
         });
     }
 }

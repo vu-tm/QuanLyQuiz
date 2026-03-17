@@ -12,7 +12,9 @@ public class CauHoiDAO {
     public List<CauHoiDTO> getAll() {
         List<CauHoiDTO> list = new ArrayList<>();
         String sql = "SELECT macauhoi, noidung, madokho, maloai, mamonhoc, nguoitao, trangthai FROM cauhoi";
-        try (Connection c = JDBCUtil.getConnection(); PreparedStatement ps = c.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
+        try (Connection c = JDBCUtil.getConnection();
+                PreparedStatement ps = c.prepareStatement(sql);
+                ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 CauHoiDTO ch = new CauHoiDTO(
                         rs.getInt("macauhoi"),
@@ -21,8 +23,7 @@ public class CauHoiDAO {
                         rs.getInt("maloai"),
                         rs.getInt("mamonhoc"),
                         rs.getString("nguoitao"),
-                        rs.getInt("trangthai")
-                );
+                        rs.getInt("trangthai"));
                 list.add(ch);
             }
         } catch (Exception e) {
@@ -35,10 +36,11 @@ public class CauHoiDAO {
         String getIdSql = "SELECT COALESCE(MAX(macauhoi),0)+1 AS nextId FROM cauhoi";
         String insertSql = "INSERT INTO cauhoi(macauhoi,noidung,madokho,maloai,mamonhoc,nguoitao,trangthai) VALUES(?,?,?,?,?,?,?)";
         try (Connection c = JDBCUtil.getConnection();
-             PreparedStatement psId = c.prepareStatement(getIdSql);
-             ResultSet rs = psId.executeQuery()) {
+                PreparedStatement psId = c.prepareStatement(getIdSql);
+                ResultSet rs = psId.executeQuery()) {
             int nextId = 1;
-            if (rs.next()) nextId = rs.getInt("nextId");
+            if (rs.next())
+                nextId = rs.getInt("nextId");
             try (PreparedStatement ps = c.prepareStatement(insertSql)) {
                 ps.setInt(1, nextId);
                 ps.setString(2, ch.getNoidung());
@@ -99,8 +101,7 @@ public class CauHoiDAO {
                             rs.getInt("maloai"),
                             rs.getInt("mamonhoc"),
                             rs.getString("nguoitao"),
-                            rs.getInt("trangthai")
-                    );
+                            rs.getInt("trangthai"));
                     list.add(ch);
                 }
             }
@@ -108,5 +109,28 @@ public class CauHoiDAO {
             e.printStackTrace();
         }
         return list;
+    }
+
+    public CauHoiDTO getById(int macauhoi) {
+        String sql = "SELECT macauhoi, noidung, madokho, maloai, mamonhoc, nguoitao, trangthai FROM cauhoi WHERE macauhoi = ?";
+        try (Connection c = JDBCUtil.getConnection(); PreparedStatement ps = c.prepareStatement(sql)) {
+            ps.setInt(1, macauhoi);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    CauHoiDTO ch = new CauHoiDTO(
+                            rs.getInt("macauhoi"),
+                            rs.getString("noidung"),
+                            rs.getInt("madokho"),
+                            rs.getInt("maloai"),
+                            rs.getInt("mamonhoc"),
+                            rs.getString("nguoitao"),
+                            rs.getInt("trangthai"));
+                    return ch;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }

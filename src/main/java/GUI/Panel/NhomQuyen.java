@@ -56,7 +56,7 @@ public class NhomQuyen extends JPanel {
         searchPanel.setBackground(Color.WHITE);
 
         JLabel searchIconLabel = new JLabel();
-        ImageIcon searchIcon = IconHelper.loadIcon("find.png", 20, 20);
+        Icon searchIcon = IconHelper.loadIcon("find.svg", 20, 20);
         if (searchIcon != null) {
             searchIconLabel.setIcon(searchIcon);
             searchIconLabel.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 5));

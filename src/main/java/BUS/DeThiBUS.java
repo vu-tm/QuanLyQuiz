@@ -102,4 +102,8 @@ public class DeThiBUS {
         }
         return null;
     }
+
+    public ArrayList<DeThiDTO> getDanhSachDeThiByNguoiDung(String manguoidung) {
+        return dethiDAO.getDanhSachDeThiByNguoiDung(manguoidung);
+    }
 }

@@ -11,6 +11,7 @@ public class MonHocBUS {
 
     public MonHocBUS() {
         this.listMonHoc = mhDAO.selectAll();
+        if (this.listMonHoc == null) this.listMonHoc = new ArrayList<>();
     }
 
     public ArrayList<MonHocDTO> getAll() {

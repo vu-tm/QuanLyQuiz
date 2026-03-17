@@ -1,9 +1,10 @@
 package helper;
+
 import javax.swing.*;
 import java.awt.*;
 
 public class IconHelper {
-    
+
     public static ImageIcon loadIcon(String fileName) {
         try {
             // Đường dẫn đến thư mục icon (Other Sources/src/main/resources/icon)
@@ -19,7 +20,7 @@ public class IconHelper {
             return null;
         }
     }
-    
+
     public static ImageIcon loadIcon(String fileName, int width, int height) {
         ImageIcon icon = loadIcon(fileName);
         if (icon != null) {

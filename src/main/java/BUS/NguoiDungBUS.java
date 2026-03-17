@@ -28,6 +28,15 @@ public class NguoiDungBUS {
         return dao.checkExistUsernameAll(username);
     }
 
+    // Đăng nhập
+    public NguoiDungDTO login(String username, String password) {
+        NguoiDungDTO user = dao.getByUsername(username);
+        if (user != null && user.getMatkhau().equals(password)) {
+            return user;
+        }
+        return null;
+    }
+
     // Thêm mới người dùng
     public boolean insert(NguoiDungDTO user) {
         return dao.insert(user);

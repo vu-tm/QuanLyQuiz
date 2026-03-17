@@ -31,4 +31,8 @@ public class CauHoiBUS {
     public List<CauHoiDTO> search(String keyword) {
         return dao.search(keyword);
     }
+
+    public CauHoiDTO getById(int macauhoi) {
+        return dao.getById(macauhoi);
+    }
 }

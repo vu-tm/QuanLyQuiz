@@ -33,6 +33,14 @@ public class MenuTaskbar extends JPanel {
 
     public MenuTaskbar(Main main) {
         this.main = main;
+        if (Main.user.getManhomquyen() == 3) {
+            getSt = new String[][]{
+                {"Trang chủ", "home.svg"},
+                {"Vào thi", "dethi.svg"},
+                {"Kết quả", "baithi.svg"},
+                {"Đăng xuất", "logout.svg"}
+            };
+        }
         initComponent();
     }
 
@@ -100,43 +108,56 @@ public class MenuTaskbar extends JPanel {
                 @Override
                 public void mousePressed(MouseEvent evt) {
                     pnlMenuTaskbarMousePress(evt);
-
-                    switch (index) {
-                        case 0:
-                            main.setPanel(new TrangChu());
-                            break;
-                        case 1:
-                            main.setPanel(new MonHoc());
-                            break;
-                        case 2:
-                            main.setPanel(new CauHoi());
-                            break;
-                        case 3:
-                            main.setPanel(new DoKho());
-                            break;
-                        case 4:
-                            main.setPanel(new DeThi());
-                            break;
-                        case 5:
-                            main.setPanel(new KyThi());
-                            break;
-                        case 6:
-                            main.setPanel(new LopHoc());
-                            break;
-                        case 7:
-                            main.setPanel(new NguoiDung());
-                            break;
-                        case 8:
-                            main.setPanel(new NhomQuyen());
-                            break;
-                        case 9:
-                            main.setPanel(new BaiThi());
-                            break;
-                        case 10:
-                            if (JOptionPane.showConfirmDialog(null, "Đăng xuất?", "Xác nhận", 0) == 0) {
-                                System.exit(0);
-                            }
-                            break;
+                    int role = Main.user.getManhomquyen();
+                    if (role == 3) {
+                        switch (index) {
+                            case 0: main.setPanel(new TrangChuHS()); break;
+                            case 1: main.setPanel(new VaoThi()); break;
+                            case 2: main.setPanel(new KetQuaHS()); break;
+                            case 3:
+                                if (JOptionPane.showConfirmDialog(null, "Đăng xuất?", "Xác nhận", 0) == 0) {
+                                    System.exit(0);
+                                }
+                                break;
+                        }
+                    } else {
+                        switch (index) {
+                            case 0:
+                                main.setPanel(new TrangChu());
+                                break;
+                            case 1:
+                                main.setPanel(new MonHoc());
+                                break;
+                            case 2:
+                                main.setPanel(new CauHoi());
+                                break;
+                            case 3:
+                                main.setPanel(new DoKho());
+                                break;
+                            case 4:
+                                main.setPanel(new DeThi());
+                                break;
+                            case 5:
+                                main.setPanel(new KyThi());
+                                break;
+                            case 6:
+                                main.setPanel(new LopHoc());
+                                break;
+                            case 7:
+                                main.setPanel(new NguoiDung());
+                                break;
+                            case 8:
+                                main.setPanel(new NhomQuyen());
+                                break;
+                            case 9:
+                                main.setPanel(new BaiThi());
+                                break;
+                            case 10:
+                                if (JOptionPane.showConfirmDialog(null, "Đăng xuất?", "Xác nhận", 0) == 0) {
+                                    System.exit(0);
+                                }
+                                break;
+                        }
                     }
                 }
             });

@@ -114,4 +114,34 @@ public class DeThiDAO {
         }
         return result;
     }
+
+    public ArrayList<DeThiDTO> getDanhSachDeThiByNguoiDung(String manguoidung) {
+        ArrayList<DeThiDTO> result = new ArrayList<>();
+        try (Connection con = JDBCUtil.getConnection()) {
+            String sql = "SELECT DISTINCT dt.* FROM dethi dt " +
+                         "JOIN giaodethi gdt ON dt.made = gdt.made " +
+                         "JOIN chitietlop ctl ON gdt.malop = ctl.malop " +
+                         "WHERE ctl.manguoidung = ? AND dt.trangthai = 1 AND ctl.hienthi = 1 " +
+                         "ORDER BY dt.made DESC";
+            PreparedStatement pst = con.prepareStatement(sql);
+            pst.setString(1, manguoidung);
+            ResultSet rs = pst.executeQuery();
+            while (rs.next()) {
+                DeThiDTO dt = new DeThiDTO();
+                dt.setMade(rs.getInt("made"));
+                dt.setMakythi(rs.getInt("makythi"));
+                dt.setMonthi(rs.getInt("monthi"));
+                dt.setNguoitao(rs.getString("nguoitao"));
+                dt.setTende(rs.getString("tende"));
+                dt.setThoigiantao(rs.getTimestamp("thoigiantao"));
+                dt.setThoigianthi(rs.getInt("thoigianthi"));
+                dt.setTongsocau(rs.getInt("tongsocau"));
+                dt.setTrangthai(rs.getInt("trangthai") == 1);
+                result.add(dt);
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+        return result;
+    }
 }

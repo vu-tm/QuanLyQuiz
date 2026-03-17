@@ -2,6 +2,7 @@ package BUS;
 
 import DAO.ChiTietDeThiDAO;
 import DAO.DeThiDAO;
+import DTO.CauHoiDTO;
 import DTO.ChiTietDeThiDTO;
 import DTO.DeThiDTO;
 import java.util.ArrayList;
@@ -21,22 +22,27 @@ public class DeThiBUS {
         return this.listDeThi;
     }
 
-    public boolean add(DeThiDTO dt) {
-        boolean check = dethiDAO.insert(dt) > 0;
-        if (check) getAll();
-        return check;
+    public int add(DeThiDTO dt) {
+        int made = dethiDAO.insert(dt);
+        if (made > 0) {
+            getAll();
+        }
+        return made;
     }
 
     public boolean update(DeThiDTO dt) {
         boolean check = dethiDAO.update(dt) > 0;
-        if (check) getAll();
+        if (check) {
+            getAll();
+        }
         return check;
     }
 
     public boolean delete(int made) {
-        ctdtDAO.deleteByMade(made);
         boolean check = dethiDAO.delete(made) > 0;
-        if (check) getAll();
+        if (check) {
+            getAll();
+        }
         return check;
     }
 
@@ -48,9 +54,7 @@ public class DeThiBUS {
             boolean match = false;
             switch (type) {
                 case "Tất cả":
-                    match = Integer.toString(dt.getMade()).contains(text)
-                            || dt.getTende().toLowerCase().contains(text)
-                            || dt.getNguoitao().toLowerCase().contains(text);
+                    match = Integer.toString(dt.getMade()).contains(text) || dt.getTende().toLowerCase().contains(text) || dt.getNguoitao().toLowerCase().contains(text);
                     break;
                 case "Mã đề":
                     match = Integer.toString(dt.getMade()).contains(text);
@@ -69,14 +73,12 @@ public class DeThiBUS {
         return result;
     }
 
-    public boolean saveChiTiet(int made, ArrayList<Integer> listMaCauHoi) {
+    public void saveChiTiet(int made, ArrayList<Integer> listMaCauHoi) {
         ctdtDAO.deleteByMade(made);
         for (int i = 0; i < listMaCauHoi.size(); i++) {
-            int macauhoi = listMaCauHoi.get(i);
-            ChiTietDeThiDTO ct = new ChiTietDeThiDTO(made, macauhoi, i + 1);
+            ChiTietDeThiDTO ct = new ChiTietDeThiDTO(made, listMaCauHoi.get(i), i + 1);
             ctdtDAO.insert(ct);
         }
-        return true;
     }
 
     public ArrayList<Integer> getMaCauHoiByMade(int made) {
@@ -86,5 +88,18 @@ public class DeThiBUS {
             result.add(list.get(i).getMacauhoi());
         }
         return result;
+    }
+
+    public ArrayList<CauHoiDTO> getDanhSachCauHoiByMade(int made) {
+        return dethiDAO.getDanhSachCauHoiByMade(made);
+    }
+
+    public DeThiDTO getById(int made) {
+        for (int i = 0; i < listDeThi.size(); i++) {
+            if (listDeThi.get(i).getMade() == made) {
+                return listDeThi.get(i);
+            }
+        }
+        return null;
     }
 }

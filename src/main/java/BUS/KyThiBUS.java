@@ -5,6 +5,7 @@ import DTO.KyThiDTO;
 import java.util.ArrayList;
 
 public class KyThiBUS {
+
     private final KyThiDAO kythiDAO = KyThiDAO.getInstance();
     private ArrayList<KyThiDTO> listKyThi;
 
@@ -19,19 +20,25 @@ public class KyThiBUS {
 
     public boolean add(KyThiDTO kt) {
         boolean check = kythiDAO.insert(kt) > 0;
-        if (check) getAll();
+        if (check) {
+            getAll();
+        }
         return check;
     }
 
     public boolean update(KyThiDTO kt) {
         boolean check = kythiDAO.update(kt) > 0;
-        if (check) getAll();
+        if (check) {
+            getAll();
+        }
         return check;
     }
 
     public boolean delete(int id) {
         boolean check = kythiDAO.delete(id) > 0;
-        if (check) getAll();
+        if (check) {
+            getAll();
+        }
         return check;
     }
 
@@ -44,23 +51,30 @@ public class KyThiBUS {
         return "Không xác định";
     }
 
+    public KyThiDTO getById(int makythi) {
+        for (int i = 0; i < listKyThi.size(); i++) {
+            if (listKyThi.get(i).getMakythi() == makythi) {
+                return listKyThi.get(i);
+            }
+        }
+        return null;
+    }
+
     public ArrayList<KyThiDTO> search(String text, String type) {
         ArrayList<KyThiDTO> result = new ArrayList<>();
         text = text.toLowerCase();
         for (int i = 0; i < this.listKyThi.size(); i++) {
             KyThiDTO kt = listKyThi.get(i);
-            String maStr = Integer.toString(kt.getMakythi());
-            String tenStr = kt.getTenkythi().toLowerCase();
             boolean match = false;
             switch (type) {
                 case "Tất cả":
-                    match = maStr.contains(text) || tenStr.contains(text);
+                    match = Integer.toString(kt.getMakythi()).contains(text) || kt.getTenkythi().toLowerCase().contains(text);
                     break;
                 case "Mã kỳ thi":
-                    match = maStr.contains(text);
+                    match = Integer.toString(kt.getMakythi()).contains(text);
                     break;
                 case "Tên kỳ thi":
-                    match = tenStr.contains(text);
+                    match = kt.getTenkythi().toLowerCase().contains(text);
                     break;
             }
             if (match) {

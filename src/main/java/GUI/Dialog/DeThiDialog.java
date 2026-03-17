@@ -13,6 +13,7 @@ import DTO.DoKhoDTO;
 import DTO.KyThiDTO;
 import DTO.LopDTO;
 import DTO.MonHocDTO;
+import DTO.GiaoDeThiDTO;
 import GUI.Component.ButtonCustom;
 import GUI.Component.InputForm;
 import GUI.Component.NumericDocumentFilter;
@@ -26,6 +27,7 @@ import java.awt.event.KeyEvent;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
@@ -42,7 +44,6 @@ public class DeThiDialog extends JDialog {
     private JPanel pnlInfo, pnlRight, pnlSelect, pnlQuestionList, pnlButtons;
     private JPanel pnlLopHoc, pnlLopHeader, pnlLopGrid;
     private JScrollPane scrollQuestion, scrollLop;
-    private JSplitPane splitPane;
 
     private KyThiBUS kyThiBUS = new KyThiBUS();
     private DoKhoBUS doKhoBUS = new DoKhoBUS();
@@ -61,7 +62,7 @@ public class DeThiDialog extends JDialog {
     private DeThiDTO currentDTO;
     private String currentType;
 
-    private ArrayList<CauHoiDTO> allCauHoi;
+    private List<CauHoiDTO> allCauHoi;
     private ArrayList<MonHocDTO> listMH;
 
     public DeThiDialog(DeThi parent, JFrame owner, String title, boolean modal, String type, DeThiDTO dt) {
@@ -79,7 +80,7 @@ public class DeThiDialog extends JDialog {
             }
         }
 
-        allCauHoi = cauHoiBUS.getAll();
+        allCauHoi = cauHoiBUS.load();
         listMH = monHocBUS.getAll();
         init(type);
     }
@@ -90,8 +91,8 @@ public class DeThiDialog extends JDialog {
         this.setLocationRelativeTo(null);
         this.getContentPane().setBackground(Color.WHITE);
 
-        // Thứ tự quan trọng: initPnlRight trước (tạo pnlLopGrid),
-        // sau đó initPnlInfo mới gắn listener môn học
+        initPnlLopHoc();
+        initPnlSelect();
         initPnlRight();
         initPnlInfo();
         initPnlButtons(type);
@@ -107,7 +108,6 @@ public class DeThiDialog extends JDialog {
             cbxMonHoc.getCbb().setEnabled(false);
         }
 
-        // Load lớp nếu đang edit/view (pnlLopGrid đã sẵn sàng)
         if (currentDTO != null) {
             capNhatDanhSachLop();
         }
@@ -138,7 +138,6 @@ public class DeThiDialog extends JDialog {
         }
         cbxMonHoc = new SelectForm("Môn học", dsMonHoc);
 
-        // Listener gắn SAU KHI pnlLopGrid đã được tạo trong initPnlRight()
         cbxMonHoc.getCbb().addItemListener((ItemEvent e) -> {
             if (e.getStateChange() == ItemEvent.SELECTED) {
                 capNhatDanhSachLop();
@@ -179,8 +178,6 @@ public class DeThiDialog extends JDialog {
                     break;
                 }
             }
-            // setSelectedIndex môn học KHÔNG trigger listener vì listener chưa được add
-            // (listener add sau block này) — nên capNhatDanhSachLop() sẽ gọi thủ công trong init()
             for (int i = 0; i < listMH.size(); i++) {
                 if (listMH.get(i).getMamonhoc() == currentDTO.getMonthi()) {
                     cbxMonHoc.getCbb().setSelectedIndex(i + 1);
@@ -197,20 +194,16 @@ public class DeThiDialog extends JDialog {
     }
 
     private void initPnlRight() {
-        pnlRight = new JPanel(new BorderLayout(0, 0));
+        pnlRight = new JPanel(new BorderLayout(0, 5));
         pnlRight.setBorder(new EmptyBorder(20, 10, 10, 20));
         pnlRight.setBackground(Color.WHITE);
 
-        initPnlSelect();
-        initPnlLopHoc();
-
-        splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, pnlSelect, pnlLopHoc);
-        splitPane.setResizeWeight(0.65);
-        splitPane.setDividerSize(5);
-        splitPane.setBorder(null);
-        splitPane.setBackground(Color.WHITE);
-
-        pnlRight.add(splitPane, BorderLayout.CENTER);
+        JSplitPane split = new JSplitPane(JSplitPane.VERTICAL_SPLIT, pnlSelect, pnlLopHoc);
+        split.setResizeWeight(0.70);   // 70% trên, 30% dưới
+        split.setDividerSize(4);
+        split.setBorder(null);
+        split.setEnabled(false);       // không cho kéo
+        pnlRight.add(split, BorderLayout.CENTER);
     }
 
     private void initPnlSelect() {
@@ -223,6 +216,7 @@ public class DeThiDialog extends JDialog {
         JPanel pnlSearchTool = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 5));
         pnlSearchTool.setBackground(Color.WHITE);
 
+        JLabel lblTimKiem = new JLabel("Tìm kiếm:");
         txtSearch = new JTextField(15);
         txtSearch.setPreferredSize(new Dimension(180, 32));
         txtSearch.putClientProperty("JTextField.placeholderText", "Tìm câu hỏi...");
@@ -244,7 +238,7 @@ public class DeThiDialog extends JDialog {
         });
         cbxFilterDoKho.addActionListener(e -> applyFilter());
 
-        pnlSearchTool.add(new JLabel("Tìm kiếm:"));
+        pnlSearchTool.add(lblTimKiem);
         pnlSearchTool.add(txtSearch);
         pnlSearchTool.add(cbxFilterDoKho);
 
@@ -268,7 +262,6 @@ public class DeThiDialog extends JDialog {
                 TitledBorder.LEFT, TitledBorder.TOP));
         pnlLopHoc.setBackground(Color.WHITE);
 
-        // Header "Chọn tất cả" — ẩn khi chưa chọn môn học
         pnlLopHeader = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 5));
         pnlLopHeader.setBackground(Color.WHITE);
         pnlLopHeader.setVisible(false);
@@ -287,15 +280,14 @@ public class DeThiDialog extends JDialog {
             }
             renderLopGrid();
         });
-        if (currentType.equals("view")) {
+        if ("view".equals(currentType)) {
             chkChonTatCa.setEnabled(false);
         }
         pnlLopHeader.add(chkChonTatCa);
 
-        // Grid 3 cột các checkbox lớp
-        pnlLopGrid = new JPanel(new GridLayout(0, 3, 10, 5));
+        pnlLopGrid = new JPanel(new GridLayout(0, 4, 2, 2));  // 4 cột, gap nhỏ
+        pnlLopGrid.setBorder(new EmptyBorder(3, 8, 3, 8));
         pnlLopGrid.setBackground(Color.WHITE);
-        pnlLopGrid.setBorder(new EmptyBorder(5, 10, 5, 10));
 
         scrollLop = new JScrollPane(pnlLopGrid);
         scrollLop.setBorder(null);
@@ -339,7 +331,7 @@ public class DeThiDialog extends JDialog {
             chk.setFont(new Font("Roboto", Font.PLAIN, 13));
             chk.setSelected(isChecked);
 
-            if (!currentType.equals("view")) {
+            if (!"view".equals(currentType)) {
                 int malop = lop.getMalop();
                 chk.addActionListener(e -> {
                     if (chk.isSelected()) {
@@ -378,7 +370,7 @@ public class DeThiDialog extends JDialog {
         ArrayList<CauHoiDTO> filtered = new ArrayList<>();
         for (CauHoiDTO ch : allCauHoi) {
             boolean matchKeyword = keyword.isEmpty() || ch.getNoidung().toLowerCase().contains(keyword);
-            boolean matchDoKho = tenDoKho.equals("Tất cả độ khó")
+            boolean matchDoKho = "Tất cả độ khó".equals(tenDoKho)
                     || doKhoBUS.getTenDoKho(ch.getMadokho()).equals(tenDoKho);
             if (matchKeyword && matchDoKho) {
                 filtered.add(ch);
@@ -387,7 +379,7 @@ public class DeThiDialog extends JDialog {
         renderCauHoi(filtered);
     }
 
-    private void renderCauHoi(ArrayList<CauHoiDTO> danhSach) {
+    private void renderCauHoi(List<CauHoiDTO> danhSach) {
         pnlQuestionList.removeAll();
         for (CauHoiDTO ch : danhSach) {
             String tenDoKho = doKhoBUS.getTenDoKho(ch.getMadokho());
@@ -410,9 +402,7 @@ public class DeThiDialog extends JDialog {
         chk.setBackground(Color.WHITE);
         chk.setSelected(isChecked);
 
-        if (currentType.equals("view")) {
-            chk.setEnabled(false);
-        } else {
+        if (!"view".equals(currentType)) {
             chk.addActionListener((ActionEvent e) -> {
                 if (chk.isSelected()) {
                     selectedCauHoi.add(maCauHoi);
@@ -421,6 +411,8 @@ public class DeThiDialog extends JDialog {
                 }
                 soCau.setText(String.valueOf(selectedCauHoi.size()));
             });
+        } else {
+            chk.setEnabled(false);
         }
 
         JLabel lblContent = new JLabel("<html>" + content + "</html>");
@@ -481,6 +473,11 @@ public class DeThiDialog extends JDialog {
     }
 
     private void luuDeThi(String type) {
+        if (cbxKyThi.getCbb().getSelectedIndex() == 0 || cbxMonHoc.getCbb().getSelectedIndex() == 0) {
+            JOptionPane.showMessageDialog(this, "Vui lòng chọn đầy đủ Kỳ thi và Môn học!");
+            return;
+        }
+
         int indexKT = cbxKyThi.getCbb().getSelectedIndex() - 1;
         int indexMH = cbxMonHoc.getCbb().getSelectedIndex() - 1;
 
@@ -503,12 +500,12 @@ public class DeThiDialog extends JDialog {
             dt.setNguoitao("admin");
             dt.setTrangthai(true);
 
-            if (deThiBUS.add(dt)) {
-                ArrayList<DeThiDTO> all = deThiBUS.getAll();
-                if (!all.isEmpty()) {
-                    int madeVuaTao = all.get(0).getMade();
-                    deThiBUS.saveChiTiet(madeVuaTao, listMaCauHoi);
-                    giaoDeThiDAO.saveAll(madeVuaTao, listMaLop);
+            int madeVuaTao = deThiBUS.add(dt);
+            if (madeVuaTao > 0) {
+                deThiBUS.saveChiTiet(madeVuaTao, listMaCauHoi);
+                giaoDeThiDAO.deleteByMaDe(madeVuaTao);
+                for (int malop : listMaLop) {
+                    giaoDeThiDAO.insert(new DTO.GiaoDeThiDTO(madeVuaTao, malop));
                 }
                 JOptionPane.showMessageDialog(this, "Thêm đề thi thành công!");
                 parent.loadDataTable(deThiBUS.getAll());
@@ -525,7 +522,10 @@ public class DeThiDialog extends JDialog {
 
             if (deThiBUS.update(currentDTO)) {
                 deThiBUS.saveChiTiet(currentDTO.getMade(), listMaCauHoi);
-                giaoDeThiDAO.saveAll(currentDTO.getMade(), listMaLop);
+                giaoDeThiDAO.deleteByMaDe(currentDTO.getMade());
+                for (int malop : listMaLop) {
+                    giaoDeThiDAO.insert(new GiaoDeThiDTO(currentDTO.getMade(), malop));
+                }
                 JOptionPane.showMessageDialog(this, "Cập nhật thành công!");
                 parent.loadDataTable(deThiBUS.getAll());
                 dispose();

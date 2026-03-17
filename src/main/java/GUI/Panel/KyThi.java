@@ -236,14 +236,9 @@ public class KyThi extends JPanel implements ActionListener, ItemListener {
             if (index == -1) {
                 JOptionPane.showMessageDialog(this, "Vui lòng chọn kỳ thi cần sửa!");
             } else {
-                int id = (int) tableKyThi.getValueAt(index, 0);
-                KyThiDTO selected = null;
-                for (KyThiDTO item : listHienTai) {
-                    if (item.getMakythi() == id) {
-                        selected = item;
-                        break;
-                    }
-                }
+                int modelRow = tableKyThi.convertRowIndexToModel(index);
+                int makythi = (int) tblModel.getValueAt(modelRow, 0);
+                KyThiDTO selected = kythiBUS.getById(makythi);
                 new KyThiDialog(this, owner, "Chỉnh sửa kỳ thi", true, "update", selected);
             }
 
@@ -252,31 +247,27 @@ public class KyThi extends JPanel implements ActionListener, ItemListener {
             if (index == -1) {
                 JOptionPane.showMessageDialog(this, "Vui lòng chọn kỳ thi cần xem!");
             } else {
-                int id = (int) tableKyThi.getValueAt(index, 0);
-                KyThiDTO selected = null;
-                for (KyThiDTO item : listHienTai) {
-                    if (item.getMakythi() == id) {
-                        selected = item;
-                        break;
-                    }
-                }
+                int modelRow = tableKyThi.convertRowIndexToModel(index);
+                int makythi = (int) tblModel.getValueAt(modelRow, 0);
+                KyThiDTO selected = kythiBUS.getById(makythi);
                 new KyThiDialog(this, owner, "Thông tin chi tiết kỳ thi", true, "view", selected);
             }
 
         } else if (source == mainFunction.btn.get("delete")) {
             int index = tableKyThi.getSelectedRow();
-            if (index != -1) {
+            if (index == -1) {
+                JOptionPane.showMessageDialog(this, "Vui lòng chọn kỳ thi cần xóa!");
+            } else {
                 int confirm = JOptionPane.showConfirmDialog(this, "Bạn có chắc chắn muốn xóa kỳ thi này?", "Xác nhận xóa", JOptionPane.YES_NO_OPTION);
                 if (confirm == JOptionPane.YES_OPTION) {
-                    int id = (int) tableKyThi.getValueAt(index, 0);
-                    if (kythiBUS.delete(id)) {
+                    int modelRow = tableKyThi.convertRowIndexToModel(index);
+                    int makythi = (int) tblModel.getValueAt(modelRow, 0);
+                    if (kythiBUS.delete(makythi)) {
                         JOptionPane.showMessageDialog(this, "Xóa thành công!");
                         listHienTai = kythiBUS.getAll();
                         loadDataTable(listHienTai);
                     }
                 }
-            } else {
-                JOptionPane.showMessageDialog(this, "Vui lòng chọn kỳ thi cần xóa!");
             }
         } else if (source == mainFunction.btn.get("import")) {
             importExcel();

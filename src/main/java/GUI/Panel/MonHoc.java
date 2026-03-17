@@ -27,14 +27,14 @@ public class MonHoc extends JPanel implements ActionListener, ItemListener {
 
     PanelBorderRadius main, functionBar;
     JPanel pnlBorder1, pnlBorder2, pnlBorder3, pnlBorder4, contentCenter;
-    JTable tableMonHoc;
-    JScrollPane scrollTableMonHoc;
+    JTable table;
+    JScrollPane scrollTable;
     MainFunction mainFunction;
     IntegratedSearch search;
     DefaultTableModel tblModel;
 
-    MonHocBUS monhocBUS = new MonHocBUS();
-    ArrayList<MonHocDTO> listHienTai = monhocBUS.getAll();
+    MonHocBUS bus = new MonHocBUS();
+    ArrayList<MonHocDTO> listHienTai = bus.getAll();
 
     Color BackgroundColor = new Color(240, 247, 250);
 
@@ -48,51 +48,41 @@ public class MonHoc extends JPanel implements ActionListener, ItemListener {
         this.setLayout(new BorderLayout(0, 0));
         this.setOpaque(true);
 
-        tableMonHoc = new JTable();
-        scrollTableMonHoc = new JScrollPane();
-
+        table = new JTable();
+        scrollTable = new JScrollPane();
         tblModel = new DefaultTableModel() {
             @Override
-            public boolean isCellEditable(int row, int column) {
-                return false;
-            }
+            public boolean isCellEditable(int row, int column) { return false; }
         };
 
-        String[] header = new String[]{"Mã môn học", "Tên môn học", "Số tín chỉ", "Trạng thái"};
+        String[] header = {"Mã môn học", "Tên môn học", "Số tín chỉ", "Trạng thái"};
         tblModel.setColumnIdentifiers(header);
-        tableMonHoc.setModel(tblModel);
-        tableMonHoc.setFocusable(false);
-        scrollTableMonHoc.setViewportView(tableMonHoc);
+        table.setModel(tblModel);
+        table.setFocusable(false);
+        table.setRowHeight(30);
+        scrollTable.setViewportView(table);
 
         DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
         centerRenderer.setHorizontalAlignment(JLabel.CENTER);
-        for (int i = 0; i < tableMonHoc.getColumnCount(); i++) {
-            tableMonHoc.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);
+        for (int i = 0; i < table.getColumnCount(); i++) {
+            table.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);
         }
 
-        tableMonHoc.setAutoCreateRowSorter(true);
-        TableSorter.configureTableColumnSorter(tableMonHoc, 0, TableSorter.INTEGER_COMPARATOR);
+        table.setAutoCreateRowSorter(true);
+        TableSorter.configureTableColumnSorter(table, 0, TableSorter.INTEGER_COMPARATOR);
 
-        pnlBorder1 = new JPanel();
-        pnlBorder1.setPreferredSize(new Dimension(0, 10));
-        pnlBorder1.setBackground(BackgroundColor);
+        pnlBorder1 = new JPanel(); pnlBorder1.setPreferredSize(new Dimension(0, 10)); pnlBorder1.setBackground(BackgroundColor);
+        pnlBorder2 = new JPanel(); pnlBorder2.setPreferredSize(new Dimension(0, 10)); pnlBorder2.setBackground(BackgroundColor);
+        pnlBorder3 = new JPanel(); pnlBorder3.setPreferredSize(new Dimension(10, 0)); pnlBorder3.setBackground(BackgroundColor);
+        pnlBorder4 = new JPanel(); pnlBorder4.setPreferredSize(new Dimension(10, 0)); pnlBorder4.setBackground(BackgroundColor);
+
         this.add(pnlBorder1, BorderLayout.NORTH);
-        pnlBorder2 = new JPanel();
-        pnlBorder2.setPreferredSize(new Dimension(0, 10));
-        pnlBorder2.setBackground(BackgroundColor);
         this.add(pnlBorder2, BorderLayout.SOUTH);
-        pnlBorder3 = new JPanel();
-        pnlBorder3.setPreferredSize(new Dimension(10, 0));
-        pnlBorder3.setBackground(BackgroundColor);
         this.add(pnlBorder3, BorderLayout.EAST);
-        pnlBorder4 = new JPanel();
-        pnlBorder4.setPreferredSize(new Dimension(10, 0));
-        pnlBorder4.setBackground(BackgroundColor);
         this.add(pnlBorder4, BorderLayout.WEST);
 
-        contentCenter = new JPanel();
+        contentCenter = new JPanel(new BorderLayout(10, 10));
         contentCenter.setBackground(BackgroundColor);
-        contentCenter.setLayout(new BorderLayout(10, 10));
         this.add(contentCenter, BorderLayout.CENTER);
 
         functionBar = new PanelBorderRadius();
@@ -103,40 +93,36 @@ public class MonHoc extends JPanel implements ActionListener, ItemListener {
 
         String[] action = {"create", "update", "delete", "detail", "import", "export"};
         mainFunction = new MainFunction(action);
-        for (String ac : action) {
-            mainFunction.btn.get(ac).addActionListener(this);
-        }
+        for (String ac : action) mainFunction.btn.get(ac).addActionListener(this);
+
         functionBar.add(mainFunction);
 
         search = new IntegratedSearch(new String[]{"Tất cả", "Mã môn học", "Tên môn học"});
         search.txtSearchForm.addKeyListener(new KeyAdapter() {
-            @Override
-            public void keyReleased(KeyEvent e) {
-                thucHienTimKiem();
-            }
+            @Override public void keyReleased(KeyEvent e) { thucHienTimKiem(); }
         });
         search.cbxChoose.addItemListener(this);
         search.btnReset.addActionListener(e -> {
             search.txtSearchForm.setText("");
             search.cbxChoose.setSelectedIndex(0);
-            listHienTai = monhocBUS.getAll();
+            listHienTai = bus.getAll();
             loadDataTable(listHienTai);
         });
-
         functionBar.add(search);
+
         contentCenter.add(functionBar, BorderLayout.NORTH);
 
         main = new PanelBorderRadius();
         main.setLayout(new BorderLayout());
         main.setBackground(Color.WHITE);
-        main.add(scrollTableMonHoc, BorderLayout.CENTER);
+        main.add(scrollTable, BorderLayout.CENTER);
         contentCenter.add(main, BorderLayout.CENTER);
     }
 
     public void thucHienTimKiem() {
-        String kieuTimKiem = (String) search.cbxChoose.getSelectedItem();
-        String noiDungTim = search.txtSearchForm.getText();
-        listHienTai = monhocBUS.search(noiDungTim, kieuTimKiem);
+        String kieu = (String) search.cbxChoose.getSelectedItem();
+        String text = search.txtSearchForm.getText();
+        listHienTai = bus.search(text, kieu);
         loadDataTable(listHienTai);
     }
 
@@ -147,8 +133,7 @@ public class MonHoc extends JPanel implements ActionListener, ItemListener {
         XSSFWorkbook excelJTableImport = null;
         JFileChooser jf = new JFileChooser();
         int result = jf.showOpenDialog(null);
-        int countSuccess = 0;
-        int countError = 0;
+        int countSuccess = 0, countError = 0;
 
         if (result == JFileChooser.APPROVE_OPTION) {
             try {
@@ -175,17 +160,14 @@ public class MonHoc extends JPanel implements ActionListener, ItemListener {
                         mh.setSotinchi(soTinChi);
                         mh.setTrangthai(1);
 
-                        if (monhocBUS.add(mh)) {
-                            countSuccess++;
-                        } else {
-                            countError++;
-                        }
+                        if (bus.add(mh)) countSuccess++;
+                        else countError++;
                     } catch (Exception e) {
                         countError++;
                     }
                 }
                 JOptionPane.showMessageDialog(this, "Nhập thành công " + countSuccess + " dòng. Lỗi " + countError + " dòng.");
-                listHienTai = monhocBUS.getAll();
+                listHienTai = bus.getAll();
                 loadDataTable(listHienTai);
             } catch (IOException ex) {
                 JOptionPane.showMessageDialog(this, "Lỗi đọc file Excel!");
@@ -193,17 +175,9 @@ public class MonHoc extends JPanel implements ActionListener, ItemListener {
         }
     }
 
-    @Override
-    public void itemStateChanged(ItemEvent e) {
-        if (e.getStateChange() == ItemEvent.SELECTED) {
-            thucHienTimKiem();
-        }
-    }
-
     public void loadDataTable(ArrayList<MonHocDTO> danhSach) {
         tblModel.setRowCount(0);
-        for (int i = 0; i < danhSach.size(); i++) {
-            MonHocDTO mh = danhSach.get(i);
+        for (MonHocDTO mh : danhSach) {
             tblModel.addRow(new Object[]{
                 mh.getMamonhoc(),
                 mh.getTenmonhoc(),
@@ -220,62 +194,43 @@ public class MonHoc extends JPanel implements ActionListener, ItemListener {
 
         if (source == mainFunction.btn.get("create")) {
             new MonHocDialog(this, owner, "Thêm môn học mới", true, "create", null);
-
-        } else if (source == mainFunction.btn.get("update")) {
-            int index = tableMonHoc.getSelectedRow();
+        } 
+        else if (source == mainFunction.btn.get("update") || source == mainFunction.btn.get("detail") || source == mainFunction.btn.get("delete")) {
+            int index = table.getSelectedRow();
             if (index == -1) {
-                JOptionPane.showMessageDialog(this, "Vui lòng chọn môn học cần sửa!");
-            } else {
-                int id = (int) tableMonHoc.getValueAt(index, 0);
-                MonHocDTO selected = null;
-                for (int i = 0; i < listHienTai.size(); i++) {
-                    if (listHienTai.get(i).getMamonhoc() == id) {
-                        selected = listHienTai.get(i);
-                        break;
-                    }
-                }
+                JOptionPane.showMessageDialog(this, "Vui lòng chọn môn học!");
+                return;
+            }
+            int mamonhoc = (int) table.getValueAt(index, 0);
+            MonHocDTO selected = bus.getById(mamonhoc);
+
+            if (source == mainFunction.btn.get("update")) {
                 new MonHocDialog(this, owner, "Chỉnh sửa môn học", true, "update", selected);
-            }
-
-        } else if (source == mainFunction.btn.get("detail")) {
-            int index = tableMonHoc.getSelectedRow();
-            if (index == -1) {
-                JOptionPane.showMessageDialog(this, "Vui lòng chọn môn học cần xem!");
-            } else {
-                int id = (int) tableMonHoc.getValueAt(index, 0);
-                MonHocDTO selected = null;
-                for (int i = 0; i < listHienTai.size(); i++) {
-                    if (listHienTai.get(i).getMamonhoc() == id) {
-                        selected = listHienTai.get(i);
-                        break;
-                    }
-                }
+            } else if (source == mainFunction.btn.get("detail")) {
                 new MonHocDialog(this, owner, "Thông tin chi tiết môn học", true, "view", selected);
-            }
-
-        } else if (source == mainFunction.btn.get("delete")) {
-            int index = tableMonHoc.getSelectedRow();
-            if (index != -1) {
-                int confirm = JOptionPane.showConfirmDialog(this, "Bạn có chắc muốn xóa môn học này?", "Xác nhận xóa", JOptionPane.YES_NO_OPTION);
-                if (confirm == JOptionPane.YES_OPTION) {
-                    int id = (int) tableMonHoc.getValueAt(index, 0);
-                    if (monhocBUS.delete(id)) {
-                        JOptionPane.showMessageDialog(this, "Xóa thành công!");
-                        listHienTai = monhocBUS.getAll();
+            } else if (source == mainFunction.btn.get("delete")) {
+                if (JOptionPane.showConfirmDialog(this, "Xóa môn học " + selected.getTenmonhoc() + "?", "Xác nhận", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+                    if (bus.delete(selected.getMamonhoc())) {
+                        listHienTai = bus.getAll();
                         loadDataTable(listHienTai);
                     }
                 }
-            } else {
-                JOptionPane.showMessageDialog(this, "Vui lòng chọn môn học!");
             }
-        } else if (source == mainFunction.btn.get("import")) {
+        } 
+        else if (source == mainFunction.btn.get("import")) {
             importExcel();
-        } else if (source == mainFunction.btn.get("export")) {
+        } 
+        else if (source == mainFunction.btn.get("export")) {
             try {
-                helper.JTableExporter.exportJTableToExcel(tableMonHoc);
+                helper.JTableExporter.exportJTableToExcel(table);
             } catch (IOException ex) {
                 ex.printStackTrace();
             }
         }
+    }
+
+    @Override
+    public void itemStateChanged(ItemEvent e) {
+        if (e.getStateChange() == ItemEvent.SELECTED) thucHienTimKiem();
     }
 }

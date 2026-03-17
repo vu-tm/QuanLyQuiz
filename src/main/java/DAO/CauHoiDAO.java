@@ -2,57 +2,111 @@ package DAO;
 
 import DTO.CauHoiDTO;
 import config.JDBCUtil;
+
 import java.sql.*;
 import java.util.ArrayList;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.List;
 
 public class CauHoiDAO {
 
-    public static CauHoiDAO getInstance() {
-        return new CauHoiDAO();
+    public List<CauHoiDTO> getAll() {
+        List<CauHoiDTO> list = new ArrayList<>();
+        String sql = "SELECT macauhoi, noidung, madokho, maloai, mamonhoc, nguoitao, trangthai FROM cauhoi";
+        try (Connection c = JDBCUtil.getConnection(); PreparedStatement ps = c.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                CauHoiDTO ch = new CauHoiDTO(
+                        rs.getInt("macauhoi"),
+                        rs.getString("noidung"),
+                        rs.getInt("madokho"),
+                        rs.getInt("maloai"),
+                        rs.getInt("mamonhoc"),
+                        rs.getString("nguoitao"),
+                        rs.getInt("trangthai")
+                );
+                list.add(ch);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
     }
 
-    public ArrayList<CauHoiDTO> selectAll() {
-        ArrayList<CauHoiDTO> result = new ArrayList<>();
-        try {
-            Connection con = JDBCUtil.getConnection();
-            String sql = "SELECT * FROM cauhoi WHERE trangthai = 1 ORDER BY macauhoi DESC";
-            PreparedStatement pst = con.prepareStatement(sql);
-            ResultSet rs = pst.executeQuery();
-            while (rs.next()) {
-                CauHoiDTO ch = new CauHoiDTO();
-                ch.setMacauhoi(rs.getInt("macauhoi"));
-                ch.setNoidung(rs.getString("noidung"));
-                ch.setMadokho(rs.getInt("madokho"));
-                ch.setMaloai(rs.getInt("maloai"));
-                ch.setMamonhoc(rs.getInt("mamonhoc"));
-                ch.setNguoitao(rs.getString("nguoitao"));
-                ch.setTrangthai(rs.getInt("trangthai"));
-                result.add(ch);
+    public boolean insert(CauHoiDTO ch) {
+        String getIdSql = "SELECT COALESCE(MAX(macauhoi),0)+1 AS nextId FROM cauhoi";
+        String insertSql = "INSERT INTO cauhoi(macauhoi,noidung,madokho,maloai,mamonhoc,nguoitao,trangthai) VALUES(?,?,?,?,?,?,?)";
+        try (Connection c = JDBCUtil.getConnection();
+             PreparedStatement psId = c.prepareStatement(getIdSql);
+             ResultSet rs = psId.executeQuery()) {
+            int nextId = 1;
+            if (rs.next()) nextId = rs.getInt("nextId");
+            try (PreparedStatement ps = c.prepareStatement(insertSql)) {
+                ps.setInt(1, nextId);
+                ps.setString(2, ch.getNoidung());
+                ps.setInt(3, ch.getMadokho());
+                ps.setInt(4, ch.getMaloai());
+                ps.setInt(5, ch.getMamonhoc());
+                ps.setString(6, ch.getNguoitao());
+                ps.setInt(7, ch.getTrangthai());
+                return ps.executeUpdate() > 0;
             }
-            JDBCUtil.closeConnection(con);
-        } catch (SQLException ex) {
-            Logger.getLogger(CauHoiDAO.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
         }
-        return result;
     }
 
-    public ArrayList<Integer> selectMaCauHoiByMaDe(int made) {
-        ArrayList<Integer> result = new ArrayList<>();
-        try {
-            Connection con = JDBCUtil.getConnection();
-            String sql = "SELECT macauhoi FROM chitietdethi WHERE made = ?";
-            PreparedStatement pst = con.prepareStatement(sql);
-            pst.setInt(1, made);
-            ResultSet rs = pst.executeQuery();
-            while (rs.next()) {
-                result.add(rs.getInt("macauhoi"));
-            }
-            JDBCUtil.closeConnection(con);
-        } catch (SQLException ex) {
-            Logger.getLogger(CauHoiDAO.class.getName()).log(Level.SEVERE, null, ex);
+    public boolean update(CauHoiDTO ch) {
+        String sql = "UPDATE cauhoi SET noidung = ?, madokho = ?, maloai = ?, mamonhoc = ?, nguoitao = ?, trangthai = ? WHERE macauhoi = ?";
+        try (Connection c = JDBCUtil.getConnection(); PreparedStatement ps = c.prepareStatement(sql)) {
+            ps.setString(1, ch.getNoidung());
+            ps.setInt(2, ch.getMadokho());
+            ps.setInt(3, ch.getMaloai());
+            ps.setInt(4, ch.getMamonhoc());
+            ps.setString(5, ch.getNguoitao());
+            ps.setInt(6, ch.getTrangthai());
+            ps.setInt(7, ch.getMacauhoi());
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
         }
-        return result;
+    }
+
+    public boolean delete(int macauhoi) {
+        String sql = "DELETE FROM cauhoi WHERE macauhoi = ?";
+        try (Connection c = JDBCUtil.getConnection(); PreparedStatement ps = c.prepareStatement(sql)) {
+            ps.setInt(1, macauhoi);
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public List<CauHoiDTO> search(String keyword) {
+        List<CauHoiDTO> list = new ArrayList<>();
+        String sql = "SELECT macauhoi, noidung, madokho, maloai, mamonhoc, nguoitao, trangthai FROM cauhoi WHERE noidung LIKE ? OR nguoitao LIKE ?";
+        try (Connection c = JDBCUtil.getConnection(); PreparedStatement ps = c.prepareStatement(sql)) {
+            String k = "%" + keyword + "%";
+            ps.setString(1, k);
+            ps.setString(2, k);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    CauHoiDTO ch = new CauHoiDTO(
+                            rs.getInt("macauhoi"),
+                            rs.getString("noidung"),
+                            rs.getInt("madokho"),
+                            rs.getInt("maloai"),
+                            rs.getInt("mamonhoc"),
+                            rs.getString("nguoitao"),
+                            rs.getInt("trangthai")
+                    );
+                    list.add(ch);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
     }
 }

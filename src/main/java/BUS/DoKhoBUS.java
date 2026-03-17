@@ -5,6 +5,7 @@ import DTO.DoKhoDTO;
 import java.util.ArrayList;
 
 public class DoKhoBUS {
+
     private final DoKhoDAO dkDAO = DoKhoDAO.getInstance();
     private ArrayList<DoKhoDTO> listDoKho;
 
@@ -19,19 +20,25 @@ public class DoKhoBUS {
 
     public boolean add(DoKhoDTO dk) {
         boolean check = dkDAO.insert(dk) > 0;
-        if (check) getAll();
-        return check;
-    }
-
-    public boolean delete(int madokho) {
-        boolean check = dkDAO.delete(madokho) > 0;
-        if (check) getAll();
+        if (check) {
+            getAll();
+        }
         return check;
     }
 
     public boolean update(DoKhoDTO dk) {
         boolean check = dkDAO.update(dk) > 0;
-        if (check) getAll();
+        if (check) {
+            getAll();
+        }
+        return check;
+    }
+
+    public boolean delete(int madokho) {
+        boolean check = dkDAO.delete(madokho) > 0;
+        if (check) {
+            getAll();
+        }
         return check;
     }
 
@@ -40,19 +47,16 @@ public class DoKhoBUS {
         text = text.toLowerCase();
         for (int i = 0; i < this.listDoKho.size(); i++) {
             DoKhoDTO dk = listDoKho.get(i);
-            String maStr = Integer.toString(dk.getMadokho());
-            String tenStr = dk.getTendokho().toLowerCase();
             boolean match = false;
-            
             switch (type) {
                 case "Tất cả":
-                    match = maStr.contains(text) || tenStr.contains(text);
+                    match = Integer.toString(dk.getMadokho()).contains(text) || dk.getTendokho().toLowerCase().contains(text);
                     break;
                 case "Mã độ khó":
-                    match = maStr.contains(text);
+                    match = Integer.toString(dk.getMadokho()).contains(text);
                     break;
                 case "Tên độ khó":
-                    match = tenStr.contains(text);
+                    match = dk.getTendokho().toLowerCase().contains(text);
                     break;
             }
             if (match) {
@@ -69,5 +73,14 @@ public class DoKhoBUS {
             }
         }
         return "Không xác định";
+    }
+
+    public DoKhoDTO getById(int madokho) {
+        for (int i = 0; i < listDoKho.size(); i++) {
+            if (listDoKho.get(i).getMadokho() == madokho) {
+                return listDoKho.get(i);
+            }
+        }
+        return null;
     }
 }

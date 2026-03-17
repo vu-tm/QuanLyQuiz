@@ -34,11 +34,11 @@
         </dependency>
         
         <!--Lịch JCalendar -->
-        <dependency>
+<!--        <dependency>
             <groupId>com.toedter</groupId>
             <artifactId>jcalendar</artifactId>
             <version>1.4</version>
-        </dependency>
+        </dependency>-->
         
         <!-- Apache POI xuất Excel -->
         <dependency>
@@ -51,7 +51,12 @@
             <artifactId>poi-ooxml</artifactId>
             <version>5.2.5</version>
         </dependency>
-       </dependencies>
+        <dependency>
+            <groupId>com.github.lgooddatepicker</groupId>
+            <artifactId>LGoodDatePicker</artifactId>
+            <version>11.2.1</version>
+        </dependency>
+    </dependencies>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.release>17</maven.compiler.release>

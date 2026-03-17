@@ -4,8 +4,6 @@ import DTO.KyThiDTO;
 import config.JDBCUtil;
 import java.sql.*;
 import java.util.ArrayList;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class KyThiDAO {
 
@@ -15,25 +13,22 @@ public class KyThiDAO {
 
     public int insert(KyThiDTO t) {
         int result = 0;
-        try {
-            Connection con = JDBCUtil.getConnection();
+        try (Connection con = JDBCUtil.getConnection()) {
             String sql = "INSERT INTO kythi (tenkythi, thoigianbatdau, thoigianketthuc, trangthai) VALUES (?, ?, ?, 1)";
             PreparedStatement pst = con.prepareStatement(sql);
             pst.setString(1, t.getTenkythi());
             pst.setTimestamp(2, t.getThoigianbatdau());
             pst.setTimestamp(3, t.getThoigianketthuc());
             result = pst.executeUpdate();
-            JDBCUtil.closeConnection(con);
         } catch (SQLException ex) {
-            Logger.getLogger(KyThiDAO.class.getName()).log(Level.SEVERE, null, ex);
+            ex.printStackTrace();
         }
         return result;
     }
 
     public int update(KyThiDTO t) {
         int result = 0;
-        try {
-            Connection con = JDBCUtil.getConnection();
+        try (Connection con = JDBCUtil.getConnection()) {
             String sql = "UPDATE kythi SET tenkythi = ?, thoigianbatdau = ?, thoigianketthuc = ? WHERE makythi = ?";
             PreparedStatement pst = con.prepareStatement(sql);
             pst.setString(1, t.getTenkythi());
@@ -41,32 +36,28 @@ public class KyThiDAO {
             pst.setTimestamp(3, t.getThoigianketthuc());
             pst.setInt(4, t.getMakythi());
             result = pst.executeUpdate();
-            JDBCUtil.closeConnection(con);
         } catch (SQLException ex) {
-            Logger.getLogger(KyThiDAO.class.getName()).log(Level.SEVERE, null, ex);
+            ex.printStackTrace();
         }
         return result;
     }
 
     public int delete(int id) {
         int result = 0;
-        try {
-            Connection con = JDBCUtil.getConnection();
+        try (Connection con = JDBCUtil.getConnection()) {
             String sql = "UPDATE kythi SET trangthai = 0 WHERE makythi = ?";
             PreparedStatement pst = con.prepareStatement(sql);
             pst.setInt(1, id);
             result = pst.executeUpdate();
-            JDBCUtil.closeConnection(con);
         } catch (SQLException ex) {
-            Logger.getLogger(KyThiDAO.class.getName()).log(Level.SEVERE, null, ex);
+            ex.printStackTrace();
         }
         return result;
     }
 
     public ArrayList<KyThiDTO> selectAll() {
         ArrayList<KyThiDTO> result = new ArrayList<>();
-        try {
-            Connection con = JDBCUtil.getConnection();
+        try (Connection con = JDBCUtil.getConnection()) {
             String sql = "SELECT * FROM kythi WHERE trangthai = 1 ORDER BY makythi DESC";
             PreparedStatement pst = con.prepareStatement(sql);
             ResultSet rs = pst.executeQuery();
@@ -79,9 +70,8 @@ public class KyThiDAO {
                 kt.setTrangthai(rs.getInt("trangthai"));
                 result.add(kt);
             }
-            JDBCUtil.closeConnection(con);
         } catch (SQLException ex) {
-            Logger.getLogger(KyThiDAO.class.getName()).log(Level.SEVERE, null, ex);
+            ex.printStackTrace();
         }
         return result;
     }

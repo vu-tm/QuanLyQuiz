@@ -1,15 +1,12 @@
 package GUI.Panel;
 
-import BUS.DeThiBUS;
-import BUS.KyThiBUS;
-import BUS.MonHocBUS;
-import DTO.DeThiDTO;
+import BUS.DoKhoBUS;
+import DTO.DoKhoDTO;
 import GUI.Component.IntegratedSearch;
 import GUI.Component.MainFunction;
 import GUI.Component.PanelBorderRadius;
 import GUI.Component.TableSorter;
-import GUI.Dialog.ChiTietDeThiDialog;
-import GUI.Dialog.DeThiDialog;
+import GUI.Dialog.DoKhoDialog;
 import helper.Validation;
 import java.awt.*;
 import java.awt.event.*;
@@ -17,7 +14,6 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -27,7 +23,7 @@ import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
-public class DeThi extends JPanel implements ActionListener, ItemListener {
+public class DoKho extends JPanel implements ActionListener, ItemListener {
 
     PanelBorderRadius main, functionBar;
     JPanel pnlBorder1, pnlBorder2, pnlBorder3, pnlBorder4, contentCenter;
@@ -37,14 +33,12 @@ public class DeThi extends JPanel implements ActionListener, ItemListener {
     IntegratedSearch search;
     DefaultTableModel tblModel;
 
-    DeThiBUS bus = new DeThiBUS();
-    KyThiBUS kyThiBUS = new KyThiBUS();
-    MonHocBUS monHocBUS = new MonHocBUS();
-    ArrayList<DeThiDTO> listHienTai = bus.getAll();
+    DoKhoBUS bus = new DoKhoBUS();
+    ArrayList<DoKhoDTO> listHienTai = bus.getAll();
 
     Color BackgroundColor = new Color(240, 247, 250);
 
-    public DeThi() {
+    public DoKho() {
         initComponent();
         loadDataTable(listHienTai);
     }
@@ -61,7 +55,7 @@ public class DeThi extends JPanel implements ActionListener, ItemListener {
             public boolean isCellEditable(int row, int column) { return false; }
         };
 
-        String[] header = {"Mã đề", "Tên đề thi", "Kỳ thi", "Môn học", "Thời gian", "Tổng câu", "Người tạo", "Trạng thái"};
+        String[] header = {"Mã độ khó", "Tên độ khó", "Trạng thái"};
         tblModel.setColumnIdentifiers(header);
         table.setModel(tblModel);
         table.setFocusable(false);
@@ -103,7 +97,7 @@ public class DeThi extends JPanel implements ActionListener, ItemListener {
 
         functionBar.add(mainFunction);
 
-        search = new IntegratedSearch(new String[]{"Tất cả", "Mã đề", "Tên đề", "Người tạo"});
+        search = new IntegratedSearch(new String[]{"Tất cả", "Mã độ khó", "Tên độ khó"});
         search.txtSearchForm.addKeyListener(new KeyAdapter() {
             @Override public void keyReleased(KeyEvent e) { thucHienTimKiem(); }
         });
@@ -153,29 +147,18 @@ public class DeThi extends JPanel implements ActionListener, ItemListener {
                     XSSFRow excelRow = excelSheet.getRow(row);
                     if (excelRow == null) continue;
                     try {
-                        String tende = excelRow.getCell(0).getStringCellValue();
-                        int makythi = (int) excelRow.getCell(1).getNumericCellValue();
-                        int mamonhoc = (int) excelRow.getCell(2).getNumericCellValue();
-                        int thoigianthi = (int) excelRow.getCell(3).getNumericCellValue();
-                        String nguoitao = excelRow.getCell(4).getStringCellValue();
-
-                        if (Validation.isEmpty(tende) || Validation.isEmpty(nguoitao)) {
+                        String tenDoKho = excelRow.getCell(0).getStringCellValue();
+                        if (Validation.isEmpty(tenDoKho)) {
                             countError++;
                             continue;
                         }
+                        DoKhoDTO dk = new DoKhoDTO();
+                        dk.setTendokho(tenDoKho);
+                        dk.setTrangthai(1);
 
-                        DeThiDTO dt = new DeThiDTO();
-                        dt.setTende(tende);
-                        dt.setMakythi(makythi);
-                        dt.setMonthi(mamonhoc);
-                        dt.setThoigianthi(thoigianthi);
-                        dt.setNguoitao(nguoitao);
-                        dt.setThoigiantao(new Timestamp(System.currentTimeMillis()));
-                        dt.setTongsocau(0);
-
-                        if (bus.add(dt) > 0) countSuccess++;
+                        if (bus.add(dk)) countSuccess++;
                         else countError++;
-                    } catch (Exception ex) {
+                    } catch (Exception e) {
                         countError++;
                     }
                 }
@@ -188,17 +171,13 @@ public class DeThi extends JPanel implements ActionListener, ItemListener {
         }
     }
 
-    public void loadDataTable(ArrayList<DeThiDTO> result) {
+    public void loadDataTable(ArrayList<DoKhoDTO> danhSach) {
         tblModel.setRowCount(0);
-        for (DeThiDTO dt : result) {
+        for (DoKhoDTO dk : danhSach) {
             tblModel.addRow(new Object[]{
-                dt.getMade(), dt.getTende(),
-                kyThiBUS.getTenById(dt.getMakythi()),
-                monHocBUS.getTenById(dt.getMonthi()),
-                dt.getThoigianthi() + " phút", 
-                dt.getTongsocau(),
-                dt.getNguoitao(), 
-                dt.isTrangthai() ? "Hoạt động" : "Khóa"
+                dk.getMadokho(),
+                dk.getTendokho(),
+                dk.getTrangthai() == 1 ? "Hoạt động" : "Ngưng hoạt động"
             });
         }
     }
@@ -209,24 +188,24 @@ public class DeThi extends JPanel implements ActionListener, ItemListener {
         Object source = e.getSource();
 
         if (source == mainFunction.btn.get("create")) {
-            new DeThiDialog(this, owner, "Thêm đề thi mới", true, "create", null);
+            new DoKhoDialog(this, owner, "Thêm độ khó mới", true, "create", null);
         } 
         else if (source == mainFunction.btn.get("update") || source == mainFunction.btn.get("detail") || source == mainFunction.btn.get("delete")) {
             int index = table.getSelectedRow();
             if (index == -1) {
-                JOptionPane.showMessageDialog(this, "Vui lòng chọn đề thi!");
+                JOptionPane.showMessageDialog(this, "Vui lòng chọn độ khó!");
                 return;
             }
-            int made = (int) table.getValueAt(index, 0);
-            DeThiDTO selected = bus.getById(made);
+            int madokho = (int) table.getValueAt(index, 0);
+            DoKhoDTO selected = bus.getById(madokho);
 
             if (source == mainFunction.btn.get("update")) {
-                new DeThiDialog(this, owner, "Chỉnh sửa đề thi", true, "update", selected);
+                new DoKhoDialog(this, owner, "Chỉnh sửa độ khó", true, "update", selected);
             } else if (source == mainFunction.btn.get("detail")) {
-                new ChiTietDeThiDialog(owner, "Chi tiết đề thi", true, selected);
+                new DoKhoDialog(this, owner, "Thông tin chi tiết độ khó", true, "view", selected);
             } else if (source == mainFunction.btn.get("delete")) {
-                if (JOptionPane.showConfirmDialog(this, "Xóa đề thi " + selected.getTende() + "?", "Xác nhận", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
-                    if (bus.delete(selected.getMade())) {
+                if (JOptionPane.showConfirmDialog(this, "Xóa độ khó " + selected.getTendokho() + "?", "Xác nhận", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+                    if (bus.delete(selected.getMadokho())) {
                         listHienTai = bus.getAll();
                         loadDataTable(listHienTai);
                     }

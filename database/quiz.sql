@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Mar 14, 2026 at 10:30 AM
+-- Generation Time: Mar 17, 2026 at 04:41 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.0.30
 
@@ -157,15 +157,6 @@ CREATE TABLE `dokho` (
   `trangthai` tinyint(1) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
---
--- Dumping data for table `dokho`
---
-
-INSERT INTO `dokho` (`madokho`, `tendokho`, `trangthai`) VALUES
-(1, 'Dễ', 1),
-(2, 'Trung bình', 1),
-(3, 'Khó', 1);
-
 -- --------------------------------------------------------
 
 --
@@ -190,17 +181,6 @@ CREATE TABLE `kythi` (
   `thoigianketthuc` datetime NOT NULL,
   `trangthai` tinyint(1) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
--- Dumping data for table `kythi`
---
-
-INSERT INTO `kythi` (`makythi`, `tenkythi`, `thoigianbatdau`, `thoigianketthuc`, `trangthai`) VALUES
-(1, 'test', '2026-03-13 00:00:00', '2026-03-14 00:00:00', 1),
-(2, 'rbgc', '2026-03-09 00:00:00', '2026-03-11 00:00:00', 0),
-(3, '123', '2026-03-12 00:00:00', '2026-03-21 00:00:00', 1),
-(4, '123', '2026-03-11 12:00:00', '2026-03-14 13:00:00', 1),
-(5, 'avvv', '2026-03-12 11:00:00', '2026-03-14 12:00:00', 1);
 
 -- --------------------------------------------------------
 
@@ -444,13 +424,13 @@ ALTER TABLE `dethi`
 -- AUTO_INCREMENT for table `dokho`
 --
 ALTER TABLE `dokho`
-  MODIFY `madokho` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `madokho` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `kythi`
 --
 ALTER TABLE `kythi`
-  MODIFY `makythi` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `makythi` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `loaicauhoi`

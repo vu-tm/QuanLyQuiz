@@ -199,18 +199,26 @@ public class DeThiDialog extends JDialog {
         pnlRight.setBackground(Color.WHITE);
 
         JSplitPane split = new JSplitPane(JSplitPane.VERTICAL_SPLIT, pnlSelect, pnlLopHoc);
-        split.setResizeWeight(0.70);   // 70% trên, 30% dưới
         split.setDividerSize(4);
         split.setBorder(null);
-        split.setEnabled(false);       // không cho kéo
+        split.setEnabled(false);
+
+        SwingUtilities.invokeLater(() -> {
+            int totalHeight = split.getHeight();
+            split.setDividerLocation((int) (totalHeight * 0.70));
+        });
+
         pnlRight.add(split, BorderLayout.CENTER);
     }
 
     private void initPnlSelect() {
         pnlSelect = new JPanel(new BorderLayout(5, 5));
         pnlSelect.setBorder(BorderFactory.createTitledBorder(
-                new LineBorder(new Color(200, 200, 200)), "Chọn câu hỏi",
-                TitledBorder.LEFT, TitledBorder.TOP));
+                new LineBorder(new Color(200, 200, 200)),
+                "Chọn câu hỏi",
+                TitledBorder.LEFT,
+                TitledBorder.TOP,
+                new Font("Segoe UI", Font.BOLD, 13)));
         pnlSelect.setBackground(Color.WHITE);
 
         JPanel pnlSearchTool = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 5));
@@ -258,8 +266,11 @@ public class DeThiDialog extends JDialog {
     private void initPnlLopHoc() {
         pnlLopHoc = new JPanel(new BorderLayout(0, 0));
         pnlLopHoc.setBorder(BorderFactory.createTitledBorder(
-                new LineBorder(new Color(200, 200, 200)), "Giao đề thi cho lớp",
-                TitledBorder.LEFT, TitledBorder.TOP));
+                new LineBorder(new Color(200, 200, 200)),
+                "Giao đề thi cho lớp",
+                TitledBorder.LEFT,
+                TitledBorder.TOP,
+                new Font("Segoe UI", Font.BOLD, 13)));
         pnlLopHoc.setBackground(Color.WHITE);
 
         pnlLopHeader = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 5));

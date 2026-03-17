@@ -52,12 +52,17 @@ public class MonHoc extends JPanel implements ActionListener, ItemListener {
         scrollTable = new JScrollPane();
         tblModel = new DefaultTableModel() {
             @Override
-            public boolean isCellEditable(int row, int column) { return false; }
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
         };
 
         String[] header = {"Mã môn học", "Tên môn học", "Số tín chỉ", "Trạng thái"};
         tblModel.setColumnIdentifiers(header);
         table.setModel(tblModel);
+        table.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 13));
+        table.getTableHeader().setPreferredSize(new Dimension(0, 40));
+        ((DefaultTableCellRenderer) table.getTableHeader().getDefaultRenderer()).setHorizontalAlignment(JLabel.CENTER);
         table.setFocusable(false);
         table.setRowHeight(30);
         scrollTable.setViewportView(table);
@@ -71,10 +76,18 @@ public class MonHoc extends JPanel implements ActionListener, ItemListener {
         table.setAutoCreateRowSorter(true);
         TableSorter.configureTableColumnSorter(table, 0, TableSorter.INTEGER_COMPARATOR);
 
-        pnlBorder1 = new JPanel(); pnlBorder1.setPreferredSize(new Dimension(0, 10)); pnlBorder1.setBackground(BackgroundColor);
-        pnlBorder2 = new JPanel(); pnlBorder2.setPreferredSize(new Dimension(0, 10)); pnlBorder2.setBackground(BackgroundColor);
-        pnlBorder3 = new JPanel(); pnlBorder3.setPreferredSize(new Dimension(10, 0)); pnlBorder3.setBackground(BackgroundColor);
-        pnlBorder4 = new JPanel(); pnlBorder4.setPreferredSize(new Dimension(10, 0)); pnlBorder4.setBackground(BackgroundColor);
+        pnlBorder1 = new JPanel();
+        pnlBorder1.setPreferredSize(new Dimension(0, 10));
+        pnlBorder1.setBackground(BackgroundColor);
+        pnlBorder2 = new JPanel();
+        pnlBorder2.setPreferredSize(new Dimension(0, 10));
+        pnlBorder2.setBackground(BackgroundColor);
+        pnlBorder3 = new JPanel();
+        pnlBorder3.setPreferredSize(new Dimension(10, 0));
+        pnlBorder3.setBackground(BackgroundColor);
+        pnlBorder4 = new JPanel();
+        pnlBorder4.setPreferredSize(new Dimension(10, 0));
+        pnlBorder4.setBackground(BackgroundColor);
 
         this.add(pnlBorder1, BorderLayout.NORTH);
         this.add(pnlBorder2, BorderLayout.SOUTH);
@@ -93,13 +106,18 @@ public class MonHoc extends JPanel implements ActionListener, ItemListener {
 
         String[] action = {"create", "update", "delete", "detail", "import", "export"};
         mainFunction = new MainFunction(action);
-        for (String ac : action) mainFunction.btn.get(ac).addActionListener(this);
+        for (String ac : action) {
+            mainFunction.btn.get(ac).addActionListener(this);
+        }
 
         functionBar.add(mainFunction);
 
         search = new IntegratedSearch(new String[]{"Tất cả", "Mã môn học", "Tên môn học"});
         search.txtSearchForm.addKeyListener(new KeyAdapter() {
-            @Override public void keyReleased(KeyEvent e) { thucHienTimKiem(); }
+            @Override
+            public void keyReleased(KeyEvent e) {
+                thucHienTimKiem();
+            }
         });
         search.cbxChoose.addItemListener(this);
         search.btnReset.addActionListener(e -> {
@@ -145,7 +163,9 @@ public class MonHoc extends JPanel implements ActionListener, ItemListener {
 
                 for (int row = 1; row <= excelSheet.getLastRowNum(); row++) {
                     XSSFRow excelRow = excelSheet.getRow(row);
-                    if (excelRow == null) continue;
+                    if (excelRow == null) {
+                        continue;
+                    }
                     try {
                         String tenMonHoc = excelRow.getCell(0).getStringCellValue();
                         int soTinChi = (int) excelRow.getCell(1).getNumericCellValue();
@@ -160,8 +180,11 @@ public class MonHoc extends JPanel implements ActionListener, ItemListener {
                         mh.setSotinchi(soTinChi);
                         mh.setTrangthai(1);
 
-                        if (bus.add(mh)) countSuccess++;
-                        else countError++;
+                        if (bus.add(mh)) {
+                            countSuccess++;
+                        } else {
+                            countError++;
+                        }
                     } catch (Exception e) {
                         countError++;
                     }
@@ -194,8 +217,7 @@ public class MonHoc extends JPanel implements ActionListener, ItemListener {
 
         if (source == mainFunction.btn.get("create")) {
             new MonHocDialog(this, owner, "Thêm môn học mới", true, "create", null);
-        } 
-        else if (source == mainFunction.btn.get("update") || source == mainFunction.btn.get("detail") || source == mainFunction.btn.get("delete")) {
+        } else if (source == mainFunction.btn.get("update") || source == mainFunction.btn.get("detail") || source == mainFunction.btn.get("delete")) {
             int index = table.getSelectedRow();
             if (index == -1) {
                 JOptionPane.showMessageDialog(this, "Vui lòng chọn môn học!");
@@ -216,11 +238,9 @@ public class MonHoc extends JPanel implements ActionListener, ItemListener {
                     }
                 }
             }
-        } 
-        else if (source == mainFunction.btn.get("import")) {
+        } else if (source == mainFunction.btn.get("import")) {
             importExcel();
-        } 
-        else if (source == mainFunction.btn.get("export")) {
+        } else if (source == mainFunction.btn.get("export")) {
             try {
                 helper.JTableExporter.exportJTableToExcel(table);
             } catch (IOException ex) {
@@ -231,6 +251,8 @@ public class MonHoc extends JPanel implements ActionListener, ItemListener {
 
     @Override
     public void itemStateChanged(ItemEvent e) {
-        if (e.getStateChange() == ItemEvent.SELECTED) thucHienTimKiem();
+        if (e.getStateChange() == ItemEvent.SELECTED) {
+            thucHienTimKiem();
+        }
     }
 }

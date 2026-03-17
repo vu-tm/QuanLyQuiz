@@ -64,6 +64,10 @@ public class KyThi extends JPanel implements ActionListener, ItemListener {
         tblModel.setColumnIdentifiers(header);
         tableKyThi.setModel(tblModel);
         tableKyThi.setFocusable(false);
+        tableKyThi.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 13));
+        tableKyThi.getTableHeader().setPreferredSize(new Dimension(0, 40));
+        DefaultTableCellRenderer headerRenderer = (DefaultTableCellRenderer) tableKyThi.getTableHeader().getDefaultRenderer();
+        headerRenderer.setHorizontalAlignment(JLabel.CENTER);
         scrollTableKyThi.setViewportView(tableKyThi);
 
         DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
@@ -159,8 +163,8 @@ public class KyThi extends JPanel implements ActionListener, ItemListener {
                 excelBIS = new BufferedInputStream(excelFIS);
                 excelJTableImport = new XSSFWorkbook(excelBIS);
                 XSSFSheet excelSheet = excelJTableImport.getSheetAt(0);
+                org.apache.poi.ss.usermodel.DataFormatter formatter = new org.apache.poi.ss.usermodel.DataFormatter();
 
-                // Chạy từ dòng 1 (bỏ qua header dòng 0)
                 for (int row = 1; row <= excelSheet.getLastRowNum(); row++) {
                     XSSFRow excelRow = excelSheet.getRow(row);
                     if (excelRow == null) {
@@ -168,20 +172,20 @@ public class KyThi extends JPanel implements ActionListener, ItemListener {
                     }
 
                     try {
-                        String tenKyThi = excelRow.getCell(0).getStringCellValue();
-                        String tgBatDauStr = excelRow.getCell(1).getStringCellValue();
-                        String tgKetThucStr = excelRow.getCell(2).getStringCellValue();
+                        String tenKyThi = formatter.formatCellValue(excelRow.getCell(0));
+                        String tgBatDauStr = formatter.formatCellValue(excelRow.getCell(1));
+                        String tgKetThucStr = formatter.formatCellValue(excelRow.getCell(2));
 
-                        if (Validation.isEmpty(tenKyThi)) {
+                        if (Validation.isEmpty(tenKyThi) || tgBatDauStr.isEmpty()) {
                             countError++;
                             continue;
                         }
-
                         KyThiDTO kt = new KyThiDTO();
                         kt.setTenkythi(tenKyThi);
-                        kt.setThoigianbatdau(Timestamp.valueOf(tgBatDauStr));
-                        kt.setThoigianketthuc(Timestamp.valueOf(tgKetThucStr));
-                        kt.setTrangthai(1); // Mặc định hoạt động
+
+                        kt.setThoigianbatdau(chuyenDoiNgayThang(tgBatDauStr));
+                        kt.setThoigianketthuc(chuyenDoiNgayThang(tgKetThucStr));
+                        kt.setTrangthai(1);
 
                         if (kythiBUS.add(kt)) {
                             countSuccess++;
@@ -199,6 +203,27 @@ public class KyThi extends JPanel implements ActionListener, ItemListener {
                 JOptionPane.showMessageDialog(this, "Lỗi đọc file Excel!");
             }
         }
+    }
+
+    private Timestamp chuyenDoiNgayThang(String input) {
+        String[] formats = {
+            "dd-MM-yyyy HH:mm:ss", "dd/MM/yyyy HH:mm:ss",
+            "dd-MM-yyyy HH:mm", "dd/MM/yyyy HH:mm",
+            "yyyy-MM-dd HH:mm:ss", "MM/dd/yyyy HH:mm:ss"
+        };
+
+        for (String format : formats) {
+            try {
+                java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat(format);
+                sdf.setLenient(false);
+                return new Timestamp(sdf.parse(input).getTime());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        // Default của hệ thống nếu chả cái nào khớp
+        return Timestamp.valueOf(input.replace("/", "-"));
     }
 
     @Override

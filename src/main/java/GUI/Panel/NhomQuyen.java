@@ -6,7 +6,7 @@ import GUI.Component.IntegratedSearch;
 import GUI.Component.MainFunction;
 import GUI.Component.PanelBorderRadius;
 import GUI.Component.TableSorter;
-import GUI.Dialog.AddNhomQuyenDialog; 
+import GUI.Dialog.AddNhomQuyenDialog;
 import GUI.Dialog.ChiTietNhomQuyenDialog;
 import java.awt.*;
 import java.awt.event.*;
@@ -72,7 +72,8 @@ public class NhomQuyen extends JPanel implements ActionListener, ItemListener {
         functionBar.setBorder(new EmptyBorder(10, 10, 10, 10));
         functionBar.setBackground(Color.WHITE);
 
-        String[] actions = {"create", "update", "delete", "detail", "import", "export"};
+        // các chức năng của chương trình
+        String[] actions = {"create", "update", "delete", "detail"};
         mainFunction = new MainFunction(actions);
         for (String ac : actions) {
             mainFunction.btn.get(ac).addActionListener(this);
@@ -190,8 +191,7 @@ public class NhomQuyen extends JPanel implements ActionListener, ItemListener {
                 listHienTai = bus.getAll();
                 loadDataTable();
             });
-        }
-        else if (src == mainFunction.btn.get("update")) {
+        } else if (src == mainFunction.btn.get("update")) {
             int row = table.getSelectedRow();
             if (row == -1) {
                 JOptionPane.showMessageDialog(this, "Vui lòng chọn nhóm quyền cần sửa!");
@@ -212,10 +212,6 @@ public class NhomQuyen extends JPanel implements ActionListener, ItemListener {
             xoaNhomQuyen();
         } else if (src == mainFunction.btn.get("detail")) {
             xemChiTiet(owner);
-        } else if (src == mainFunction.btn.get("import")) {
-            JOptionPane.showMessageDialog(this, "Chức năng import đang phát triển!");
-        } else if (src == mainFunction.btn.get("export")) {
-            JOptionPane.showMessageDialog(this, "Chức năng export đang phát triển!");
         }
     }
 
@@ -239,7 +235,7 @@ public class NhomQuyen extends JPanel implements ActionListener, ItemListener {
                 "Bạn có chắc muốn xóa nhóm quyền \"" + tenNhomQuyen + "\"?\n(Xóa nhóm quyền sẽ xóa tất cả phân quyền liên quan)",
                 "Xác nhận xóa", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
         if (confirm == JOptionPane.YES_OPTION) {
-            if (bus.delete(maNhomQuyen)) { 
+            if (bus.delete(maNhomQuyen)) {
                 JOptionPane.showMessageDialog(this, "Xóa thành công!");
                 listHienTai = bus.getAll();
                 loadDataTable();
@@ -259,7 +255,6 @@ public class NhomQuyen extends JPanel implements ActionListener, ItemListener {
         int maNhomQuyen = (int) tableModel.getValueAt(modelRow, 0);
         NhomQuyenDTO dto = bus.getById(maNhomQuyen);
         if (dto != null) {
-            // Gọi dialog xem chi tiết (không cho sửa)
             new ChiTietNhomQuyenDialog(owner, "Thông tin nhóm quyền", dto, bus);
         }
     }

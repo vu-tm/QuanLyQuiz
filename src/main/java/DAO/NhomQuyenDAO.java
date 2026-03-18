@@ -115,8 +115,7 @@ public class NhomQuyenDAO {
         return false;
     }
 
-    // ===== Chi tiết quyền (giữ nguyên) =====
-
+    // Chi tiết quyền 
     public boolean insertChiTietQuyen(int manhomquyen, List<Integer> dsQuyen) {
         String sql = "INSERT INTO chitietquyen(manhomquyen, maquyen) VALUES (?, ?)";
         try (Connection conn = DatabaseHelper.getConnection();
@@ -162,5 +161,36 @@ public class NhomQuyenDAO {
             e.printStackTrace();
         }
         return list;
+    }
+    
+    // kiểm tra id
+    public boolean checkExistId(int manhomquyen) {
+        String sql = "SELECT COUNT(*) FROM nhomquyen WHERE manhomquyen = ?";
+        try (Connection conn = DatabaseHelper.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, manhomquyen);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+    
+    public int getNextId() {
+        String sql = "SELECT IFNULL(MAX(manhomquyen), 0) + 1 FROM nhomquyen";
+        try (Connection conn = DatabaseHelper.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 1; // mặc định nếu bảng chưa có dữ liệu
     }
 }

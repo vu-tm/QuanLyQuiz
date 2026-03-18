@@ -43,4 +43,10 @@ public class NhomQuyenBUS {
     public List<Integer> getQuyenByNhom(int manhomquyen) {
         return nhomQuyenDao.getQuyenIdsByNhom(manhomquyen);
     }
+    public boolean checkExistId(int manhomquyen) {
+        return nhomQuyenDao.checkExistId(manhomquyen);
+    }
+    public int getNextId() {
+        return nhomQuyenDao.getNextId();
+    }
 }

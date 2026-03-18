@@ -13,7 +13,6 @@ public class NhomQuyenBUS {
     
     public boolean delete(int manhomquyen) {
         if (manhomquyen <= 0) return false;
-        nhomQuyenDao.deleteChiTietQuyen(manhomquyen);
         return nhomQuyenDao.delete(manhomquyen);
     }
     

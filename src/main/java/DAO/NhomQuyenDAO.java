@@ -73,7 +73,7 @@ public class NhomQuyenDAO {
         try (Connection conn = DatabaseHelper.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, nq.getTennhomquyen());
-            ps.setInt(2, 1); // trang thái mặc định = 1 (hoạt động)
+            ps.setInt(2, 1); // mặc định hoạt động
             int affected = ps.executeUpdate();
             if (affected > 0) {
                 try (ResultSet rs = ps.getGeneratedKeys()) {
@@ -89,11 +89,12 @@ public class NhomQuyenDAO {
     }
 
     public boolean update(NhomQuyenDTO nq) {
-        String sql = "UPDATE nhomquyen SET tennhomquyen = ? WHERE manhomquyen = ?";
+        String sql = "UPDATE nhomquyen SET tennhomquyen = ?, trangthai = ? WHERE manhomquyen = ?";
         try (Connection conn = DatabaseHelper.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, nq.getTennhomquyen());
-            ps.setInt(2, nq.getManhomquyen());
+            ps.setInt(2, nq.getTrangthai());
+            ps.setInt(3, nq.getManhomquyen());
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();
@@ -101,9 +102,9 @@ public class NhomQuyenDAO {
         return false;
     }
 
+    // Xóa - chuyển trạng thái về 0
     public boolean delete(int manhomquyen) {
-        // Xóa cứng (có thể đổi thành xóa mềm nếu muốn)
-        String sql = "DELETE FROM nhomquyen WHERE manhomquyen = ?";
+        String sql = "UPDATE nhomquyen SET trangthai = 0 WHERE manhomquyen = ?";
         try (Connection conn = DatabaseHelper.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, manhomquyen);
@@ -114,7 +115,7 @@ public class NhomQuyenDAO {
         return false;
     }
 
-    // ===== Chi tiết quyền =====
+    // ===== Chi tiết quyền (giữ nguyên) =====
 
     public boolean insertChiTietQuyen(int manhomquyen, List<Integer> dsQuyen) {
         String sql = "INSERT INTO chitietquyen(manhomquyen, maquyen) VALUES (?, ?)";

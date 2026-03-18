@@ -9,6 +9,7 @@ import DTO.CauHoiDTO;
 import GUI.Component.ButtonCustom;
 import GUI.Component.InputForm;
 import helper.Formater;
+import helper.writePDF;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -32,7 +33,8 @@ public final class ChiTietDeThiDialog extends JDialog implements ActionListener 
     private MonHocBUS monhocBus = new MonHocBUS();
     private DoKhoBUS dokhoBus = new DoKhoBUS();
 
-    private ButtonCustom btnHuyBo;
+    private ButtonCustom btnPdf, btnHuyBo;
+
     private ArrayList<CauHoiDTO> dsCauHoi;
 
     public ChiTietDeThiDialog(JFrame owner, String title, boolean modal, DeThiDTO dethiDTO) {
@@ -51,50 +53,47 @@ public final class ChiTietDeThiDialog extends JDialog implements ActionListener 
 
         pnmain = new JPanel(new BorderLayout());
 
-        // Top Panel: 6 ô thông tin (2 hàng x 3 cột)
         pnmain_top = new JPanel(new GridLayout(2, 3, 10, 10));
         pnmain_top.setBorder(new EmptyBorder(10, 10, 10, 10));
         pnmain_top.setBackground(Color.WHITE);
 
-        txtTenDe = new InputForm("Tên đề thi");
-        txtKyThi = new InputForm("Kỳ thi");
-        txtMonHoc = new InputForm("Môn học");
-        txtNguoiTao = new InputForm("Người tạo");
+        txtTenDe       = new InputForm("Tên đề thi");
+        txtKyThi       = new InputForm("Kỳ thi");
+        txtMonHoc      = new InputForm("Môn học");
+        txtNguoiTao    = new InputForm("Người tạo");
         txtThoiGianTao = new InputForm("Thời gian tạo");
         txtThoiGianThi = new InputForm("Thời gian thi (phút)");
 
         InputForm[] inputs = {txtTenDe, txtKyThi, txtMonHoc, txtNguoiTao, txtThoiGianTao, txtThoiGianThi};
-        for (int i = 0; i < inputs.length; i++) {
-            inputs[i].setEditable(false);
-            pnmain_top.add(inputs[i]);
+        for (InputForm inp : inputs) {
+            inp.setEditable(false);
+            pnmain_top.add(inp);
         }
-
         pnmain.add(pnmain_top, BorderLayout.NORTH);
 
-        // Center Panel: Bảng danh sách câu hỏi
+        // ── Center: bảng danh sách câu hỏi ──────────────────────────────────
         pnmain_bottom = new JPanel(new BorderLayout());
         pnmain_bottom.setBorder(new EmptyBorder(5, 10, 5, 10));
         pnmain_bottom.setBackground(Color.WHITE);
 
         tblModel = new DefaultTableModel();
-        String[] header = new String[]{"STT", "Mã CH", "Nội dung câu hỏi", "Độ khó"};
-        tblModel.setColumnIdentifiers(header);
-        
+        tblModel.setColumnIdentifiers(new String[]{"STT", "Mã CH", "Nội dung câu hỏi", "Độ khó"});
+
         table = new JTable(tblModel);
         table.setRowSelectionAllowed(false);
         table.setFocusable(false);
         table.setRowHeight(35);
-        
+
         scrollTable = new JScrollPane(table);
-        
+
         DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
         centerRenderer.setHorizontalAlignment(JLabel.CENTER);
+
         table.getColumnModel().getColumn(0).setPreferredWidth(50);
         table.getColumnModel().getColumn(1).setPreferredWidth(80);
         table.getColumnModel().getColumn(2).setPreferredWidth(600);
         table.getColumnModel().getColumn(3).setPreferredWidth(120);
-        
-        // Căn giữa các cột trừ nội dung câu hỏi
+
         table.getColumnModel().getColumn(0).setCellRenderer(centerRenderer);
         table.getColumnModel().getColumn(1).setCellRenderer(centerRenderer);
         table.getColumnModel().getColumn(3).setCellRenderer(centerRenderer);
@@ -102,13 +101,18 @@ public final class ChiTietDeThiDialog extends JDialog implements ActionListener 
         pnmain_bottom.add(scrollTable, BorderLayout.CENTER);
         pnmain.add(pnmain_bottom, BorderLayout.CENTER);
 
-        // Bottom Panel: Nút bấm
-        pnmain_btn = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        // ── Bottom: nút bấm ──────────────────────────────────────────────────
+        pnmain_btn = new JPanel(new FlowLayout(FlowLayout.CENTER));
         pnmain_btn.setBorder(new EmptyBorder(10, 10, 10, 10));
         pnmain_btn.setBackground(Color.WHITE);
-        
-        btnHuyBo = new ButtonCustom("Đóng", "danger", 14);
+
+        btnPdf   = new ButtonCustom("Xuất PDF", "success", 14);
+        btnHuyBo = new ButtonCustom("Đóng",     "danger",  14);
+
+        btnPdf.addActionListener(this);
         btnHuyBo.addActionListener(this);
+
+        pnmain_btn.add(btnPdf);
         pnmain_btn.add(btnHuyBo);
 
         pnmain.add(pnmain_btn, BorderLayout.SOUTH);
@@ -131,9 +135,9 @@ public final class ChiTietDeThiDialog extends JDialog implements ActionListener 
         for (int i = 0; i < dsCauHoi.size(); i++) {
             CauHoiDTO ch = dsCauHoi.get(i);
             tblModel.addRow(new Object[]{
-                i + 1, 
-                ch.getMacauhoi(), 
-                ch.getNoidung(), 
+                i + 1,
+                ch.getMacauhoi(),
+                ch.getNoidung(),
                 dokhoBus.getTenDoKho(ch.getMadokho())
             });
         }
@@ -143,6 +147,10 @@ public final class ChiTietDeThiDialog extends JDialog implements ActionListener 
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == btnHuyBo) {
             dispose();
+        }
+        if (e.getSource() == btnPdf) {
+            writePDF w = new writePDF();
+            w.writeDeThi(dethi.getMade());
         }
     }
 }

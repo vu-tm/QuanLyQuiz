@@ -34,7 +34,7 @@
         </dependency>
         
         <!--Lịch JCalendar -->
-<!--        <dependency>
+        <!--        <dependency>
             <groupId>com.toedter</groupId>
             <artifactId>jcalendar</artifactId>
             <version>1.4</version>
@@ -51,10 +51,19 @@
             <artifactId>poi-ooxml</artifactId>
             <version>5.2.5</version>
         </dependency>
+        
+        <!--Lịch với ngày&giờ-->
         <dependency>
             <groupId>com.github.lgooddatepicker</groupId>
             <artifactId>LGoodDatePicker</artifactId>
             <version>11.2.1</version>
+        </dependency>
+        
+        <!--pdf-->
+        <dependency>
+            <groupId>com.itextpdf</groupId>
+            <artifactId>itextpdf</artifactId>
+            <version>5.5.13.3</version>
         </dependency>
     </dependencies>
     <properties>

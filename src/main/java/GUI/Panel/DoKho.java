@@ -1,12 +1,12 @@
 package GUI.Panel;
 
-import BUS.MonHocBUS;
-import DTO.MonHocDTO;
+import BUS.DoKhoBUS;
+import DTO.DoKhoDTO;
 import GUI.Component.IntegratedSearch;
 import GUI.Component.MainFunction;
 import GUI.Component.PanelBorderRadius;
 import GUI.Component.TableSorter;
-import GUI.Dialog.MonHocDialog;
+import GUI.Dialog.DoKhoDialog;
 import helper.Validation;
 import java.awt.*;
 import java.awt.event.*;
@@ -23,7 +23,7 @@ import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
-public class MonHoc extends JPanel implements ActionListener, ItemListener {
+public class DoKho extends JPanel implements ActionListener, ItemListener {
 
     PanelBorderRadius main, functionBar;
     JPanel pnlBorder1, pnlBorder2, pnlBorder3, pnlBorder4, contentCenter;
@@ -33,12 +33,12 @@ public class MonHoc extends JPanel implements ActionListener, ItemListener {
     IntegratedSearch search;
     DefaultTableModel tblModel;
 
-    MonHocBUS bus = new MonHocBUS();
-    ArrayList<MonHocDTO> listHienTai = bus.getAll();
+    DoKhoBUS bus = new DoKhoBUS();
+    ArrayList<DoKhoDTO> listHienTai = bus.getAll();
 
     Color BackgroundColor = new Color(240, 247, 250);
 
-    public MonHoc() {
+    public DoKho() {
         initComponent();
         loadDataTable(listHienTai);
     }
@@ -57,12 +57,11 @@ public class MonHoc extends JPanel implements ActionListener, ItemListener {
             }
         };
 
-        String[] header = {"Mã môn học", "Tên môn học", "Số tín chỉ", "Trạng thái"};
+        String[] header = {"Mã độ khó", "Tên độ khó", "Trạng thái"};
         tblModel.setColumnIdentifiers(header);
         table.setModel(tblModel);
         table.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 13));
         table.getTableHeader().setPreferredSize(new Dimension(0, 40));
-        ((DefaultTableCellRenderer) table.getTableHeader().getDefaultRenderer()).setHorizontalAlignment(JLabel.CENTER);
         table.setFocusable(false);
         table.setRowHeight(30);
         scrollTable.setViewportView(table);
@@ -112,7 +111,7 @@ public class MonHoc extends JPanel implements ActionListener, ItemListener {
 
         functionBar.add(mainFunction);
 
-        search = new IntegratedSearch(new String[]{"Tất cả", "Mã môn học", "Tên môn học"});
+        search = new IntegratedSearch(new String[]{"Tất cả", "Mã độ khó", "Tên độ khó"});
         search.txtSearchForm.addKeyListener(new KeyAdapter() {
             @Override
             public void keyReleased(KeyEvent e) {
@@ -167,20 +166,16 @@ public class MonHoc extends JPanel implements ActionListener, ItemListener {
                         continue;
                     }
                     try {
-                        String tenMonHoc = excelRow.getCell(0).getStringCellValue();
-                        int soTinChi = (int) excelRow.getCell(1).getNumericCellValue();
-
-                        if (Validation.isEmpty(tenMonHoc)) {
+                        String tenDoKho = excelRow.getCell(0).getStringCellValue();
+                        if (Validation.isEmpty(tenDoKho)) {
                             countError++;
                             continue;
                         }
+                        DoKhoDTO dk = new DoKhoDTO();
+                        dk.setTendokho(tenDoKho);
+                        dk.setTrangthai(1);
 
-                        MonHocDTO mh = new MonHocDTO();
-                        mh.setTenmonhoc(tenMonHoc);
-                        mh.setSotinchi(soTinChi);
-                        mh.setTrangthai(1);
-
-                        if (bus.add(mh)) {
+                        if (bus.add(dk)) {
                             countSuccess++;
                         } else {
                             countError++;
@@ -198,14 +193,13 @@ public class MonHoc extends JPanel implements ActionListener, ItemListener {
         }
     }
 
-    public void loadDataTable(ArrayList<MonHocDTO> danhSach) {
+    public void loadDataTable(ArrayList<DoKhoDTO> danhSach) {
         tblModel.setRowCount(0);
-        for (MonHocDTO mh : danhSach) {
+        for (DoKhoDTO dk : danhSach) {
             tblModel.addRow(new Object[]{
-                mh.getMamonhoc(),
-                mh.getTenmonhoc(),
-                mh.getSotinchi(),
-                mh.getTrangthai() == 1 ? "Hoạt động" : "Ngưng hoạt động"
+                dk.getMadokho(),
+                dk.getTendokho(),
+                dk.getTrangthai() == 1 ? "Hoạt động" : "Ngưng hoạt động"
             });
         }
     }
@@ -216,23 +210,23 @@ public class MonHoc extends JPanel implements ActionListener, ItemListener {
         Object source = e.getSource();
 
         if (source == mainFunction.btn.get("create")) {
-            new MonHocDialog(this, owner, "Thêm môn học mới", true, "create", null);
+            new DoKhoDialog(this, owner, "Thêm độ khó mới", true, "create", null);
         } else if (source == mainFunction.btn.get("update") || source == mainFunction.btn.get("detail") || source == mainFunction.btn.get("delete")) {
             int index = table.getSelectedRow();
             if (index == -1) {
-                JOptionPane.showMessageDialog(this, "Vui lòng chọn môn học!");
+                JOptionPane.showMessageDialog(this, "Vui lòng chọn độ khó!");
                 return;
             }
-            int mamonhoc = (int) table.getValueAt(index, 0);
-            MonHocDTO selected = bus.getById(mamonhoc);
+            int madokho = (int) table.getValueAt(index, 0);
+            DoKhoDTO selected = bus.getById(madokho);
 
             if (source == mainFunction.btn.get("update")) {
-                new MonHocDialog(this, owner, "Chỉnh sửa môn học", true, "update", selected);
+                new DoKhoDialog(this, owner, "Chỉnh sửa độ khó", true, "update", selected);
             } else if (source == mainFunction.btn.get("detail")) {
-                new MonHocDialog(this, owner, "Thông tin chi tiết môn học", true, "view", selected);
+                new DoKhoDialog(this, owner, "Thông tin chi tiết độ khó", true, "view", selected);
             } else if (source == mainFunction.btn.get("delete")) {
-                if (JOptionPane.showConfirmDialog(this, "Xóa môn học " + selected.getTenmonhoc() + "?", "Xác nhận", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
-                    if (bus.delete(selected.getMamonhoc())) {
+                if (JOptionPane.showConfirmDialog(this, "Xóa độ khó " + selected.getTendokho() + "?", "Xác nhận", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+                    if (bus.delete(selected.getMadokho())) {
                         listHienTai = bus.getAll();
                         loadDataTable(listHienTai);
                     }

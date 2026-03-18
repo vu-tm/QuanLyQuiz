@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Mar 14, 2026 at 10:30 AM
+-- Generation Time: Mar 17, 2026 at 08:41 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.0.30
 
@@ -54,6 +54,21 @@ CREATE TABLE `cauhoi` (
   `trangthai` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Dumping data for table `cauhoi`
+--
+
+INSERT INTO `cauhoi` (`macauhoi`, `noidung`, `madokho`, `maloai`, `mamonhoc`, `nguoitao`, `trangthai`) VALUES
+(1, 'Trong Java, biến static được sử dụng để làm gì?', 2, 1, 1, 'admin', 1),
+(2, 'Java có hỗ trợ đa kế thừa thông qua Class không?', 1, 2, 1, 'admin', 1),
+(3, 'Kiểu dữ liệu nào có kích thước lớn nhất trong các kiểu số nguyên của Java?', 1, 1, 1, 'admin', 1),
+(4, 'Hiện tượng Deadlock là gì?', 3, 1, 2, 'admin', 1),
+(5, 'Thành phần nào điều khiển việc cấp phát tài nguyên của hệ thống?', 1, 1, 2, 'admin', 1),
+(6, 'Hệ điều hành là một phần mềm ứng dụng, đúng hay sai?', 1, 2, 2, 'admin', 1),
+(7, 'Thẻ HTML nào được dùng để tạo một danh sách không thứ tự?', 1, 1, 3, 'admin', 1),
+(8, 'Giao thức mặc định được sử dụng để truyền tải dữ liệu trên Web là gì?', 1, 1, 3, 'admin', 1),
+(9, 'CSS là viết tắt của từ nào?', 2, 1, 3, 'admin', 1);
+
 -- --------------------------------------------------------
 
 --
@@ -78,6 +93,21 @@ CREATE TABLE `chitietdethi` (
   `macauhoi` int(11) NOT NULL,
   `thutu` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `chitietdethi`
+--
+
+INSERT INTO `chitietdethi` (`made`, `macauhoi`, `thutu`) VALUES
+(1, 1, 1),
+(1, 2, 2),
+(1, 3, 3),
+(2, 4, 1),
+(2, 5, 2),
+(2, 6, 3),
+(3, 7, 1),
+(3, 8, 2),
+(3, 9, 3);
 
 -- --------------------------------------------------------
 
@@ -127,6 +157,44 @@ CREATE TABLE `dapan` (
   `ladapan` tinyint(1) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Dumping data for table `dapan`
+--
+
+INSERT INTO `dapan` (`madapan`, `macauhoi`, `noidungtl`, `ladapan`) VALUES
+(1, 1, 'Dùng chung cho tất cả các đối tượng của lớp', 1),
+(2, 1, 'Mỗi đối tượng có một bản sao riêng', 0),
+(3, 1, 'Để khai báo một hằng số', 0),
+(4, 1, 'Để giải phóng bộ nhớ', 0),
+(5, 2, 'Đúng', 0),
+(6, 2, 'Sai', 1),
+(7, 3, 'int', 0),
+(8, 3, 'short', 0),
+(9, 3, 'long', 1),
+(10, 3, 'byte', 0),
+(11, 4, 'Tình trạng hai hoặc nhiều tiến trình chờ đợi lẫn nhau mãi mãi', 1),
+(12, 4, 'Tình trạng hệ thống bị thiếu bộ nhớ RAM', 0),
+(13, 4, 'Tình trạng CPU chạy quá tải', 0),
+(14, 4, 'Lỗi ổ cứng không đọc được dữ liệu', 0),
+(15, 5, 'Kernel (Nhân)', 1),
+(16, 5, 'Trình soạn thảo văn bản', 0),
+(17, 5, 'Trình duyệt web', 0),
+(18, 5, 'Bảng tính Excel', 0),
+(19, 6, 'Đúng', 0),
+(20, 6, 'Sai (Là phần mềm hệ thống)', 1),
+(21, 7, '<ul>', 1),
+(22, 7, '<ol>', 0),
+(23, 7, '<li>', 0),
+(24, 7, '<list>', 0),
+(25, 8, 'FTP', 0),
+(26, 8, 'SMTP', 0),
+(27, 8, 'HTTP', 1),
+(28, 8, 'TCP/IP', 0),
+(29, 9, 'Cascading Style Sheets', 1),
+(30, 9, 'Creative Style System', 0),
+(31, 9, 'Computer Style Sheets', 0),
+(32, 9, 'Colorful Style Sheets', 0);
+
 -- --------------------------------------------------------
 
 --
@@ -144,6 +212,15 @@ CREATE TABLE `dethi` (
   `tongsocau` int(11) DEFAULT 0,
   `trangthai` tinyint(1) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `dethi`
+--
+
+INSERT INTO `dethi` (`made`, `makythi`, `monthi`, `nguoitao`, `tende`, `thoigiantao`, `thoigianthi`, `tongsocau`, `trangthai`) VALUES
+(1, 1, 1, 'admin', 'Đề thi Java cơ bản', '2025-03-17 08:00:00', 60, 10, 1),
+(2, 1, 2, 'admin', 'Đề thi hệ điều hành giữa kỳ', '2025-03-17 09:00:00', 45, 10, 1),
+(3, 2, 3, 'admin', 'Đề thi Lập trình web 15 phút', '2025-03-17 10:00:00', 15, 3, 1);
 
 -- --------------------------------------------------------
 
@@ -196,11 +273,8 @@ CREATE TABLE `kythi` (
 --
 
 INSERT INTO `kythi` (`makythi`, `tenkythi`, `thoigianbatdau`, `thoigianketthuc`, `trangthai`) VALUES
-(1, 'test', '2026-03-13 00:00:00', '2026-03-14 00:00:00', 1),
-(2, 'rbgc', '2026-03-09 00:00:00', '2026-03-11 00:00:00', 0),
-(3, '123', '2026-03-12 00:00:00', '2026-03-21 00:00:00', 1),
-(4, '123', '2026-03-11 12:00:00', '2026-03-14 13:00:00', 1),
-(5, 'avvv', '2026-03-12 11:00:00', '2026-03-14 12:00:00', 1);
+(1, 'Thi Giữa Kỳ 1', '2026-03-01 07:30:00', '2026-03-30 17:00:00', 1),
+(2, 'Kiểm tra 15 phút', '2026-03-17 02:00:00', '2026-03-17 02:15:00', 1);
 
 -- --------------------------------------------------------
 
@@ -213,6 +287,14 @@ CREATE TABLE `loaicauhoi` (
   `tenloai` varchar(100) NOT NULL,
   `trangthai` tinyint(1) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `loaicauhoi`
+--
+
+INSERT INTO `loaicauhoi` (`maloai`, `tenloai`, `trangthai`) VALUES
+(1, 'Trắc nghiệm (4 lựa chọn)', 1),
+(2, 'Đúng/Sai', 1);
 
 -- --------------------------------------------------------
 
@@ -243,6 +325,15 @@ CREATE TABLE `monhoc` (
   `sotinchi` int(11) DEFAULT NULL,
   `trangthai` tinyint(1) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `monhoc`
+--
+
+INSERT INTO `monhoc` (`mamonhoc`, `tenmonhoc`, `sotinchi`, `trangthai`) VALUES
+(1, 'Lập trình Java', 3, 1),
+(2, 'Hệ điều hành', 3, 1),
+(3, 'Lập trình web và ứng dụng', 2, 1);
 
 -- --------------------------------------------------------
 
@@ -426,19 +517,19 @@ ALTER TABLE `baithi`
 -- AUTO_INCREMENT for table `cauhoi`
 --
 ALTER TABLE `cauhoi`
-  MODIFY `macauhoi` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `macauhoi` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT for table `dapan`
 --
 ALTER TABLE `dapan`
-  MODIFY `madapan` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `madapan` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=33;
 
 --
 -- AUTO_INCREMENT for table `dethi`
 --
 ALTER TABLE `dethi`
-  MODIFY `made` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `made` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `dokho`
@@ -450,13 +541,13 @@ ALTER TABLE `dokho`
 -- AUTO_INCREMENT for table `kythi`
 --
 ALTER TABLE `kythi`
-  MODIFY `makythi` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `makythi` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `loaicauhoi`
 --
 ALTER TABLE `loaicauhoi`
-  MODIFY `maloai` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `maloai` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `lop`
@@ -468,7 +559,7 @@ ALTER TABLE `lop`
 -- AUTO_INCREMENT for table `monhoc`
 --
 ALTER TABLE `monhoc`
-  MODIFY `mamonhoc` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `mamonhoc` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `nhomquyen`

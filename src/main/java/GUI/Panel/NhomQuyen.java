@@ -56,7 +56,7 @@ public class NhomQuyen extends JPanel {
         searchPanel.setBackground(Color.WHITE);
 
         JLabel searchIconLabel = new JLabel();
-        ImageIcon searchIcon = IconHelper.loadIcon("find.png", 20, 20);
+        ImageIcon searchIcon = IconHelper.loadIcon("find.svg", 20, 20);
         if (searchIcon != null) {
             searchIconLabel.setIcon(searchIcon);
             searchIconLabel.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 5));
@@ -210,8 +210,8 @@ public class NhomQuyen extends JPanel {
             btnDelete.setContentAreaFilled(false);
             btnDelete.setFocusPainted(false);
 
-            ImageIcon editIcon = IconHelper.loadIcon("edit.png", 22, 22);
-            ImageIcon deleteIcon = IconHelper.loadIcon("delete.png", 22, 22);
+            ImageIcon editIcon = IconHelper.loadIcon("edit.svg", 22, 22);
+            ImageIcon deleteIcon = IconHelper.loadIcon("delete.svg", 22, 22);
 
             if (editIcon != null) btnEdit.setIcon(editIcon);
             else btnEdit.setText("Sửa");
@@ -279,8 +279,8 @@ public class NhomQuyen extends JPanel {
             btnDelete.setContentAreaFilled(false);
             btnDelete.setFocusPainted(false);
 
-            ImageIcon editIcon = IconHelper.loadIcon("edit.png", 22, 22);
-            ImageIcon deleteIcon = IconHelper.loadIcon("delete.png", 22, 22);
+            ImageIcon editIcon = IconHelper.loadIcon("edit.svg", 22, 22);
+            ImageIcon deleteIcon = IconHelper.loadIcon("delete.svg", 22, 22);
 
             if (editIcon != null) btnEdit.setIcon(editIcon);
             else btnEdit.setText("Sửa");

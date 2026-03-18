@@ -15,7 +15,7 @@ public class NguoiDungBUS {
 
     // Lấy người dùng theo ID (không phân biệt trạng thái) - dùng cho sửa
     public NguoiDungDTO getById(String id) {
-        return dao.getByIdAll(id);
+        return dao.getById(id);
     }
 
     // Kiểm tra tồn tại ID (không phân biệt trạng thái) - dùng cho thêm mới

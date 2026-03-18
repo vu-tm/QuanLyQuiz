@@ -10,12 +10,10 @@ public class NguoiDungDAO {
     
     public List<NguoiDungDTO> getAll() {
         List<NguoiDungDTO> list = new ArrayList<>();
-        String sql = "SELECT * FROM nguoidung ORDER BY hoten ASC";
-
+        String sql = "SELECT * FROM nguoidung WHERE trangthai = 1 ORDER BY hoten ASC";
         try (Connection conn = DatabaseHelper.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
-
             while (rs.next()) {
                 NguoiDungDTO user = new NguoiDungDTO();
                 user.setId(rs.getString("id"));

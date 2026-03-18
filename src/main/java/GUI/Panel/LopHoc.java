@@ -3,11 +3,18 @@ package GUI.Panel;
 import BUS.LopBUS;
 import DTO.LopDTO;
 import java.awt.*;
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
+import org.apache.poi.xssf.usermodel.XSSFRow;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 public class LopHoc extends JPanel {
 
@@ -18,7 +25,7 @@ public class LopHoc extends JPanel {
     private DefaultTableModel modelLop;
     private JTextField txtTimKiem;
     private JComboBox<String> cbTimKiem;
-    private JButton btnThem, btnSua, btnXoa, btnChiTiet, btnLamMoi;
+    private JButton btnThem, btnSua, btnXoa, btnChiTiet, btnLamMoi, btnNhapExcel, btnXuatExcel;
 
     Color MainColor = new Color(250, 250, 250);
     Color FontColorHeader = new Color(96, 125, 139);
@@ -103,6 +110,14 @@ public class LopHoc extends JPanel {
         btnLamMoi = createButton("Làm mới", new Color(96, 125, 139));
         btnLamMoi.addActionListener(e -> lamMoi());
         pnlBottom.add(btnLamMoi);
+
+        btnNhapExcel = createButton("Nhập Excel", new Color(76, 175, 80));
+        btnNhapExcel.addActionListener(e -> importExcel());
+        pnlBottom.add(btnNhapExcel);
+
+        btnXuatExcel = createButton("Xuất Excel", new Color(33, 150, 243));
+        btnXuatExcel.addActionListener(e -> exportExcel());
+        pnlBottom.add(btnXuatExcel);
 
         // TABLE
         JPanel pnlTable = new JPanel(new BorderLayout());
@@ -261,6 +276,90 @@ public class LopHoc extends JPanel {
         txtTimKiem.setText("");
         cbTimKiem.setSelectedIndex(0);
         loadDataTable();
+    }
+
+    private void importExcel() {
+        File excelFile;
+        FileInputStream excelFIS = null;
+        BufferedInputStream excelBIS = null;
+        XSSFWorkbook excelJTableImport = null;
+        JFileChooser jf = new JFileChooser();
+        int result = jf.showOpenDialog(this);
+        int countSuccess = 0, countError = 0;
+
+        if (result == JFileChooser.APPROVE_OPTION) {
+            try {
+                excelFile = jf.getSelectedFile();
+                excelFIS = new FileInputStream(excelFile);
+                excelBIS = new BufferedInputStream(excelFIS);
+                excelJTableImport = new XSSFWorkbook(excelBIS);
+                XSSFSheet excelSheet = excelJTableImport.getSheetAt(0);
+
+                for (int row = 1; row <= excelSheet.getLastRowNum(); row++) {
+                    XSSFRow excelRow = excelSheet.getRow(row);
+                    if (excelRow == null) {
+                        continue;
+                    }
+                    try {
+                        String tenlop = excelRow.getCell(0).getStringCellValue();
+                        int siso = (int) excelRow.getCell(1).getNumericCellValue();
+                        int namhoc = (int) excelRow.getCell(2).getNumericCellValue();
+                        int hocky = (int) excelRow.getCell(3).getNumericCellValue();
+                        String giangvien = excelRow.getCell(4).getStringCellValue();
+                        int mamonhoc = (int) excelRow.getCell(5).getNumericCellValue();
+
+                        if (tenlop == null || tenlop.trim().isEmpty() || giangvien == null || giangvien.trim().isEmpty()) {
+                            countError++;
+                            continue;
+                        }
+
+                        LopDTO lop = new LopDTO();
+                        lop.setTenlop(tenlop.trim());
+                        lop.setSiso(siso);
+                        lop.setNamhoc(namhoc);
+                        lop.setHocky(hocky);
+                        lop.setGiangvien(giangvien.trim());
+                        lop.setMamonhoc(mamonhoc);
+                        lop.setTrangthai(1);
+
+                        if (lopBUS.add(lop)) {
+                            countSuccess++;
+                        } else {
+                            countError++;
+                        }
+                    } catch (Exception ex) {
+                        countError++;
+                    }
+                }
+
+                JOptionPane.showMessageDialog(this, "Nhập thành công " + countSuccess + " dòng. Lỗi " + countError + " dòng.");
+                loadDataTable();
+            } catch (IOException ex) {
+                JOptionPane.showMessageDialog(this, "Lỗi đọc file Excel!");
+            } finally {
+                try {
+                    if (excelJTableImport != null) {
+                        excelJTableImport.close();
+                    }
+                    if (excelBIS != null) {
+                        excelBIS.close();
+                    }
+                    if (excelFIS != null) {
+                        excelFIS.close();
+                    }
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        }
+    }
+
+    private void exportExcel() {
+        try {
+            helper.JTableExporter.exportJTableToExcel(tblLop);
+        } catch (IOException ex) {
+            JOptionPane.showMessageDialog(this, "Xuất file Excel thất bại!");
+        }
     }
 }
 

@@ -5,11 +5,24 @@ import BUS.NguoiDungBUS;
 import DTO.NguoiDungDTO;
 import helper.IconHelper;
 import java.awt.*;
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.sql.Date;
+import java.time.LocalDate;
 import java.util.List;
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellType;
+import org.apache.poi.ss.usermodel.DataFormatter;
+import org.apache.poi.ss.usermodel.DateUtil;
+import org.apache.poi.xssf.usermodel.XSSFRow;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 public class NguoiDung extends JPanel {
     private JTextField searchField;
@@ -43,7 +56,30 @@ public class NguoiDung extends JPanel {
         btnAdd.setFocusPainted(false);
         btnAdd.setBorder(BorderFactory.createEmptyBorder(8, 15, 8, 15));
         btnAdd.addActionListener(e -> themNguoiDung()); // NÚT THÊM NGƯỜI DÙNG
-        northPanel.add(btnAdd, BorderLayout.EAST);
+
+        JPanel actionPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
+        actionPanel.setBackground(Color.WHITE);
+
+        JButton btnImport = new JButton("Nhập Excel");
+        btnImport.setFont(new Font("Arial", Font.BOLD, 14));
+        btnImport.setBackground(new Color(76, 175, 80));
+        btnImport.setForeground(Color.WHITE);
+        btnImport.setFocusPainted(false);
+        btnImport.setBorder(BorderFactory.createEmptyBorder(8, 15, 8, 15));
+        btnImport.addActionListener(e -> importExcel());
+
+        JButton btnExport = new JButton("Xuất Excel");
+        btnExport.setFont(new Font("Arial", Font.BOLD, 14));
+        btnExport.setBackground(new Color(33, 150, 243));
+        btnExport.setForeground(Color.WHITE);
+        btnExport.setFocusPainted(false);
+        btnExport.setBorder(BorderFactory.createEmptyBorder(8, 15, 8, 15));
+        btnExport.addActionListener(e -> exportExcel());
+
+        actionPanel.add(btnImport);
+        actionPanel.add(btnExport);
+        actionPanel.add(btnAdd);
+        northPanel.add(actionPanel, BorderLayout.EAST);
 
         add(northPanel, BorderLayout.NORTH);
 
@@ -208,6 +244,142 @@ public class NguoiDung extends JPanel {
         } else {
             JOptionPane.showMessageDialog(this, "Không tìm thấy người dùng!", "Lỗi", JOptionPane.ERROR_MESSAGE);
         }
+    }
+
+    private void importExcel() {
+        File excelFile;
+        FileInputStream excelFIS = null;
+        BufferedInputStream excelBIS = null;
+        XSSFWorkbook excelJTableImport = null;
+        JFileChooser jf = new JFileChooser();
+        int result = jf.showOpenDialog(this);
+        int countSuccess = 0, countError = 0;
+        DataFormatter formatter = new DataFormatter();
+
+        if (result == JFileChooser.APPROVE_OPTION) {
+            try {
+                excelFile = jf.getSelectedFile();
+                excelFIS = new FileInputStream(excelFile);
+                excelBIS = new BufferedInputStream(excelFIS);
+                excelJTableImport = new XSSFWorkbook(excelBIS);
+                XSSFSheet excelSheet = excelJTableImport.getSheetAt(0);
+
+                for (int row = 1; row <= excelSheet.getLastRowNum(); row++) {
+                    XSSFRow excelRow = excelSheet.getRow(row);
+                    if (excelRow == null) {
+                        continue;
+                    }
+                    try {
+                        String id = formatter.formatCellValue(excelRow.getCell(0)).trim();
+                        String username = formatter.formatCellValue(excelRow.getCell(1)).trim();
+                        String hoten = formatter.formatCellValue(excelRow.getCell(2)).trim();
+                        String gioiTinhText = formatter.formatCellValue(excelRow.getCell(3)).trim();
+                        Date ngaysinh = parseExcelDate(excelRow.getCell(4), formatter);
+                        String matkhau = formatter.formatCellValue(excelRow.getCell(5)).trim();
+                        int manhomquyen = Integer.parseInt(formatter.formatCellValue(excelRow.getCell(6)).trim());
+                        int trangthai = 1;
+
+                        if (excelRow.getCell(7) != null) {
+                            String trangthaiStr = formatter.formatCellValue(excelRow.getCell(7)).trim();
+                            if (!trangthaiStr.isEmpty()) {
+                                trangthai = Integer.parseInt(trangthaiStr);
+                            }
+                        }
+
+                        if (id.isEmpty() || username.isEmpty() || hoten.isEmpty() || ngaysinh == null) {
+                            countError++;
+                            continue;
+                        }
+
+                        if (bus.checkExistId(id) || bus.checkExistUsername(username)) {
+                            countError++;
+                            continue;
+                        }
+
+                        NguoiDungDTO user = new NguoiDungDTO();
+                        user.setId(id);
+                        user.setUsername(username);
+                        user.setHoten(hoten);
+                        user.setGioitinh(parseGender(gioiTinhText));
+                        user.setNgaysinh(ngaysinh);
+                        user.setMatkhau(matkhau);
+                        user.setTrangthai(trangthai);
+                        user.setManhomquyen(manhomquyen);
+
+                        if (bus.insert(user)) {
+                            countSuccess++;
+                        } else {
+                            countError++;
+                        }
+                    } catch (Exception ex) {
+                        countError++;
+                    }
+                }
+
+                JOptionPane.showMessageDialog(this, "Nhập thành công " + countSuccess + " dòng. Lỗi " + countError + " dòng.");
+                loadDataToTable();
+            } catch (IOException ex) {
+                JOptionPane.showMessageDialog(this, "Lỗi đọc file Excel!");
+            } finally {
+                try {
+                    if (excelJTableImport != null) {
+                        excelJTableImport.close();
+                    }
+                    if (excelBIS != null) {
+                        excelBIS.close();
+                    }
+                    if (excelFIS != null) {
+                        excelFIS.close();
+                    }
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        }
+    }
+
+    private void exportExcel() {
+        try {
+            helper.JTableExporter.exportJTableToExcel(table);
+        } catch (IOException ex) {
+            JOptionPane.showMessageDialog(this, "Xuất file Excel thất bại!");
+        }
+    }
+
+    private boolean parseGender(String value) {
+        String normalized = value == null ? "" : value.trim().toLowerCase();
+        return normalized.equals("1") || normalized.equals("true") || normalized.equals("nam") || normalized.equals("male");
+    }
+
+    private Date parseExcelDate(Cell cell, DataFormatter formatter) {
+        if (cell == null) {
+            return null;
+        }
+        if (cell.getCellType() == CellType.NUMERIC && DateUtil.isCellDateFormatted(cell)) {
+            return new Date(cell.getDateCellValue().getTime());
+        }
+
+        String value = formatter.formatCellValue(cell).trim();
+        if (value.isEmpty()) {
+            return null;
+        }
+
+        try {
+            return Date.valueOf(LocalDate.parse(value)); // yyyy-MM-dd
+        } catch (Exception e) {
+            try {
+                String[] parts = value.split("/");
+                if (parts.length == 3) {
+                    int day = Integer.parseInt(parts[0]);
+                    int month = Integer.parseInt(parts[1]);
+                    int year = Integer.parseInt(parts[2]);
+                    return Date.valueOf(LocalDate.of(year, month, day));
+                }
+            } catch (Exception ex) {
+                return null;
+            }
+        }
+        return null;
     }
 
     // ICON THAO TÁC

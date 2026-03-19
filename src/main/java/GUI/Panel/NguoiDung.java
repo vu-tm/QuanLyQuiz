@@ -1,102 +1,132 @@
 package GUI.Panel;
 
-import GUI.Main;
 import BUS.NguoiDungBUS;
 import DTO.NguoiDungDTO;
-import helper.IconHelper;
+import GUI.Component.IntegratedSearch;
+import GUI.Component.MainFunction;
+import GUI.Component.PanelBorderRadius;
+import GUI.Component.TableSorter;
+import GUI.Dialog.ChiTietNguoiDungDialog;
+import GUI.Dialog.AddNguoiDungDialog;
+import helper.Formater;
+import helper.Validation;
 import java.awt.*;
+import java.awt.event.*;
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.List;
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.table.JTableHeader;
+import org.apache.poi.xssf.usermodel.XSSFRow;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
-public class NguoiDung extends JPanel {
+public class NguoiDung extends JPanel implements ActionListener, ItemListener {
+
     private JTextField searchField;
     private JTable table;
     private DefaultTableModel tableModel;
     private NguoiDungBUS bus = new NguoiDungBUS();
 
+    private PanelBorderRadius main, functionBar;
+    private JPanel pnlBorder1, pnlBorder2, pnlBorder3, pnlBorder4, contentCenter;
+    private JScrollPane scrollTable;
+    private MainFunction mainFunction;
+    private IntegratedSearch search;
+
+    private List<NguoiDungDTO> listHienTai = bus.getAll();
+    private Color BackgroundColor = new Color(240, 247, 250);
+
     public NguoiDung() {
         initComponent();
-        loadDataToTable();
-        setupEvents();
+        loadDataTable();
     }
 
     private void initComponent() {
-        setLayout(new BorderLayout());
-        setBackground(Color.WHITE);
+        setBackground(BackgroundColor);
+        setLayout(new BorderLayout(0, 0));
 
-        // HEADER
-        JPanel northPanel = new JPanel(new BorderLayout());
-        northPanel.setBackground(Color.WHITE);
-        northPanel.setBorder(BorderFactory.createEmptyBorder(15, 20, 15, 20));
+        pnlBorder1 = new JPanel();
+        pnlBorder1.setPreferredSize(new Dimension(0, 10));
+        pnlBorder1.setBackground(BackgroundColor);
+        add(pnlBorder1, BorderLayout.NORTH);
 
-        JLabel titleLabel = new JLabel("Tất cả người dùng");
-        titleLabel.setFont(new Font("Arial", Font.BOLD, 18));
-        northPanel.add(titleLabel, BorderLayout.WEST);
+        pnlBorder2 = new JPanel();
+        pnlBorder2.setPreferredSize(new Dimension(0, 10));
+        pnlBorder2.setBackground(BackgroundColor);
+        add(pnlBorder2, BorderLayout.SOUTH);
 
-        JButton btnAdd = new JButton("+ Thêm mới");
-        btnAdd.setFont(new Font("Arial", Font.BOLD, 14));
-        btnAdd.setBackground(new Color(0, 120, 215));
-        btnAdd.setForeground(Color.WHITE);
-        btnAdd.setFocusPainted(false);
-        btnAdd.setBorder(BorderFactory.createEmptyBorder(8, 15, 8, 15));
-        btnAdd.addActionListener(e -> themNguoiDung()); // NÚT THÊM NGƯỜI DÙNG
-        northPanel.add(btnAdd, BorderLayout.EAST);
+        pnlBorder3 = new JPanel();
+        pnlBorder3.setPreferredSize(new Dimension(10, 0));
+        pnlBorder3.setBackground(BackgroundColor);
+        add(pnlBorder3, BorderLayout.EAST);
 
-        add(northPanel, BorderLayout.NORTH);
+        pnlBorder4 = new JPanel();
+        pnlBorder4.setPreferredSize(new Dimension(10, 0));
+        pnlBorder4.setBackground(BackgroundColor);
+        add(pnlBorder4, BorderLayout.WEST);
 
-        // BẢNG VÀ SEARCH BAR
-        JPanel centerPanel = new JPanel(new BorderLayout());
-        centerPanel.setBackground(Color.WHITE);
-        centerPanel.setBorder(BorderFactory.createEmptyBorder(0, 20, 20, 20));
+        contentCenter = new JPanel();
+        contentCenter.setBackground(BackgroundColor);
+        contentCenter.setLayout(new BorderLayout(10, 10));
+        add(contentCenter, BorderLayout.CENTER);
 
-        // PANEL TÌM KIẾM + ICON SEARCH
-        JPanel searchPanel = new JPanel(new BorderLayout(5, 0));
-        searchPanel.setBackground(Color.WHITE);
+        functionBar = new PanelBorderRadius();
+        functionBar.setPreferredSize(new Dimension(0, 100));
+        functionBar.setLayout(new GridLayout(1, 2, 50, 0));
+        functionBar.setBorder(new EmptyBorder(10, 10, 10, 10));
+        functionBar.setBackground(Color.WHITE);
 
-        JLabel searchIconLabel = new JLabel();
-        ImageIcon searchIcon = IconHelper.loadIcon("find.png", 20, 20);
-        if (searchIcon != null) {
-            searchIconLabel.setIcon(searchIcon);
-            searchIconLabel.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 5));
+        String[] actions = {"create", "update", "delete", "detail", "import", "export"};
+        mainFunction = new MainFunction(actions);
+        for (String ac : actions) {
+            mainFunction.btn.get(ac).addActionListener(this);
         }
+        functionBar.add(mainFunction);
 
-        searchField = new JTextField();
-        searchField.putClientProperty("JTextField.placeholderText", "Tìm kiếm người dùng...");
-        searchField.setPreferredSize(new Dimension(0, 35));
-        searchPanel.add(searchIconLabel, BorderLayout.WEST);
-        searchPanel.add(searchField, BorderLayout.CENTER);
-        centerPanel.add(searchPanel, BorderLayout.NORTH);
+        search = new IntegratedSearch(new String[]{"Tất cả", "ID", "Username", "Họ tên"});
+        searchField = search.txtSearchForm;
+        searchField.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyReleased(KeyEvent e) {
+                thucHienTimKiem();
+            }
+        });
+        search.cbxChoose.addItemListener(this);
+        search.btnReset.addActionListener(e -> {
+            searchField.setText("");
+            search.cbxChoose.setSelectedIndex(0);
+            listHienTai = bus.getAll();
+            loadDataTable();
+        });
+        functionBar.add(search);
 
-        // DATA TABLE
-        String[] columns = {"ID", "Username", "Họ tên", "Giới tính", "Ngày sinh", "Nhóm quyền", "Trạng thái", "Hành động"};
+        contentCenter.add(functionBar, BorderLayout.NORTH);
+
+        String[] columns = {"ID", "Username", "Họ tên", "Giới tính", "Ngày sinh", "Nhóm quyền", "Trạng thái"};
         tableModel = new DefaultTableModel(columns, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
-                return column == 7;
+                return false;
             }
         };
-
         table = new JTable(tableModel);
-        table.setRowHeight(50);
+        table.setRowHeight(40);
         table.setFont(new Font("Arial", Font.PLAIN, 13));
-
         table.setSelectionBackground(new Color(240, 240, 240));
         table.setSelectionForeground(Color.BLACK);
-        table.setRowSelectionAllowed(true);
-        table.setColumnSelectionAllowed(false);
-
+        table.getTableHeader().setFont(new Font("Arial", Font.BOLD, 13));
+        table.getTableHeader().setBackground(new Color(245, 245, 245));
+        table.getTableHeader().setPreferredSize(new Dimension(0, 40));
         table.setShowGrid(true);
         table.setGridColor(new Color(220, 220, 220));
-        table.setIntercellSpacing(new Dimension(1, 1));
-
-        JTableHeader header = table.getTableHeader();
-        header.setFont(new Font("Arial", Font.BOLD, 13));
-        header.setBackground(new Color(245, 245, 245));
-        header.setPreferredSize(new Dimension(0, 40));
-        header.setBorder(BorderFactory.createMatteBorder(0, 0, 2, 0, new Color(200, 200, 200)));
 
         DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
         centerRenderer.setHorizontalAlignment(JLabel.CENTER);
@@ -111,46 +141,63 @@ public class NguoiDung extends JPanel {
         table.getColumnModel().getColumn(5).setCellRenderer(centerRenderer);
         table.getColumnModel().getColumn(6).setCellRenderer(centerRenderer);
 
-        table.getColumnModel().getColumn(7).setCellRenderer(new ButtonRenderer());
-        table.getColumnModel().getColumn(7).setCellEditor(new ButtonEditor());
+        table.setAutoCreateRowSorter(true);
+        TableSorter.configureTableColumnSorter(table, 0, TableSorter.INTEGER_COMPARATOR);
 
-        table.getColumnModel().getColumn(0).setPreferredWidth(80);
-        table.getColumnModel().getColumn(1).setPreferredWidth(100);
-        table.getColumnModel().getColumn(2).setPreferredWidth(200);
-        table.getColumnModel().getColumn(3).setPreferredWidth(70);
-        table.getColumnModel().getColumn(4).setPreferredWidth(100);
-        table.getColumnModel().getColumn(5).setPreferredWidth(100);
-        table.getColumnModel().getColumn(6).setPreferredWidth(80);
-        table.getColumnModel().getColumn(7).setPreferredWidth(100);
+        scrollTable = new JScrollPane(table);
+        scrollTable.setBorder(BorderFactory.createLineBorder(new Color(220, 220, 220)));
 
-        JScrollPane scrollPane = new JScrollPane(table);
-        scrollPane.getViewport().setBackground(Color.WHITE);
-        scrollPane.setBorder(BorderFactory.createLineBorder(new Color(220, 220, 220)));
-        centerPanel.add(scrollPane, BorderLayout.CENTER);
+        main = new PanelBorderRadius();
+        main.setLayout(new BorderLayout());
+        main.setBackground(Color.WHITE);
+        main.add(scrollTable, BorderLayout.CENTER);
 
-        add(centerPanel, BorderLayout.CENTER);
+        contentCenter.add(main, BorderLayout.CENTER);
     }
 
-    private void setupEvents() {
-        searchField.addActionListener(e -> {
-            String keyword = searchField.getText().trim();
-            List<NguoiDungDTO> list = bus.search(keyword);
-            loadDataToTable(list);
-        });
+    private void thucHienTimKiem() {
+        String kieuTim = (String) search.cbxChoose.getSelectedItem();
+        String tuKhoa = searchField.getText().trim().toLowerCase();
+        List<NguoiDungDTO> all = bus.getAll();
+        List<NguoiDungDTO> result = new ArrayList<>();
+
+        if (tuKhoa.isEmpty()) {
+            result = all;
+        } else {
+            for (NguoiDungDTO user : all) {
+                boolean match = false;
+                switch (kieuTim) {
+                    case "ID":
+                        match = user.getId().toLowerCase().contains(tuKhoa);
+                        break;
+                    case "Username":
+                        match = user.getUsername().toLowerCase().contains(tuKhoa);
+                        break;
+                    case "Họ tên":
+                        match = user.getHoten().toLowerCase().contains(tuKhoa);
+                        break;
+                    default: // Tất cả
+                        match = user.getId().toLowerCase().contains(tuKhoa)
+                                || user.getUsername().toLowerCase().contains(tuKhoa)
+                                || user.getHoten().toLowerCase().contains(tuKhoa);
+                        break;
+                }
+                if (match) {
+                    result.add(user);
+                }
+            }
+        }
+        listHienTai = result;
+        loadDataTable();
     }
 
-    private void loadDataToTable() {
-        List<NguoiDungDTO> list = bus.getAll();
-        loadDataToTable(list);
-    }
-
-    private void loadDataToTable(List<NguoiDungDTO> list) {
+    private void loadDataTable() {
         tableModel.setRowCount(0);
-        for (NguoiDungDTO user : list) {
+        for (NguoiDungDTO user : listHienTai) {
             String gioiTinh = user.isGioitinh() ? "Nam" : "Nữ";
             String trangThai = user.getTrangthai() == 1 ? "Hoạt động" : "Đã khóa";
-            String nhomQuyen = bus.getTenNhomQuyen(user.getManhomquyen()); // Dùng bus
-            String ngaySinh = user.getNgaysinh() != null ? user.getNgaysinh().toString() : "N/A";
+            String nhomQuyen = bus.getTenNhomQuyen(user.getManhomquyen());
+            String ngaySinh = user.getNgaysinh() != null ? Formater.FormatDate(user.getNgaysinh()) : "N/A";
 
             tableModel.addRow(new Object[]{
                 user.getId(),
@@ -159,182 +206,197 @@ public class NguoiDung extends JPanel {
                 gioiTinh,
                 ngaySinh,
                 nhomQuyen,
-                trangThai,
-                ""
+                trangThai
             });
         }
     }
 
-    // XOÁ NGƯỜI DÙNG
-    private void xoaNguoiDung(String id, String hoten) {
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        JFrame owner = (JFrame) SwingUtilities.getWindowAncestor(this);
+        Object src = e.getSource();
+
+        if (src == mainFunction.btn.get("create")) {
+            themNguoiDung(owner);
+        } else if (src == mainFunction.btn.get("update")) {
+            suaNguoiDung(owner);
+        } else if (src == mainFunction.btn.get("delete")) {
+            xoaNguoiDung();
+        } else if (src == mainFunction.btn.get("detail")) {
+            xemChiTiet(owner);
+        } else if (src == mainFunction.btn.get("import")) {
+            importExcel();
+        } else if (src == mainFunction.btn.get("export")) {
+            exportExcel();
+        }
+    }
+
+    @Override
+    public void itemStateChanged(ItemEvent e) {
+        if (e.getStateChange() == ItemEvent.SELECTED) {
+            thucHienTimKiem();
+        }
+    }
+
+    private void themNguoiDung(JFrame owner) {
+        AddNguoiDungDialog dialog = new AddNguoiDungDialog(owner, "Thêm người dùng", null, () -> {
+            listHienTai = bus.getAll();
+            loadDataTable();
+        });
+        dialog.setVisible(true);
+    }
+
+    private void suaNguoiDung(JFrame owner) {
+        int row = table.getSelectedRow();
+        if (row == -1) {
+            JOptionPane.showMessageDialog(this, "Vui lòng chọn người dùng cần sửa!");
+            return;
+        }
+        int modelRow = table.convertRowIndexToModel(row);
+        String id = (String) tableModel.getValueAt(modelRow, 0);
+        NguoiDungDTO user = bus.getById(id);
+        if (user != null) {
+            AddNguoiDungDialog dialog = new AddNguoiDungDialog(owner, "Sửa người dùng", user, () -> {
+                listHienTai = bus.getAll();
+                loadDataTable();
+            });
+            dialog.setVisible(true);
+        } else {
+            JOptionPane.showMessageDialog(this, "Không tìm thấy người dùng!");
+        }
+    }
+
+    private void xoaNguoiDung() { // chuyen trang thai ve 0
+        int row = table.getSelectedRow();
+        if (row == -1) {
+            JOptionPane.showMessageDialog(this, "Vui lòng chọn người dùng cần xóa!");
+            return;
+        }
+        int modelRow = table.convertRowIndexToModel(row);
+        String id = (String) tableModel.getValueAt(modelRow, 0);
+        String hoten = (String) tableModel.getValueAt(modelRow, 2);
         int confirm = JOptionPane.showConfirmDialog(this,
-                "Bạn có chắc muốn xóa người dùng \"" + hoten + "\"",
+                "Bạn có chắc muốn xóa người dùng \"" + hoten + "\"?",
                 "Xác nhận xóa", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
         if (confirm == JOptionPane.YES_OPTION) {
-            boolean success = bus.deleteHard(id); // Xóa cứng
-            if (success) {
+            if (bus.delete(id)) {
                 JOptionPane.showMessageDialog(this, "Xóa thành công!");
-                loadDataToTable();
+                listHienTai = bus.getAll();
+                loadDataTable();
             } else {
                 JOptionPane.showMessageDialog(this, "Xóa thất bại!");
             }
         }
     }
-    
-    // THÊM NGƯỜI DÙNG
-    private void themNguoiDung() {
-        JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
-        AddNguoiDung dialog = new AddNguoiDung(
-            parentFrame,
-            "Thêm người dùng",
-            null,
-            this::loadDataToTable
-        );
-        dialog.setVisible(true);
-    }
 
-    // SỬA NGƯỜI DÙNG
-    private void suaNguoiDung(String id) {
+    private void xemChiTiet(JFrame owner) {
+        int row = table.getSelectedRow();
+        if (row == -1) {
+            JOptionPane.showMessageDialog(this, "Vui lòng chọn người dùng cần xem!");
+            return;
+        }
+        int modelRow = table.convertRowIndexToModel(row);
+        String id = (String) tableModel.getValueAt(modelRow, 0);
         NguoiDungDTO user = bus.getById(id);
         if (user != null) {
-            JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
-            AddNguoiDung dialog = new AddNguoiDung(
-                parentFrame,
-                "Sửa người dùng",
-                user,
-                this::loadDataToTable
-            );
-            dialog.setVisible(true);
-        } else {
-            JOptionPane.showMessageDialog(this, "Không tìm thấy người dùng!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+            new ChiTietNguoiDungDialog(owner, "Thông tin người dùng", true, user);
         }
     }
 
-    // ICON THAO TÁC
-    class ButtonRenderer extends JPanel implements javax.swing.table.TableCellRenderer {
-        private JButton btnEdit = new JButton();
-        private JButton btnDelete = new JButton();
+    // IMPORT EXCEL
+    private void importExcel() {
+        File excelFile;
+        FileInputStream excelFIS = null;
+        BufferedInputStream excelBIS = null;
+        XSSFWorkbook excelJTableImport = null;
+        JFileChooser jf = new JFileChooser();
+        int result = jf.showOpenDialog(this);
+        int countSuccess = 0, countError = 0;
 
-        public ButtonRenderer() {
-            setLayout(new FlowLayout(FlowLayout.CENTER, 10, 5));
-            setBackground(Color.WHITE);
+        if (result == JFileChooser.APPROVE_OPTION) {
+            try {
+                excelFile = jf.getSelectedFile();
+                excelFIS = new FileInputStream(excelFile);
+                excelBIS = new BufferedInputStream(excelFIS);
+                excelJTableImport = new XSSFWorkbook(excelBIS);
+                XSSFSheet excelSheet = excelJTableImport.getSheetAt(0);
 
-            btnEdit.setBorderPainted(false);
-            btnEdit.setContentAreaFilled(false);
-            btnEdit.setFocusPainted(false);
+                SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+                // Bỏ qua header (dòng 0)
+                for (int row = 1; row <= excelSheet.getLastRowNum(); row++) {
+                    XSSFRow excelRow = excelSheet.getRow(row);
+                    if (excelRow == null) continue;
+                    try {
+                        String id = excelRow.getCell(0).getStringCellValue();
+                        String username = excelRow.getCell(1).getStringCellValue();
+                        String hoten = excelRow.getCell(2).getStringCellValue();
+                        String gioiTinhStr = excelRow.getCell(3).getStringCellValue();
+                        String ngaySinhStr = excelRow.getCell(4).getStringCellValue();
+                        int manhomquyen = (int) excelRow.getCell(5).getNumericCellValue();
+                        int trangthai = (int) excelRow.getCell(6).getNumericCellValue();
 
-            btnDelete.setBorderPainted(false);
-            btnDelete.setContentAreaFilled(false);
-            btnDelete.setFocusPainted(false);
+                        // Kiểm tra dữ liệu bắt buộc
+                        if (Validation.isEmpty(id) || Validation.isEmpty(username) || Validation.isEmpty(hoten)) {
+                            countError++;
+                            continue;
+                        }
+                        // Kiểm tra trùng
+                        if (bus.checkExistId(id) || bus.checkExistUsername(username)) {
+                            countError++;
+                            continue;
+                        }
 
-            ImageIcon editIcon = IconHelper.loadIcon("edit.png", 22, 22);
-            ImageIcon deleteIcon = IconHelper.loadIcon("delete.png", 22, 22);
+                        boolean gioitinh = "Nam".equalsIgnoreCase(gioiTinhStr);
 
-            if (editIcon != null) btnEdit.setIcon(editIcon);
-            else btnEdit.setText("Sửa");
+                        java.sql.Date ngaySinh = null;
+                        if (!Validation.isEmpty(ngaySinhStr)) {
+                            try {
+                                java.util.Date utilDate = dateFormat.parse(ngaySinhStr);
+                                ngaySinh = new java.sql.Date(utilDate.getTime());
+                            } catch (Exception e) {
+                                countError++;
+                                System.err.println("Lỗi tại dòng " + (row + 1) + ": " + e.getMessage());
+                                e.printStackTrace();
+                            }
+                        }
 
-            if (deleteIcon != null) btnDelete.setIcon(deleteIcon);
-            else btnDelete.setText("Xóa");
+                        // Giá trị mặc định cho mật khẩu (có thể cho nhập từ file nếu muốn)
+                        String matkhau = "123";
 
-            btnEdit.setPreferredSize(new Dimension(30, 30));
-            btnDelete.setPreferredSize(new Dimension(30, 30));
-
-            btnEdit.addMouseListener(new java.awt.event.MouseAdapter() {
-                public void mouseEntered(java.awt.event.MouseEvent evt) {
-                    btnEdit.setBackground(new Color(230, 230, 230));
-                    btnEdit.setContentAreaFilled(true);
+                        NguoiDungDTO nd = new NguoiDungDTO(id, username, hoten, gioitinh, ngaySinh, matkhau, trangthai, manhomquyen);
+                        if (bus.insert(nd)) {
+                            countSuccess++;
+                        } else {
+                            countError++;
+                        }
+                    } catch (Exception e) {
+                        countError++;
+                    }
                 }
-                public void mouseExited(java.awt.event.MouseEvent evt) {
-                    btnEdit.setContentAreaFilled(false);
+                JOptionPane.showMessageDialog(this, "Nhập thành công " + countSuccess + " dòng. Lỗi " + countError + " dòng.");
+                listHienTai = bus.getAll();
+                loadDataTable();
+                
+            } catch (IOException ex) {
+                JOptionPane.showMessageDialog(this, "Lỗi đọc file Excel!");
+            } finally {
+                try {
+                    if (excelJTableImport != null) excelJTableImport.close();
+                    if (excelBIS != null) excelBIS.close();
+                    if (excelFIS != null) excelFIS.close();
+                } catch (IOException ex) {
+                    ex.printStackTrace();
                 }
-            });
-
-            btnDelete.addMouseListener(new java.awt.event.MouseAdapter() {
-                public void mouseEntered(java.awt.event.MouseEvent evt) {
-                    btnDelete.setBackground(new Color(255, 200, 200));
-                    btnDelete.setContentAreaFilled(true);
-                }
-                public void mouseExited(java.awt.event.MouseEvent evt) {
-                    btnDelete.setContentAreaFilled(false);
-                }
-            });
-
-            add(btnEdit);
-            add(btnDelete);
-        }
-
-        @Override
-        public Component getTableCellRendererComponent(JTable table, Object value,
-                                                       boolean isSelected, boolean hasFocus, int row, int column) {
-            if (isSelected) {
-                setBackground(new Color(240, 240, 240));
-            } else {
-                setBackground(Color.WHITE);
             }
-            setOpaque(true);
-            return this;
         }
     }
 
-    // SỰ KIỆN CLICK
-    class ButtonEditor extends DefaultCellEditor {
-        private JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 5));
-        private JButton btnEdit = new JButton();
-        private JButton btnDelete = new JButton();
-        private int currentRow;
-
-        public ButtonEditor() {
-            super(new JCheckBox());
-
-            panel.setBackground(Color.WHITE);
-
-            btnEdit.setBorderPainted(false);
-            btnEdit.setContentAreaFilled(false);
-            btnEdit.setFocusPainted(false);
-
-            btnDelete.setBorderPainted(false);
-            btnDelete.setContentAreaFilled(false);
-            btnDelete.setFocusPainted(false);
-
-            ImageIcon editIcon = IconHelper.loadIcon("edit.png", 22, 22);
-            ImageIcon deleteIcon = IconHelper.loadIcon("delete.png", 22, 22);
-
-            if (editIcon != null) btnEdit.setIcon(editIcon);
-            else btnEdit.setText("Sửa");
-
-            if (deleteIcon != null) btnDelete.setIcon(deleteIcon);
-            else btnDelete.setText("Xóa");
-
-            btnEdit.setPreferredSize(new Dimension(30, 30));
-            btnDelete.setPreferredSize(new Dimension(30, 30));
-
-            btnEdit.addActionListener(e -> {
-                fireEditingStopped();
-                String id = (String) table.getValueAt(currentRow, 0);
-                suaNguoiDung(id);
-            });
-
-            btnDelete.addActionListener(e -> {
-                fireEditingStopped();
-                String id = (String) table.getValueAt(currentRow, 0);
-                String hoten = (String) table.getValueAt(currentRow, 2);
-                xoaNguoiDung(id, hoten);
-            });
-
-            panel.add(btnEdit);
-            panel.add(btnDelete);
-        }
-
-        @Override
-        public Component getTableCellEditorComponent(JTable table, Object value,
-                                                     boolean isSelected, int row, int column) {
-            currentRow = row;
-            return panel;
-        }
-
-        @Override
-        public Object getCellEditorValue() {
-            return "";
+    private void exportExcel() {
+        try {
+            helper.JTableExporter.exportJTableToExcel(table);
+        } catch (IOException ex) {
+            ex.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Xuất Excel thất bại!", "Lỗi", JOptionPane.ERROR_MESSAGE);
         }
     }
 }

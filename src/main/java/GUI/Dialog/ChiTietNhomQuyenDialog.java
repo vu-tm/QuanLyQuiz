@@ -1,17 +1,16 @@
-package GUI.Panel;
+package GUI.Dialog;
 
 import BUS.NhomQuyenBUS;
 import BUS.QuyenBUS;
 import DTO.NhomQuyenDTO;
 import DTO.QuyenDTO;
 import java.awt.*;
-import java.util.ArrayList;
 import java.util.List;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.TitledBorder;
 
-public class AddNhomQuyen extends JDialog {
+public class ChiTietNhomQuyenDialog extends JDialog {
     private JTextField txtMaNhom;
     private JTextField txtTenNhom;
     private JCheckBox[][] quyenCheckBoxes;
@@ -21,11 +20,10 @@ public class AddNhomQuyen extends JDialog {
     private NhomQuyenBUS nhomQuyenBUS;
     private QuyenBUS quyenBUS = new QuyenBUS();
     private NhomQuyenDTO currentDTO;
-    private Runnable onSaveCallback;
 
     private final String[] doiTuong = {
-    "người dùng", "môn học", "câu hỏi", "đề thi",
-    "kì thi", "lớp học", "bài thi", "nhóm quyền"
+        "người dùng", "môn học", "câu hỏi", "đề thi",
+        "kì thi", "lớp học", "bài thi", "nhóm quyền"
     };
     private final String[] hanhDong = {"Xem", "Thêm mới", "Cập nhật", "Xoá"};
 
@@ -33,25 +31,27 @@ public class AddNhomQuyen extends JDialog {
     private int maQuyenThamGiaThi = 0;
     private int maQuyenThamGiaHocPhan = 0;
 
-    public AddNhomQuyen(JFrame parent, String title, NhomQuyenDTO dto,
-                           NhomQuyenBUS bus, Runnable callback) {
+    public ChiTietNhomQuyenDialog(JFrame parent, String title, NhomQuyenDTO dto, NhomQuyenBUS bus) {
         super(parent, title, true);
         this.currentDTO = dto;
         this.nhomQuyenBUS = bus;
-        this.onSaveCallback = callback;
-        initComponent();
-        loadQuyenMapping();
-        if (dto != null) {
-            hienThiDuLieu(dto);
+        try {
+            initComponent();
+            loadQuyenMapping();
+            hienThiDuLieu();
+            pack();
+            setLocationRelativeTo(parent);
+            setResizable(false);
+            setVisible(true);
+        } catch (Exception e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(parent, "Lỗi khởi tạo dialog: " + e.getMessage());
         }
-        pack();
-        setLocationRelativeTo(parent);
-        setResizable(false);
     }
 
     private void initComponent() {
         setLayout(new BorderLayout(10, 10));
-        ((JPanel)getContentPane()).setBorder(new EmptyBorder(10, 10, 10, 10));
+        ((JPanel) getContentPane()).setBorder(new EmptyBorder(10, 10, 10, 10));
 
         // Panel thông tin
         JPanel infoPanel = new JPanel(new GridBagLayout());
@@ -64,13 +64,18 @@ public class AddNhomQuyen extends JDialog {
         infoPanel.add(new JLabel("Mã nhóm quyền:"), gbc);
         gbc.gridx = 1;
         txtMaNhom = new JTextField(15);
-        txtMaNhom.setEditable(false); // Không cho sửa mã, để tự tăng
+        txtMaNhom.setEditable(false);
+        txtMaNhom.setBackground(new Color(240, 240, 240));
+        txtMaNhom.setFocusable(false); 
         infoPanel.add(txtMaNhom, gbc);
 
         gbc.gridx = 0; gbc.gridy = 1;
         infoPanel.add(new JLabel("Tên nhóm quyền:"), gbc);
         gbc.gridx = 1;
         txtTenNhom = new JTextField(15);
+        txtTenNhom.setEditable(false);
+        txtTenNhom.setBackground(new Color(240, 240, 240));
+        txtTenNhom.setFocusable(false); 
         infoPanel.add(txtTenNhom, gbc);
 
         add(infoPanel, BorderLayout.NORTH);
@@ -98,6 +103,8 @@ public class AddNhomQuyen extends JDialog {
             for (int j = 0; j < hanhDong.length; j++) {
                 JCheckBox chk = new JCheckBox();
                 chk.setHorizontalAlignment(SwingConstants.CENTER);
+                chk.setEnabled(false); // Chỉ xem, không tương tác
+                chk.setFocusable(false); // Không nhận focus
                 quyenCheckBoxes[i][j] = chk;
                 bangQuyen.add(chk);
             }
@@ -108,7 +115,11 @@ public class AddNhomQuyen extends JDialog {
         JPanel panelRieng = new JPanel(new FlowLayout(FlowLayout.LEFT, 20, 5));
         panelRieng.setBorder(new TitledBorder("Quyền đặc biệt"));
         chkThamGiaThi = new JCheckBox("Tham gia thi");
+        chkThamGiaThi.setEnabled(false);
+        chkThamGiaThi.setFocusable(false);
         chkThamGiaHocPhan = new JCheckBox("Tham gia học phần");
+        chkThamGiaHocPhan.setEnabled(false);
+        chkThamGiaHocPhan.setFocusable(false);
         panelRieng.add(chkThamGiaThi);
         panelRieng.add(chkThamGiaHocPhan);
 
@@ -117,27 +128,24 @@ public class AddNhomQuyen extends JDialog {
         centerPanel.add(panelRieng, BorderLayout.SOUTH);
         add(centerPanel, BorderLayout.CENTER);
 
-        // Panel nút
+        // Panel nút - chỉ có nút Đóng
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        JButton btnLuu = new JButton("Lưu");
-        btnLuu.setBackground(new Color(0, 120, 215));
-        btnLuu.setForeground(Color.WHITE);
-        btnLuu.setFocusPainted(false);
-        btnLuu.addActionListener(e -> luu());
-
-        JButton btnHuy = new JButton("Huỷ");
-        btnHuy.addActionListener(e -> dispose());
-
-        buttonPanel.add(btnLuu);
-        buttonPanel.add(btnHuy);
+        JButton btnDong = new JButton("Đóng");
+        btnDong.setBackground(new Color(0, 120, 215));
+        btnDong.setForeground(Color.WHITE);
+        btnDong.setFocusPainted(false);
+        btnDong.addActionListener(e -> dispose());
+        buttonPanel.add(btnDong);
         add(buttonPanel, BorderLayout.SOUTH);
+
+        // Focus vào nút Đóng khi dialog hiện ra
+        SwingUtilities.invokeLater(() -> btnDong.requestFocus());
     }
 
     private void loadQuyenMapping() {
         List<QuyenDTO> dsQuyen = quyenBUS.getAll();
         maQuyenMapping = new int[doiTuong.length][hanhDong.length];
 
-        // Khởi tạo mặc định
         for (int i = 0; i < doiTuong.length; i++) {
             for (int j = 0; j < hanhDong.length; j++) {
                 maQuyenMapping[i][j] = 0;
@@ -150,7 +158,6 @@ public class AddNhomQuyen extends JDialog {
             if (i != -1 && j != -1) {
                 maQuyenMapping[i][j] = q.getMaquyen();
             } else {
-                // Quyền đặc biệt
                 if ("Tham gia thi".equalsIgnoreCase(q.getChucnang())) {
                     maQuyenThamGiaThi = q.getMaquyen();
                 } else if ("Tham gia học phần".equalsIgnoreCase(q.getChucnang())) {
@@ -180,11 +187,11 @@ public class AddNhomQuyen extends JDialog {
         return -1;
     }
 
-    private void hienThiDuLieu(NhomQuyenDTO dto) {
-        txtMaNhom.setText(String.valueOf(dto.getManhomquyen()));
-        txtTenNhom.setText(dto.getTennhomquyen());
+    private void hienThiDuLieu() {
+        txtMaNhom.setText(String.valueOf(currentDTO.getManhomquyen()));
+        txtTenNhom.setText(currentDTO.getTennhomquyen());
 
-        List<Integer> dsQuyen = nhomQuyenBUS.getQuyenByNhom(dto.getManhomquyen());
+        List<Integer> dsQuyen = nhomQuyenBUS.getQuyenByNhom(currentDTO.getManhomquyen());
 
         // Reset tất cả checkbox
         for (int i = 0; i < doiTuong.length; i++) {
@@ -212,69 +219,6 @@ public class AddNhomQuyen extends JDialog {
                 } else if (ma == maQuyenThamGiaHocPhan) {
                     chkThamGiaHocPhan.setSelected(true);
                 }
-            }
-        }
-    }
-
-    private void luu() {
-        String ten = txtTenNhom.getText().trim();
-        if (ten.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Vui lòng nhập tên nhóm quyền!");
-            return;
-        }
-
-        List<Integer> dsQuyenChon = new ArrayList<>();
-
-        for (int i = 0; i < doiTuong.length; i++) {
-            for (int j = 0; j < hanhDong.length; j++) {
-                if (quyenCheckBoxes[i][j].isSelected()) {
-                    int ma = maQuyenMapping[i][j];
-                    if (ma != 0) {
-                        dsQuyenChon.add(ma);
-                    }
-                    // Đã xóa dòng cảnh báo
-                }
-            }
-        }
-
-        if (chkThamGiaThi.isSelected()) {
-            dsQuyenChon.add(maQuyenThamGiaThi);
-        }
-        if (chkThamGiaHocPhan.isSelected()) {
-            dsQuyenChon.add(maQuyenThamGiaHocPhan);
-        }
-
-        if (currentDTO == null) { // Thêm mới
-            NhomQuyenDTO nq = new NhomQuyenDTO();
-            nq.setTennhomquyen(ten);
-            int maMoi = nhomQuyenBUS.insert(nq);
-            if (maMoi > 0) {
-                boolean ok = nhomQuyenBUS.insertChiTietQuyen(maMoi, dsQuyenChon);
-                if (ok) {
-                    JOptionPane.showMessageDialog(this, "Thêm nhóm quyền thành công!");
-                    if (onSaveCallback != null) onSaveCallback.run();
-                    dispose();
-                } else {
-                    JOptionPane.showMessageDialog(this, "Thêm quyền thất bại! Vui lòng thử lại.");
-                }
-            } else {
-                JOptionPane.showMessageDialog(this, "Thêm nhóm quyền thất bại!");
-            }
-        } else { // Cập nhật
-            currentDTO.setTennhomquyen(ten);
-            boolean capNhatNhom = nhomQuyenBUS.update(currentDTO);
-            if (capNhatNhom) {
-                nhomQuyenBUS.deleteChiTietQuyen(currentDTO.getManhomquyen());
-                boolean capNhatQuyen = nhomQuyenBUS.insertChiTietQuyen(currentDTO.getManhomquyen(), dsQuyenChon);
-                if (capNhatQuyen) {
-                    JOptionPane.showMessageDialog(this, "Cập nhật nhóm quyền thành công!");
-                    if (onSaveCallback != null) onSaveCallback.run();
-                    dispose();
-                } else {
-                    JOptionPane.showMessageDialog(this, "Cập nhật quyền thất bại!");
-                }
-            } else {
-                JOptionPane.showMessageDialog(this, "Cập nhật nhóm quyền thất bại!");
             }
         }
     }

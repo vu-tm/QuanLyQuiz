@@ -2,104 +2,121 @@ package GUI.Panel;
 
 import BUS.NhomQuyenBUS;
 import DTO.NhomQuyenDTO;
-import GUI.Panel.AddNhomQuyen;
-import helper.IconHelper;
+import GUI.Component.IntegratedSearch;
+import GUI.Component.MainFunction;
+import GUI.Component.PanelBorderRadius;
+import GUI.Component.TableSorter;
+import GUI.Dialog.AddNhomQuyenDialog;
+import GUI.Dialog.ChiTietNhomQuyenDialog;
 import java.awt.*;
+import java.awt.event.*;
+import java.io.IOException;
 import java.util.List;
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.table.JTableHeader;
 
-public class NhomQuyen extends JPanel {
+public class NhomQuyen extends JPanel implements ActionListener, ItemListener {
+
     private JTextField searchField;
     private JTable table;
     private DefaultTableModel tableModel;
+    private NhomQuyenBUS bus = new NhomQuyenBUS();
 
-    private NhomQuyenBUS nhomQuyenBUS = new NhomQuyenBUS();
+    private PanelBorderRadius main, functionBar;
+    private JPanel pnlBorder1, pnlBorder2, pnlBorder3, pnlBorder4, contentCenter;
+    private JScrollPane scrollTable;
+    private MainFunction mainFunction;
+    private IntegratedSearch search;
+
+    private List<NhomQuyenDTO> listHienTai = bus.getAll();
+    private Color BackgroundColor = new Color(240, 247, 250);
 
     public NhomQuyen() {
         initComponent();
-        loadDataToTable();
+        loadDataTable();
     }
 
     private void initComponent() {
-        setLayout(new BorderLayout());
-        setBackground(Color.WHITE);
+        setBackground(BackgroundColor);
+        setLayout(new BorderLayout(0, 0));
 
-        // NORTH: Tiêu đề + nút Thêm mới
-        JPanel northPanel = new JPanel(new BorderLayout());
-        northPanel.setBackground(Color.WHITE);
-        northPanel.setBorder(BorderFactory.createEmptyBorder(15, 20, 15, 20));
+        pnlBorder1 = new JPanel();
+        pnlBorder1.setPreferredSize(new Dimension(0, 10));
+        pnlBorder1.setBackground(BackgroundColor);
+        add(pnlBorder1, BorderLayout.NORTH);
 
-        JLabel titleLabel = new JLabel("Danh sách nhóm quyền");
-        titleLabel.setFont(new Font("Arial", Font.BOLD, 18));
-        northPanel.add(titleLabel, BorderLayout.WEST);
+        pnlBorder2 = new JPanel();
+        pnlBorder2.setPreferredSize(new Dimension(0, 10));
+        pnlBorder2.setBackground(BackgroundColor);
+        add(pnlBorder2, BorderLayout.SOUTH);
 
-        JButton btnAdd = new JButton("+ Thêm mới");
-        btnAdd.setFont(new Font("Arial", Font.BOLD, 14));
-        btnAdd.setBackground(new Color(0, 120, 215));
-        btnAdd.setForeground(Color.WHITE);
-        btnAdd.setFocusPainted(false);
-        btnAdd.setBorder(BorderFactory.createEmptyBorder(8, 15, 8, 15));
-        btnAdd.addActionListener(e -> themMoi());
-        northPanel.add(btnAdd, BorderLayout.EAST);
+        pnlBorder3 = new JPanel();
+        pnlBorder3.setPreferredSize(new Dimension(10, 0));
+        pnlBorder3.setBackground(BackgroundColor);
+        add(pnlBorder3, BorderLayout.EAST);
 
-        add(northPanel, BorderLayout.NORTH);
+        pnlBorder4 = new JPanel();
+        pnlBorder4.setPreferredSize(new Dimension(10, 0));
+        pnlBorder4.setBackground(BackgroundColor);
+        add(pnlBorder4, BorderLayout.WEST);
 
-        // CENTER: Bảng + search bar
-        JPanel centerPanel = new JPanel(new BorderLayout());
-        centerPanel.setBackground(Color.WHITE);
-        centerPanel.setBorder(BorderFactory.createEmptyBorder(0, 20, 20, 20));
+        contentCenter = new JPanel();
+        contentCenter.setBackground(BackgroundColor);
+        contentCenter.setLayout(new BorderLayout(10, 10));
+        add(contentCenter, BorderLayout.CENTER);
 
-        JPanel searchPanel = new JPanel(new BorderLayout(5, 0));
-        searchPanel.setBackground(Color.WHITE);
+        functionBar = new PanelBorderRadius();
+        functionBar.setPreferredSize(new Dimension(0, 100));
+        functionBar.setLayout(new GridLayout(1, 2, 50, 0));
+        functionBar.setBorder(new EmptyBorder(10, 10, 10, 10));
+        functionBar.setBackground(Color.WHITE);
 
-        JLabel searchIconLabel = new JLabel();
-        ImageIcon searchIcon = IconHelper.loadIcon("find.png", 20, 20);
-        if (searchIcon != null) {
-            searchIconLabel.setIcon(searchIcon);
-            searchIconLabel.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 5));
+        // Cac nut chuc nang
+        String[] actions = {"create", "update", "delete", "detail", "export"};
+        mainFunction = new MainFunction(actions);
+        for (String ac : actions) {
+            mainFunction.btn.get(ac).addActionListener(this);
         }
+        functionBar.add(mainFunction);
 
-        searchField = new JTextField();
-        searchField.putClientProperty("JTextField.placeholderText", "Tìm kiếm nhóm quyền...");
-        searchField.setPreferredSize(new Dimension(0, 35));
-        searchField.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyReleased(java.awt.event.KeyEvent evt) {
-                timKiem(searchField.getText());
+        search = new IntegratedSearch(new String[]{"Tất cả", "Mã nhóm", "Tên nhóm"});
+        searchField = search.txtSearchForm;
+        searchField.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyReleased(KeyEvent e) {
+                thucHienTimKiem();
             }
         });
-        searchPanel.add(searchIconLabel, BorderLayout.WEST);
-        searchPanel.add(searchField, BorderLayout.CENTER);
-        centerPanel.add(searchPanel, BorderLayout.NORTH);
+        search.cbxChoose.addItemListener(this);
+        search.btnReset.addActionListener(e -> {
+            searchField.setText("");
+            search.cbxChoose.setSelectedIndex(0);
+            listHienTai = bus.getAll();
+            loadDataTable();
+        });
+        functionBar.add(search);
 
-        // Bảng dữ liệu
-        String[] columns = {"Mã nhóm quyền", "Tên nhóm", "Trạng thái", "Hành động"};
+        contentCenter.add(functionBar, BorderLayout.NORTH);
+
+        String[] columns = {"Mã nhóm quyền", "Tên nhóm quyền", "Trạng thái"};
         tableModel = new DefaultTableModel(columns, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
-                return column == 3;
+                return false;
             }
         };
-
         table = new JTable(tableModel);
-        table.setRowHeight(50);
+        table.setRowHeight(40);
         table.setFont(new Font("Arial", Font.PLAIN, 13));
         table.setSelectionBackground(new Color(240, 240, 240));
         table.setSelectionForeground(Color.BLACK);
-        table.setRowSelectionAllowed(true);
-        table.setColumnSelectionAllowed(false);
-
+        table.getTableHeader().setFont(new Font("Arial", Font.BOLD, 13));
+        table.getTableHeader().setBackground(new Color(245, 245, 245));
+        table.getTableHeader().setPreferredSize(new Dimension(0, 40));
         table.setShowGrid(true);
         table.setGridColor(new Color(220, 220, 220));
-        table.setIntercellSpacing(new Dimension(1, 1));
-
-        JTableHeader header = table.getTableHeader();
-        header.setFont(new Font("Arial", Font.BOLD, 13));
-        header.setBackground(new Color(245, 245, 245));
-        header.setPreferredSize(new Dimension(0, 40));
-        header.setBorder(BorderFactory.createMatteBorder(0, 0, 2, 0, new Color(200, 200, 200)));
 
         DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
         centerRenderer.setHorizontalAlignment(JLabel.CENTER);
@@ -107,217 +124,152 @@ public class NhomQuyen extends JPanel {
         table.getColumnModel().getColumn(1).setCellRenderer(centerRenderer);
         table.getColumnModel().getColumn(2).setCellRenderer(centerRenderer);
 
-        table.getColumnModel().getColumn(3).setCellRenderer(new ButtonRenderer());
-        table.getColumnModel().getColumn(3).setCellEditor(new ButtonEditor());
+        table.setAutoCreateRowSorter(true);
+        TableSorter.configureTableColumnSorter(table, 0, TableSorter.INTEGER_COMPARATOR);
 
-        table.getColumnModel().getColumn(0).setPreferredWidth(120);
-        table.getColumnModel().getColumn(1).setPreferredWidth(250);
-        table.getColumnModel().getColumn(2).setPreferredWidth(100);
-        table.getColumnModel().getColumn(3).setPreferredWidth(120);
+        scrollTable = new JScrollPane(table);
+        scrollTable.setBorder(BorderFactory.createLineBorder(new Color(220, 220, 220)));
 
-        JScrollPane scrollPane = new JScrollPane(table);
-        scrollPane.getViewport().setBackground(Color.WHITE);
-        scrollPane.setBorder(BorderFactory.createLineBorder(new Color(220, 220, 220)));
-        centerPanel.add(scrollPane, BorderLayout.CENTER);
+        main = new PanelBorderRadius();
+        main.setLayout(new BorderLayout());
+        main.setBackground(Color.WHITE);
+        main.add(scrollTable, BorderLayout.CENTER);
 
-        add(centerPanel, BorderLayout.CENTER);
+        contentCenter.add(main, BorderLayout.CENTER);
     }
 
-    private void loadDataToTable() {
-        tableModel.setRowCount(0);
-        List<NhomQuyenDTO> list = nhomQuyenBUS.getAll();
-        for (NhomQuyenDTO g : list) {
-            String trangThai = (g.getTrangthai() == 1) ? "Hoạt động" : "Đóng";
-            tableModel.addRow(new Object[]{
-                g.getManhomquyen(),
-                g.getTennhomquyen(),
-                trangThai,
-                ""
-            });
-        }
-    }
+    private void thucHienTimKiem() {
+        String kieuTim = (String) search.cbxChoose.getSelectedItem();
+        String tuKhoa = searchField.getText().trim().toLowerCase();
+        List<NhomQuyenDTO> all = bus.getAll();
+        List<NhomQuyenDTO> result = new java.util.ArrayList<>();
 
-    private void timKiem(String keyword) {
-        List<NhomQuyenDTO> list = nhomQuyenBUS.search(keyword);
-        tableModel.setRowCount(0);
-        for (NhomQuyenDTO g : list) {
-            String trangThai = (g.getTrangthai() == 1) ? "Hoạt động" : "Đóng";
-            tableModel.addRow(new Object[]{
-                g.getManhomquyen(),
-                g.getTennhomquyen(),
-                trangThai,
-                ""
-            });
-        }
-    }
-
-    private void themMoi() {
-        AddNhomQuyen dialog = new AddNhomQuyen(
-            (JFrame) SwingUtilities.getWindowAncestor(this),
-            "Thêm nhóm quyền",
-            null,
-            nhomQuyenBUS,
-            this::loadDataToTable
-        );
-        dialog.setVisible(true);
-    }
-
-    private void suaNhomQuyen(int maNhomQuyen) {
-        NhomQuyenDTO dto = nhomQuyenBUS.getById(maNhomQuyen);
-        if (dto != null) {
-            AddNhomQuyen dialog = new AddNhomQuyen(
-                (JFrame) SwingUtilities.getWindowAncestor(this),
-                "Sửa nhóm quyền",
-                dto,
-                nhomQuyenBUS,
-                this::loadDataToTable
-            );
-            dialog.setVisible(true);
+        if (tuKhoa.isEmpty()) {
+            result = all;
         } else {
-            JOptionPane.showMessageDialog(this, "Không tìm thấy nhóm quyền!");
+            for (NhomQuyenDTO item : all) {
+                boolean match = false;
+                switch (kieuTim) {
+                    case "Mã nhóm":
+                        match = String.valueOf(item.getManhomquyen()).contains(tuKhoa);
+                        break;
+                    case "Tên nhóm":
+                        match = item.getTennhomquyen().toLowerCase().contains(tuKhoa);
+                        break;
+                    default: // Tất cả
+                        match = String.valueOf(item.getManhomquyen()).contains(tuKhoa)
+                                || item.getTennhomquyen().toLowerCase().contains(tuKhoa);
+                        break;
+                }
+                if (match) {
+                    result.add(item);
+                }
+            }
+        }
+        listHienTai = result;
+        loadDataTable();
+    }
+
+    private void loadDataTable() {
+        tableModel.setRowCount(0);
+        for (NhomQuyenDTO item : listHienTai) {
+            String trangThai = item.getTrangthai() == 1 ? "Hoạt động" : "Đã khóa";
+            tableModel.addRow(new Object[]{
+                item.getManhomquyen(),
+                item.getTennhomquyen(),
+                trangThai
+            });
         }
     }
 
-    private void xoaNhomQuyen(int maNhomQuyen, String tenNhomQuyen) {
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        JFrame owner = (JFrame) SwingUtilities.getWindowAncestor(this);
+        Object src = e.getSource();
+
+        if (src == mainFunction.btn.get("create")) {
+            new AddNhomQuyenDialog(owner, "Thêm nhóm quyền", null, bus, () -> {
+                listHienTai = bus.getAll();
+                loadDataTable();
+            });
+        } else if (src == mainFunction.btn.get("update")) {
+            int row = table.getSelectedRow();
+            if (row == -1) {
+                JOptionPane.showMessageDialog(this, "Vui lòng chọn nhóm quyền cần sửa!");
+                return;
+            }
+            int modelRow = table.convertRowIndexToModel(row);
+            int maNhomQuyen = (int) tableModel.getValueAt(modelRow, 0);
+            NhomQuyenDTO dto = bus.getById(maNhomQuyen);
+            if (dto != null) {
+                new AddNhomQuyenDialog(owner, "Sửa nhóm quyền", dto, bus, () -> {
+                    listHienTai = bus.getAll();
+                    loadDataTable();
+                });
+            } else {
+                JOptionPane.showMessageDialog(this, "Không tìm thấy nhóm quyền!");
+            }
+        } else if (src == mainFunction.btn.get("delete")) {
+            xoaNhomQuyen();
+        } else if (src == mainFunction.btn.get("detail")) {
+            xemChiTiet(owner);
+        } else if (src == mainFunction.btn.get("export")) {
+            xuatExcel();
+        }
+    }
+
+    @Override
+    public void itemStateChanged(ItemEvent e) {
+        if (e.getStateChange() == ItemEvent.SELECTED) {
+            thucHienTimKiem();
+        }
+    }
+
+    private void xoaNhomQuyen() {
+        int row = table.getSelectedRow();
+        if (row == -1) {
+            JOptionPane.showMessageDialog(this, "Vui lòng chọn nhóm quyền cần xóa!");
+            return;
+        }
+        int modelRow = table.convertRowIndexToModel(row);
+        int maNhomQuyen = (int) tableModel.getValueAt(modelRow, 0);
+        String tenNhomQuyen = (String) tableModel.getValueAt(modelRow, 1);
         int confirm = JOptionPane.showConfirmDialog(this,
                 "Bạn có chắc muốn xóa nhóm quyền \"" + tenNhomQuyen + "\"?\n(Xóa nhóm quyền sẽ xóa tất cả phân quyền liên quan)",
-                "Xác nhận xóa", JOptionPane.YES_NO_OPTION);
+                "Xác nhận xóa", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
         if (confirm == JOptionPane.YES_OPTION) {
-            boolean success = nhomQuyenBUS.delete(maNhomQuyen);
-            if (success) {
-                JOptionPane.showMessageDialog(this, "Xóa nhóm quyền thành công!");
-                loadDataToTable();
+            if (bus.delete(maNhomQuyen)) {
+                JOptionPane.showMessageDialog(this, "Xóa thành công!");
+                listHienTai = bus.getAll();
+                loadDataTable();
             } else {
-                JOptionPane.showMessageDialog(this, "Xóa thất bại! Có lỗi xảy ra.");
+                JOptionPane.showMessageDialog(this, "Xóa thất bại!");
             }
         }
     }
 
-    // === Lớp ButtonRenderer (giữ nguyên) ===
-    class ButtonRenderer extends JPanel implements javax.swing.table.TableCellRenderer {
-        private JButton btnEdit = new JButton();
-        private JButton btnDelete = new JButton();
-
-        public ButtonRenderer() {
-            setLayout(new FlowLayout(FlowLayout.CENTER, 10, 5));
-            setBackground(Color.WHITE);
-
-            btnEdit.setBorderPainted(false);
-            btnEdit.setContentAreaFilled(false);
-            btnEdit.setFocusPainted(false);
-
-            btnDelete.setBorderPainted(false);
-            btnDelete.setContentAreaFilled(false);
-            btnDelete.setFocusPainted(false);
-
-            ImageIcon editIcon = IconHelper.loadIcon("edit.png", 22, 22);
-            ImageIcon deleteIcon = IconHelper.loadIcon("delete.png", 22, 22);
-
-            if (editIcon != null) btnEdit.setIcon(editIcon);
-            else btnEdit.setText("Sửa");
-
-            if (deleteIcon != null) btnDelete.setIcon(deleteIcon);
-            else btnDelete.setText("Xóa");
-
-            btnEdit.setPreferredSize(new Dimension(30, 30));
-            btnDelete.setPreferredSize(new Dimension(30, 30));
-
-            btnEdit.addMouseListener(new java.awt.event.MouseAdapter() {
-                public void mouseEntered(java.awt.event.MouseEvent evt) {
-                    btnEdit.setBackground(new Color(230, 230, 230));
-                    btnEdit.setContentAreaFilled(true);
-                }
-                public void mouseExited(java.awt.event.MouseEvent evt) {
-                    btnEdit.setContentAreaFilled(false);
-                }
-            });
-
-            btnDelete.addMouseListener(new java.awt.event.MouseAdapter() {
-                public void mouseEntered(java.awt.event.MouseEvent evt) {
-                    btnDelete.setBackground(new Color(255, 200, 200));
-                    btnDelete.setContentAreaFilled(true);
-                }
-                public void mouseExited(java.awt.event.MouseEvent evt) {
-                    btnDelete.setContentAreaFilled(false);
-                }
-            });
-
-            add(btnEdit);
-            add(btnDelete);
+    private void xemChiTiet(JFrame owner) {
+        int row = table.getSelectedRow();
+        if (row == -1) {
+            JOptionPane.showMessageDialog(this, "Vui lòng chọn nhóm quyền cần xem!");
+            return;
         }
-
-        @Override
-        public Component getTableCellRendererComponent(JTable table, Object value,
-                                                       boolean isSelected, boolean hasFocus, int row, int column) {
-            if (isSelected) {
-                setBackground(new Color(240, 240, 240));
-            } else {
-                setBackground(Color.WHITE);
-            }
-            setOpaque(true);
-            return this;
+        int modelRow = table.convertRowIndexToModel(row);
+        int maNhomQuyen = (int) tableModel.getValueAt(modelRow, 0);
+        NhomQuyenDTO dto = bus.getById(maNhomQuyen);
+        if (dto != null) {
+            new ChiTietNhomQuyenDialog(owner, "Thông tin nhóm quyền", dto, bus);
         }
     }
 
-    // === Lớp ButtonEditor (giữ nguyên) ===
-    class ButtonEditor extends DefaultCellEditor {
-        private JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 5));
-        private JButton btnEdit = new JButton();
-        private JButton btnDelete = new JButton();
-        private int currentRow;
-
-        public ButtonEditor() {
-            super(new JCheckBox());
-
-            panel.setBackground(Color.WHITE);
-
-            btnEdit.setBorderPainted(false);
-            btnEdit.setContentAreaFilled(false);
-            btnEdit.setFocusPainted(false);
-
-            btnDelete.setBorderPainted(false);
-            btnDelete.setContentAreaFilled(false);
-            btnDelete.setFocusPainted(false);
-
-            ImageIcon editIcon = IconHelper.loadIcon("edit.png", 22, 22);
-            ImageIcon deleteIcon = IconHelper.loadIcon("delete.png", 22, 22);
-
-            if (editIcon != null) btnEdit.setIcon(editIcon);
-            else btnEdit.setText("Sửa");
-
-            if (deleteIcon != null) btnDelete.setIcon(deleteIcon);
-            else btnDelete.setText("Xóa");
-
-            btnEdit.setPreferredSize(new Dimension(30, 30));
-            btnDelete.setPreferredSize(new Dimension(30, 30));
-
-            btnEdit.addActionListener(e -> {
-                fireEditingStopped();
-                int maNhomQuyen = (int) table.getValueAt(currentRow, 0);
-                suaNhomQuyen(maNhomQuyen);
-            });
-
-            btnDelete.addActionListener(e -> {
-                fireEditingStopped();
-                int maNhomQuyen = (int) table.getValueAt(currentRow, 0);
-                String tenNhomQuyen = (String) table.getValueAt(currentRow, 1);
-                xoaNhomQuyen(maNhomQuyen, tenNhomQuyen);
-            });
-
-            panel.add(btnEdit);
-            panel.add(btnDelete);
-        }
-
-        @Override
-        public Component getTableCellEditorComponent(JTable table, Object value,
-                                                     boolean isSelected, int row, int column) {
-            currentRow = row;
-            return panel;
-        }
-
-        @Override
-        public Object getCellEditorValue() {
-            return "";
+    // Phương thức xuất Excel
+    private void xuatExcel() {
+        try {
+            helper.JTableExporter.exportJTableToExcel(table);
+            JOptionPane.showMessageDialog(this, "Xuất Excel thành công!");
+        } catch (IOException ex) {
+            ex.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Xuất Excel thất bại!", "Lỗi", JOptionPane.ERROR_MESSAGE);
         }
     }
 }

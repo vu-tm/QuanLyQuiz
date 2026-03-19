@@ -1,4 +1,4 @@
-package GUI.Panel;
+package GUI.Dialog;
 
 import BUS.NguoiDungBUS;
 import BUS.NhomQuyenBUS;
@@ -12,7 +12,7 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.TitledBorder;
 
-public class AddNguoiDung extends JDialog {
+public class AddNguoiDungDialog extends JDialog {
     private JTextField txtId, txtUsername, txtHoten, txtNgaySinh;
     private JRadioButton rdNam, rdNu;
     private ButtonGroup groupGioiTinh;
@@ -29,7 +29,7 @@ public class AddNguoiDung extends JDialog {
     private boolean isEditMode = false;
     private Runnable onSaveCallback;
 
-    public AddNguoiDung(JFrame parent, String title, NguoiDungDTO user, Runnable onSaveCallback) {
+    public AddNguoiDungDialog(JFrame parent, String title, NguoiDungDTO user, Runnable onSaveCallback) {
         super(parent, title, true);
         this.user = user;
         this.isEditMode = (user != null);

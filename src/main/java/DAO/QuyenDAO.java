@@ -1,7 +1,7 @@
 package DAO;
 
 import DTO.QuyenDTO;
-import helper.DatabaseHelper;
+import config.JDBCUtil;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -11,7 +11,7 @@ public class QuyenDAO {
     public List<QuyenDTO> getAll() {
         List<QuyenDTO> list = new ArrayList<>();
         String sql = "SELECT * FROM quyen ORDER BY maquyen";
-        try (Connection conn = DatabaseHelper.getConnection();
+        try (Connection conn = JDBCUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {

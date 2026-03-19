@@ -85,4 +85,8 @@ public class NguoiDungBUS {
     public String getTrangThaiText(int trangthai) {
         return trangthai == 1 ? "Hoạt động" : "Đã khóa";
     }
+    
+    public String getNextId() {
+        return dao.getNextId();
+    }
 }

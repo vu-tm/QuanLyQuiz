@@ -16,7 +16,6 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -91,7 +90,8 @@ public class NguoiDung extends JPanel implements ActionListener, ItemListener {
         }
         functionBar.add(mainFunction);
 
-        search = new IntegratedSearch(new String[]{"Tất cả", "ID", "Username", "Họ tên"});
+        // ── Thêm "Nhóm quyền" vào danh sách tùy chọn tìm kiếm ───────────────
+        search = new IntegratedSearch(new String[]{"Tất cả", "ID", "Username", "Họ tên", "Nhóm quyền", "Giới tính", "Năm sinh"});
         searchField = search.txtSearchForm;
         searchField.addKeyListener(new KeyAdapter() {
             @Override
@@ -176,10 +176,31 @@ public class NguoiDung extends JPanel implements ActionListener, ItemListener {
                     case "Họ tên":
                         match = user.getHoten().toLowerCase().contains(tuKhoa);
                         break;
+                    case "Nhóm quyền":
+                        String tenNhom = bus.getTenNhomQuyen(user.getManhomquyen());
+                        match = tenNhom != null && tenNhom.toLowerCase().contains(tuKhoa);
+                        break;
+                    case "Giới tính":
+                        String gioiTinh = user.isGioitinh() ? "nam" : "nữ";
+                        match = gioiTinh.contains(tuKhoa);
+                        break;
+                    case "Năm sinh":
+                        if (user.getNgaysinh() != null) {
+                            String namSinh = String.valueOf(user.getNgaysinh().toLocalDate().getYear());
+                            match = namSinh.contains(tuKhoa);
+                        }
+                        break;
                     default: // Tất cả
+                        String tenNhomAll = bus.getTenNhomQuyen(user.getManhomquyen());
+                        String gioiTinhAll = user.isGioitinh() ? "nam" : "nữ";
+                        String namSinhAll = user.getNgaysinh() != null
+                                ? String.valueOf(user.getNgaysinh().toLocalDate().getYear()) : "";
                         match = user.getId().toLowerCase().contains(tuKhoa)
                                 || user.getUsername().toLowerCase().contains(tuKhoa)
-                                || user.getHoten().toLowerCase().contains(tuKhoa);
+                                || user.getHoten().toLowerCase().contains(tuKhoa)
+                                || (tenNhomAll != null && tenNhomAll.toLowerCase().contains(tuKhoa))
+                                || gioiTinhAll.contains(tuKhoa)
+                                || namSinhAll.contains(tuKhoa);
                         break;
                 }
                 if (match) {
@@ -266,7 +287,7 @@ public class NguoiDung extends JPanel implements ActionListener, ItemListener {
         }
     }
 
-    private void xoaNguoiDung() { // chuyen trang thai ve 0
+    private void xoaNguoiDung() {
         int row = table.getSelectedRow();
         if (row == -1) {
             JOptionPane.showMessageDialog(this, "Vui lòng chọn người dùng cần xóa!");
@@ -303,7 +324,6 @@ public class NguoiDung extends JPanel implements ActionListener, ItemListener {
         }
     }
 
-    // IMPORT EXCEL
     private void importExcel() {
         File excelFile;
         FileInputStream excelFIS = null;
@@ -322,7 +342,6 @@ public class NguoiDung extends JPanel implements ActionListener, ItemListener {
                 XSSFSheet excelSheet = excelJTableImport.getSheetAt(0);
 
                 SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
-                // Bỏ qua header (dòng 0)
                 for (int row = 1; row <= excelSheet.getLastRowNum(); row++) {
                     XSSFRow excelRow = excelSheet.getRow(row);
                     if (excelRow == null) continue;
@@ -335,48 +354,42 @@ public class NguoiDung extends JPanel implements ActionListener, ItemListener {
                         int manhomquyen = (int) excelRow.getCell(5).getNumericCellValue();
                         int trangthai = (int) excelRow.getCell(6).getNumericCellValue();
 
-                        // Kiểm tra dữ liệu bắt buộc
                         if (Validation.isEmpty(id) || Validation.isEmpty(username) || Validation.isEmpty(hoten)) {
                             countError++;
                             continue;
                         }
-                        // Kiểm tra trùng
                         if (bus.checkExistId(id) || bus.checkExistUsername(username)) {
                             countError++;
                             continue;
                         }
 
                         boolean gioitinh = "Nam".equalsIgnoreCase(gioiTinhStr);
-
                         java.sql.Date ngaySinh = null;
                         if (!Validation.isEmpty(ngaySinhStr)) {
                             try {
                                 java.util.Date utilDate = dateFormat.parse(ngaySinhStr);
                                 ngaySinh = new java.sql.Date(utilDate.getTime());
-                            } catch (Exception e) {
+                            } catch (Exception ex) {
                                 countError++;
-                                System.err.println("Lỗi tại dòng " + (row + 1) + ": " + e.getMessage());
-                                e.printStackTrace();
+                                ex.printStackTrace();
                             }
                         }
 
-                        // Giá trị mặc định cho mật khẩu (có thể cho nhập từ file nếu muốn)
                         String matkhau = "123";
-
                         NguoiDungDTO nd = new NguoiDungDTO(id, username, hoten, gioitinh, ngaySinh, matkhau, trangthai, manhomquyen);
                         if (bus.insert(nd)) {
                             countSuccess++;
                         } else {
                             countError++;
                         }
-                    } catch (Exception e) {
+                    } catch (Exception ex) {
                         countError++;
                     }
                 }
                 JOptionPane.showMessageDialog(this, "Nhập thành công " + countSuccess + " dòng. Lỗi " + countError + " dòng.");
                 listHienTai = bus.getAll();
                 loadDataTable();
-                
+
             } catch (IOException ex) {
                 JOptionPane.showMessageDialog(this, "Lỗi đọc file Excel!");
             } finally {

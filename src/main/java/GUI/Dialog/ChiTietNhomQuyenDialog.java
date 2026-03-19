@@ -4,26 +4,31 @@ import BUS.NhomQuyenBUS;
 import BUS.QuyenBUS;
 import DTO.NhomQuyenDTO;
 import DTO.QuyenDTO;
+import GUI.Component.ButtonCustom;
+import GUI.Component.InputForm;
 import java.awt.*;
 import java.util.List;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
 
 public class ChiTietNhomQuyenDialog extends JDialog {
-    private JTextField txtMaNhom;
-    private JTextField txtTenNhom;
+
+    private InputForm txtMaNhom;
+    private InputForm txtTenNhom;
     private JCheckBox[][] quyenCheckBoxes;
     private JCheckBox chkThamGiaThi;
     private JCheckBox chkThamGiaHocPhan;
+    private ButtonCustom btnDong;
 
     private NhomQuyenBUS nhomQuyenBUS;
     private QuyenBUS quyenBUS = new QuyenBUS();
     private NhomQuyenDTO currentDTO;
 
     private final String[] doiTuong = {
-        "người dùng", "môn học", "câu hỏi", "đề thi",
-        "kì thi", "lớp học", "bài thi", "nhóm quyền"
+        "Người dùng", "Môn học", "Câu hỏi", "Đề thi",
+        "Kì thi", "Lớp học", "Bài thi", "Nhóm quyền"
     };
     private final String[] hanhDong = {"Xem", "Thêm mới", "Cập nhật", "Xoá"};
 
@@ -31,15 +36,20 @@ public class ChiTietNhomQuyenDialog extends JDialog {
     private int maQuyenThamGiaThi = 0;
     private int maQuyenThamGiaHocPhan = 0;
 
+    private static final int FIELD_HEIGHT = 58;   
+    private static final int LABEL_WIDTH  = 90;  
+    private static final int FIELD_WIDTH  = 240; 
+
     public ChiTietNhomQuyenDialog(JFrame parent, String title, NhomQuyenDTO dto, NhomQuyenBUS bus) {
         super(parent, title, true);
-        this.currentDTO = dto;
+        this.currentDTO   = dto;
         this.nhomQuyenBUS = bus;
         try {
             initComponent();
             loadQuyenMapping();
             hienThiDuLieu();
             pack();
+            setMinimumSize(getSize());
             setLocationRelativeTo(parent);
             setResizable(false);
             setVisible(true);
@@ -50,107 +60,183 @@ public class ChiTietNhomQuyenDialog extends JDialog {
     }
 
     private void initComponent() {
-        setLayout(new BorderLayout(10, 10));
-        ((JPanel) getContentPane()).setBorder(new EmptyBorder(10, 10, 10, 10));
+        JPanel root = (JPanel) getContentPane();
+        root.setLayout(new BorderLayout(0, 8));
+        root.setBorder(new EmptyBorder(12, 14, 10, 14));
+        root.setBackground(Color.WHITE);
 
-        // Panel thông tin
-        JPanel infoPanel = new JPanel(new GridBagLayout());
-        infoPanel.setBorder(new TitledBorder("Thông tin nhóm quyền"));
+        root.add(buildInfoPanel(),   BorderLayout.NORTH);
+        root.add(buildCenterPanel(), BorderLayout.CENTER);
+        root.add(buildButtonPanel(), BorderLayout.SOUTH);
+    }
+
+    private JPanel buildInfoPanel() {
+        JPanel panel = new JPanel(new GridBagLayout());
+        panel.setBackground(Color.WHITE);
+        panel.setBorder(titledBorder("Thông tin nhóm quyền"));
+
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(5, 5, 5, 5);
-        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.fill   = GridBagConstraints.HORIZONTAL;
+        gbc.anchor = GridBagConstraints.WEST;
 
-        gbc.gridx = 0; gbc.gridy = 0;
-        infoPanel.add(new JLabel("Mã nhóm quyền:"), gbc);
-        gbc.gridx = 1;
-        txtMaNhom = new JTextField(15);
-        txtMaNhom.setEditable(false);
-        txtMaNhom.setBackground(new Color(240, 240, 240));
-        txtMaNhom.setFocusable(false); 
-        infoPanel.add(txtMaNhom, gbc);
+        // Hàng 1: Mã nhóm
+        gbc.gridx = 0; gbc.gridy = 0; gbc.weightx = 0;
+        gbc.insets = new Insets(8, 10, 0, 6);
+        panel.add(makeLabel("Mã nhóm:"), gbc);
 
-        gbc.gridx = 0; gbc.gridy = 1;
-        infoPanel.add(new JLabel("Tên nhóm quyền:"), gbc);
-        gbc.gridx = 1;
-        txtTenNhom = new JTextField(15);
-        txtTenNhom.setEditable(false);
-        txtTenNhom.setBackground(new Color(240, 240, 240));
-        txtTenNhom.setFocusable(false); 
-        infoPanel.add(txtTenNhom, gbc);
+        gbc.gridx = 1; gbc.weightx = 1.0;
+        gbc.insets = new Insets(8, 0, 0, 10);
+        txtMaNhom = buildReadonlyField(new InputForm(""));
+        panel.add(txtMaNhom, gbc);
 
-        add(infoPanel, BorderLayout.NORTH);
+        // Hàng 2: Tên nhóm
+        gbc.gridx = 0; gbc.gridy = 1; gbc.weightx = 0;
+        gbc.insets = new Insets(8, 10, 8, 6);
+        panel.add(makeLabel("Tên nhóm:"), gbc);
 
-        // Panel bảng quyền
-        JPanel quyenPanel = new JPanel(new BorderLayout());
-        quyenPanel.setBorder(new TitledBorder("Chi tiết quyền"));
+        gbc.gridx = 1; gbc.weightx = 1.0;
+        gbc.insets = new Insets(8, 0, 8, 10);
+        txtTenNhom = buildReadonlyField(new InputForm(""));
+        panel.add(txtTenNhom, gbc);
 
-        JPanel bangQuyen = new JPanel(new GridLayout(doiTuong.length + 1, hanhDong.length + 1, 2, 2));
-        bangQuyen.setBackground(Color.WHITE);
+        return panel;
+    }
 
-        // Header
-        bangQuyen.add(new JLabel(""));
+    private JPanel buildCenterPanel() {
+        JPanel center = new JPanel(new BorderLayout(0, 6));
+        center.setBackground(Color.WHITE);
+        center.add(buildQuyenTable(),   BorderLayout.CENTER);
+        center.add(buildSpecialQuyen(), BorderLayout.SOUTH);
+        return center;
+    }
+
+    private JPanel buildQuyenTable() {
+        JPanel wrapper = new JPanel(new BorderLayout());
+        wrapper.setBackground(Color.WHITE);
+        wrapper.setBorder(titledBorder("Chi tiết quyền"));
+
+        int cols = hanhDong.length + 1;
+        int rows = doiTuong.length + 1;
+
+        JPanel grid = new JPanel(new GridLayout(rows, cols, 0, 0));
+        grid.setBackground(Color.WHITE);
+
+        Color headerBg = new Color(245, 247, 250);
+        Color rowEven  = Color.WHITE;
+        Color rowOdd   = new Color(250, 251, 253);
+        Color border   = new Color(220, 222, 226);
+
+        // Header row
+        JLabel corner = styledCell("", true, headerBg, border);
+        corner.setPreferredSize(new Dimension(110, 28));
+        grid.add(corner);
+
         for (String hd : hanhDong) {
-            JLabel lbl = new JLabel(hd, SwingConstants.CENTER);
-            lbl.setFont(new Font("Arial", Font.BOLD, 12));
-            bangQuyen.add(lbl);
+            grid.add(styledCell(hd, true, headerBg, border));
         }
 
+        // Dữ liệu rows
         quyenCheckBoxes = new JCheckBox[doiTuong.length][hanhDong.length];
+
         for (int i = 0; i < doiTuong.length; i++) {
-            JLabel lblDoiTuong = new JLabel(doiTuong[i]);
-            lblDoiTuong.setFont(new Font("Arial", Font.PLAIN, 12));
-            bangQuyen.add(lblDoiTuong);
+            Color rowBg = (i % 2 == 0) ? rowEven : rowOdd;
+
+            JLabel lblDT = styledCell(doiTuong[i], false, rowBg, border);
+            lblDT.setPreferredSize(new Dimension(110, 26));
+            grid.add(lblDT);
+
             for (int j = 0; j < hanhDong.length; j++) {
                 JCheckBox chk = new JCheckBox();
                 chk.setHorizontalAlignment(SwingConstants.CENTER);
-                chk.setEnabled(false); // Chỉ xem, không tương tác
-                chk.setFocusable(false); // Không nhận focus
+                chk.setBackground(rowBg);
+                chk.setOpaque(true);
+                chk.setEnabled(false);
+                chk.setFocusable(false);
+                chk.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 1, border));
                 quyenCheckBoxes[i][j] = chk;
-                bangQuyen.add(chk);
+                grid.add(chk);
             }
         }
-        quyenPanel.add(bangQuyen, BorderLayout.CENTER);
 
-        // Checkbox đặc biệt
-        JPanel panelRieng = new JPanel(new FlowLayout(FlowLayout.LEFT, 20, 5));
-        panelRieng.setBorder(new TitledBorder("Quyền đặc biệt"));
-        chkThamGiaThi = new JCheckBox("Tham gia thi");
-        chkThamGiaThi.setEnabled(false);
-        chkThamGiaThi.setFocusable(false);
+        wrapper.add(grid, BorderLayout.CENTER);
+        return wrapper;
+    }
+
+    private JPanel buildSpecialQuyen() {
+        JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT, 16, 4));
+        panel.setBackground(Color.WHITE);
+        panel.setBorder(titledBorder("Quyền đặc biệt"));
+
+        chkThamGiaThi     = new JCheckBox("Tham gia thi");
         chkThamGiaHocPhan = new JCheckBox("Tham gia học phần");
-        chkThamGiaHocPhan.setEnabled(false);
-        chkThamGiaHocPhan.setFocusable(false);
-        panelRieng.add(chkThamGiaThi);
-        panelRieng.add(chkThamGiaHocPhan);
 
-        JPanel centerPanel = new JPanel(new BorderLayout());
-        centerPanel.add(quyenPanel, BorderLayout.CENTER);
-        centerPanel.add(panelRieng, BorderLayout.SOUTH);
-        add(centerPanel, BorderLayout.CENTER);
+        styleCheckBox(chkThamGiaThi);
+        styleCheckBox(chkThamGiaHocPhan);
 
-        // Panel nút - chỉ có nút Đóng
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        JButton btnDong = new JButton("Đóng");
-        btnDong.setBackground(new Color(0, 120, 215));
-        btnDong.setForeground(Color.WHITE);
-        btnDong.setFocusPainted(false);
+        panel.add(chkThamGiaThi);
+        panel.add(chkThamGiaHocPhan);
+        return panel;
+    }
+
+    private void styleCheckBox(JCheckBox chk) {
+        chk.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        chk.setBackground(Color.WHITE);
+        chk.setEnabled(false);
+        chk.setFocusable(false);
+    }
+
+    private JPanel buildButtonPanel() {
+        JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 16, 6));
+        panel.setBackground(Color.WHITE);
+        panel.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, new Color(220, 222, 226)));
+
+        btnDong = new ButtonCustom("Đóng", "danger", 14);
+        btnDong.setPreferredSize(new Dimension(110, 34));
         btnDong.addActionListener(e -> dispose());
-        buttonPanel.add(btnDong);
-        add(buttonPanel, BorderLayout.SOUTH);
 
-        // Focus vào nút Đóng khi dialog hiện ra
+        panel.add(btnDong);
         SwingUtilities.invokeLater(() -> btnDong.requestFocus());
+        return panel;
+    }
+
+    private JLabel makeLabel(String text) {
+        JLabel lbl = new JLabel(text);
+        lbl.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        lbl.setPreferredSize(new Dimension(LABEL_WIDTH, FIELD_HEIGHT));
+        return lbl;
+    }
+
+    private InputForm buildReadonlyField(InputForm field) {
+        field.setEditable(false);
+        field.setFocusable(false);
+        field.setPreferredSize(new Dimension(FIELD_WIDTH, FIELD_HEIGHT));
+        field.setMinimumSize(new Dimension(FIELD_WIDTH, FIELD_HEIGHT));
+        return field;
+    }
+
+    private JLabel styledCell(String text, boolean bold, Color bg, Color borderColor) {
+        JLabel lbl = new JLabel(text, SwingConstants.CENTER);
+        lbl.setFont(new Font("Segoe UI", bold ? Font.BOLD : Font.PLAIN, 12));
+        lbl.setBackground(bg);
+        lbl.setOpaque(true);
+        lbl.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 1, borderColor));
+        lbl.setPreferredSize(new Dimension(72, bold ? 28 : 26));
+        return lbl;
+    }
+
+    private TitledBorder titledBorder(String title) {
+        return BorderFactory.createTitledBorder(
+                new LineBorder(new Color(210, 213, 218), 1, true),
+                title,
+                TitledBorder.LEFT,
+                TitledBorder.TOP,
+                new Font("Segoe UI", Font.BOLD, 12),
+                new Color(80, 90, 110));
     }
 
     private void loadQuyenMapping() {
         List<QuyenDTO> dsQuyen = quyenBUS.getAll();
         maQuyenMapping = new int[doiTuong.length][hanhDong.length];
-
-        for (int i = 0; i < doiTuong.length; i++) {
-            for (int j = 0; j < hanhDong.length; j++) {
-                maQuyenMapping[i][j] = 0;
-            }
-        }
 
         for (QuyenDTO q : dsQuyen) {
             int i = timIndexDoiTuong(q.getTendoituong());
@@ -169,21 +255,15 @@ public class ChiTietNhomQuyenDialog extends JDialog {
 
     private int timIndexDoiTuong(String ten) {
         if (ten == null) return -1;
-        for (int i = 0; i < doiTuong.length; i++) {
-            if (doiTuong[i].equalsIgnoreCase(ten.trim())) {
-                return i;
-            }
-        }
+        for (int i = 0; i < doiTuong.length; i++)
+            if (doiTuong[i].equalsIgnoreCase(ten.trim())) return i;
         return -1;
     }
 
-    private int timIndexHanhDong(String hanhDong) {
-        if (hanhDong == null) return -1;
-        for (int j = 0; j < this.hanhDong.length; j++) {
-            if (this.hanhDong[j].equalsIgnoreCase(hanhDong.trim())) {
-                return j;
-            }
-        }
+    private int timIndexHanhDong(String hd) {
+        if (hd == null) return -1;
+        for (int j = 0; j < hanhDong.length; j++)
+            if (hanhDong[j].equalsIgnoreCase(hd.trim())) return j;
         return -1;
     }
 
@@ -193,12 +273,9 @@ public class ChiTietNhomQuyenDialog extends JDialog {
 
         List<Integer> dsQuyen = nhomQuyenBUS.getQuyenByNhom(currentDTO.getManhomquyen());
 
-        // Reset tất cả checkbox
-        for (int i = 0; i < doiTuong.length; i++) {
-            for (int j = 0; j < hanhDong.length; j++) {
+        for (int i = 0; i < doiTuong.length; i++)
+            for (int j = 0; j < hanhDong.length; j++)
                 quyenCheckBoxes[i][j].setSelected(false);
-            }
-        }
         chkThamGiaThi.setSelected(false);
         chkThamGiaHocPhan.setSelected(false);
 
@@ -214,11 +291,8 @@ public class ChiTietNhomQuyenDialog extends JDialog {
                 }
             }
             if (!found) {
-                if (ma == maQuyenThamGiaThi) {
-                    chkThamGiaThi.setSelected(true);
-                } else if (ma == maQuyenThamGiaHocPhan) {
-                    chkThamGiaHocPhan.setSelected(true);
-                }
+                if (ma == maQuyenThamGiaThi)          chkThamGiaThi.setSelected(true);
+                else if (ma == maQuyenThamGiaHocPhan) chkThamGiaHocPhan.setSelected(true);
             }
         }
     }

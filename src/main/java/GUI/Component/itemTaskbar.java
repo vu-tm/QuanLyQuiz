@@ -13,8 +13,8 @@ public class itemTaskbar extends JPanel implements MouseListener {
     private Color FontColor = new Color(96, 125, 139);
     private Color ColorBlack = new Color(26, 26, 26);
     private Color DefaultColor = new Color(255, 255, 255);
-    
-    private JLabel lblIcon, pnlContent;
+
+    private JLabel lblIcon, pnlContent, pnlContent1;
     public boolean isSelected = false;
 
     public itemTaskbar(String linkIcon, String content) {
@@ -44,6 +44,43 @@ public class itemTaskbar extends JPanel implements MouseListener {
         this.add(pnlContent);
     }
 
+    public itemTaskbar(String linkIcon, String content, String content2, int n) {
+        this.setLayout(new BorderLayout(0, 0));
+        this.setBackground(new Color(207, 159, 255));
+        this.putClientProperty(FlatClientProperties.STYLE, "arc: 15");
+        this.addMouseListener(this);
+
+        lblIcon = new JLabel();
+        lblIcon.setPreferredSize(new Dimension(80, 80));
+        lblIcon.setBorder(new EmptyBorder(0, 15, 0, 0));
+        try {
+            lblIcon.setIcon(new FlatSVGIcon("icon/" + linkIcon, 40, 40));
+        } catch (Exception e) {
+            System.err.println("Loi load icon: " + linkIcon);
+        }
+        this.add(lblIcon, BorderLayout.WEST);
+
+        JPanel center = new JPanel();
+        center.setLayout(new FlowLayout(FlowLayout.LEFT, 10, 0));
+        center.setBorder(new EmptyBorder(15, 0, 0, 0));
+        center.setOpaque(false);
+        this.add(center, BorderLayout.CENTER);
+
+        // Số lớn (ví dụ: "42")
+        pnlContent = new JLabel(content);
+        pnlContent.setPreferredSize(new Dimension(200, 30));
+        pnlContent.putClientProperty("FlatLaf.style", "font: 250% $semibold.font");
+        pnlContent.setForeground(new Color(26, 26, 26));
+        center.add(pnlContent);
+
+        // Tiêu đề nhỏ (ví dụ: "Tổng số đề thi")
+        pnlContent1 = new JLabel(content2);
+        pnlContent1.setPreferredSize(new Dimension(200, 25));
+        pnlContent1.putClientProperty("FlatLaf.style", "font: 120% $medium.font");
+        pnlContent1.setForeground(new Color(80, 80, 80));
+        center.add(pnlContent1);
+    }
+
     @Override
     public void mouseEntered(MouseEvent e) {
         if (!isSelected) {
@@ -60,16 +97,21 @@ public class itemTaskbar extends JPanel implements MouseListener {
     }
 
     @Override
-    public void mousePressed(MouseEvent e) {}
+    public void mousePressed(MouseEvent e) {
+    }
 
     @Override
-    public void mouseClicked(MouseEvent e) {}
+    public void mouseClicked(MouseEvent e) {
+    }
 
     @Override
-    public void mouseReleased(MouseEvent e) {}
+    public void mouseReleased(MouseEvent e) {
+    }
 
     // Khi active
     public void setForeground(Color c) {
-        if (pnlContent != null) pnlContent.setForeground(c);
+        if (pnlContent != null) {
+            pnlContent.setForeground(c);
+        }
     }
 }

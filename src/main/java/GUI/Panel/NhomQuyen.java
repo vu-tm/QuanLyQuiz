@@ -10,6 +10,7 @@ import GUI.Dialog.AddNhomQuyenDialog;
 import GUI.Dialog.ChiTietNhomQuyenDialog;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.IOException;
 import java.util.List;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -72,8 +73,8 @@ public class NhomQuyen extends JPanel implements ActionListener, ItemListener {
         functionBar.setBorder(new EmptyBorder(10, 10, 10, 10));
         functionBar.setBackground(Color.WHITE);
 
-        // các chức năng của chương trình
-        String[] actions = {"create", "update", "delete", "detail"};
+        // Cac nut chuc nang
+        String[] actions = {"create", "update", "delete", "detail", "export"};
         mainFunction = new MainFunction(actions);
         for (String ac : actions) {
             mainFunction.btn.get(ac).addActionListener(this);
@@ -212,6 +213,8 @@ public class NhomQuyen extends JPanel implements ActionListener, ItemListener {
             xoaNhomQuyen();
         } else if (src == mainFunction.btn.get("detail")) {
             xemChiTiet(owner);
+        } else if (src == mainFunction.btn.get("export")) {
+            xuatExcel();
         }
     }
 
@@ -256,6 +259,17 @@ public class NhomQuyen extends JPanel implements ActionListener, ItemListener {
         NhomQuyenDTO dto = bus.getById(maNhomQuyen);
         if (dto != null) {
             new ChiTietNhomQuyenDialog(owner, "Thông tin nhóm quyền", dto, bus);
+        }
+    }
+
+    // Phương thức xuất Excel
+    private void xuatExcel() {
+        try {
+            helper.JTableExporter.exportJTableToExcel(table);
+            JOptionPane.showMessageDialog(this, "Xuất Excel thành công!");
+        } catch (IOException ex) {
+            ex.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Xuất Excel thất bại!", "Lỗi", JOptionPane.ERROR_MESSAGE);
         }
     }
 }

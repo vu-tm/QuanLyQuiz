@@ -353,9 +353,10 @@ public class NguoiDung extends JPanel implements ActionListener, ItemListener {
                             try {
                                 java.util.Date utilDate = dateFormat.parse(ngaySinhStr);
                                 ngaySinh = new java.sql.Date(utilDate.getTime());
-                            } catch (ParseException e) {
+                            } catch (Exception e) {
                                 countError++;
-                                continue;
+                                System.err.println("Lỗi tại dòng " + (row + 1) + ": " + e.getMessage());
+                                e.printStackTrace();
                             }
                         }
 
@@ -375,6 +376,7 @@ public class NguoiDung extends JPanel implements ActionListener, ItemListener {
                 JOptionPane.showMessageDialog(this, "Nhập thành công " + countSuccess + " dòng. Lỗi " + countError + " dòng.");
                 listHienTai = bus.getAll();
                 loadDataTable();
+                
             } catch (IOException ex) {
                 JOptionPane.showMessageDialog(this, "Lỗi đọc file Excel!");
             } finally {

@@ -166,5 +166,7 @@ public class MenuTaskbar extends JPanel {
                 listitem[i].setForeground(new Color(96, 125, 139));
             }
         }
+        this.revalidate();
+        this.repaint();
     }
 }

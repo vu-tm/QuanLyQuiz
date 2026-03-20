@@ -1,6 +1,8 @@
 package GUI.Panel;
 
 import BUS.CauHoiBUS;
+import BUS.DoKhoBUS;
+import BUS.LoaiCauHoiBUS;
 import BUS.MonHocBUS;
 import DTO.CauHoiDTO;
 import GUI.Component.IntegratedSearch;
@@ -8,6 +10,7 @@ import GUI.Component.MainFunction;
 import GUI.Component.PanelBorderRadius;
 import GUI.Component.TableSorter;
 import GUI.Dialog.AddCauHoiDialog;
+import GUI.Dialog.ViewCauHoiDialog;
 import helper.Validation;
 
 import java.awt.*;
@@ -29,6 +32,8 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 public class CauHoi extends JPanel implements ActionListener, ItemListener {
     private final CauHoiBUS bus;
     private final MonHocBUS monHocBUS;
+    private final DoKhoBUS doKhoBUS;
+    private final LoaiCauHoiBUS loaiCauHoiBUS;
     private DefaultTableModel model;
     private JTable table;
     private JScrollPane scrollTable;
@@ -42,6 +47,8 @@ public class CauHoi extends JPanel implements ActionListener, ItemListener {
     public CauHoi() {
         this.bus = new CauHoiBUS();
         this.monHocBUS = new MonHocBUS();
+        this.doKhoBUS = new DoKhoBUS();
+        this.loaiCauHoiBUS = new LoaiCauHoiBUS();
         this.listHienTai = new ArrayList<>(bus.load());
         initComponent();
         loadDataTable(listHienTai);
@@ -61,7 +68,7 @@ public class CauHoi extends JPanel implements ActionListener, ItemListener {
             }
         };
 
-        String[] header = {"Mã câu hỏi", "Nội dung", "Mã độ khó", "Mã loại", "Mã môn", "Người tạo", "Trạng thái"};
+        String[] header = {"Mã câu hỏi", "Nội dung", "Tên độ khó", "Tên loại", "Tên môn học", "Người tạo", "Trạng thái"};
         model.setColumnIdentifiers(header);
         table.setModel(model);
         table.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 13));
@@ -79,6 +86,14 @@ public class CauHoi extends JPanel implements ActionListener, ItemListener {
 
         table.setAutoCreateRowSorter(true);
         TableSorter.configureTableColumnSorter(table, 0, TableSorter.INTEGER_COMPARATOR);
+        table.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (SwingUtilities.isLeftMouseButton(e) && e.getClickCount() == 1) {
+                    SwingUtilities.invokeLater(() -> onViewDetail());
+                }
+            }
+        });
 
         pnlBorder1 = new JPanel();
         pnlBorder1.setPreferredSize(new Dimension(0, 10));
@@ -194,12 +209,16 @@ public class CauHoi extends JPanel implements ActionListener, ItemListener {
     public void loadDataTable(ArrayList<CauHoiDTO> danhSach) {
         model.setRowCount(0);
         for (CauHoiDTO ch : danhSach) {
+            String tenDoKho = doKhoBUS.getTenDoKho(ch.getMadokho());
+            String tenLoai = loaiCauHoiBUS.getTenById(ch.getMaloai());
+            String tenMonHoc = monHocBUS.getTenById(ch.getMamonhoc());
+            
             model.addRow(new Object[]{
                 ch.getMacauhoi(),
                 ch.getNoidung(),
-                ch.getMadokho(),
-                ch.getMaloai(),
-                ch.getMamonhoc(),
+                tenDoKho,
+                tenLoai,
+                tenMonHoc,
                 ch.getNguoitao(),
                 ch.getTrangthai() == 1 ? "Hoạt động" : "Ngưng hoạt động"
             });
@@ -223,6 +242,15 @@ public class CauHoi extends JPanel implements ActionListener, ItemListener {
     private void onAdd() {
         JFrame owner = (JFrame) SwingUtilities.getWindowAncestor(this);
         new AddCauHoiDialog(this, owner, "Thêm câu hỏi mới", null);
+    }
+
+    private void onViewDetail() {
+        CauHoiDTO selected = getSelectedDTO();
+        if (selected == null) {
+            return;
+        }
+        JFrame owner = (JFrame) SwingUtilities.getWindowAncestor(this);
+        new ViewCauHoiDialog(owner, selected);
     }
 
     private void onUpdate() {

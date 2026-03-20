@@ -14,7 +14,6 @@ public class MenuTaskbar extends JPanel {
         {"Trang chủ", "home.svg"},
         {"Môn học", "subject.svg"},
         {"Câu hỏi", "question.svg"},
-        {"Loại câu hỏi", "loaicauhoi.svg"},
         {"Độ khó", "dokho.svg"},
         {"Đề thi", "dethi.svg"},
         {"Kỳ thi", "kythi.svg"},
@@ -114,25 +113,25 @@ public class MenuTaskbar extends JPanel {
                             main.setPanel(new CauHoi());
                             break;
                         case 3:
-                            main.setPanel(new LoaiCauHoi());
-                            break;
-                        case 4:
                             main.setPanel(new DoKho());
                             break;
-                        case 5:
+                        case 4:
                             main.setPanel(new DeThi());
                             break;
-                        case 6:
+                        case 5:
                             main.setPanel(new KyThi());
                             break;
-                        case 7:
+                        case 6:
                             main.setPanel(new LopHoc());
                             break;
-                        case 8:
+                        case 7:
                             main.setPanel(new NguoiDung());
                             break;
-                        case 9:
+                        case 8:
                             main.setPanel(new NhomQuyen());
+                            break;
+                        case 9:
+                            main.setPanel(new BaiThi());
                             break;
                         case 10:
                             main.setPanel(new PhanCong());

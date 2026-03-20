@@ -89,7 +89,7 @@ public class CauHoi extends JPanel implements ActionListener, ItemListener {
         table.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                if (SwingUtilities.isLeftMouseButton(e) && e.getClickCount() == 1) {
+                if (SwingUtilities.isLeftMouseButton(e) && e.getClickCount() == 2) {
                     SwingUtilities.invokeLater(() -> onViewDetail());
                 }
             }

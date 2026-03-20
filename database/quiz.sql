@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Mar 17, 2026 at 08:41 AM
+-- Generation Time: Mar 20, 2026 at 11:23 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.0.30
 
@@ -30,7 +30,7 @@ SET time_zone = "+00:00";
 CREATE TABLE `baithi` (
   `mabaithi` int(11) NOT NULL,
   `made` int(11) NOT NULL,
-  `manguoidung` varchar(50) NOT NULL,
+  `manguoidung` int(11) NOT NULL,
   `diemthi` double DEFAULT NULL,
   `thoigianvaothi` datetime DEFAULT NULL,
   `thoigianlambai` int(11) DEFAULT NULL,
@@ -117,7 +117,7 @@ INSERT INTO `chitietdethi` (`made`, `macauhoi`, `thutu`) VALUES
 
 CREATE TABLE `chitietlop` (
   `malop` int(11) NOT NULL,
-  `manguoidung` varchar(50) NOT NULL,
+  `manguoidung` int(11) NOT NULL,
   `hienthi` tinyint(1) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -309,7 +309,7 @@ CREATE TABLE `lop` (
   `namhoc` int(11) DEFAULT NULL,
   `hocky` int(11) DEFAULT NULL,
   `trangthai` tinyint(1) DEFAULT NULL,
-  `giangvien` varchar(50) NOT NULL,
+  `giangvien` int(11) NOT NULL,
   `mamonhoc` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -342,7 +342,7 @@ INSERT INTO `monhoc` (`mamonhoc`, `tenmonhoc`, `sotinchi`, `trangthai`) VALUES
 --
 
 CREATE TABLE `nguoidung` (
-  `id` varchar(50) NOT NULL,
+  `id` int(11) NOT NULL,
   `username` varchar(255) NOT NULL,
   `hoten` varchar(255) NOT NULL,
   `gioitinh` tinyint(1) DEFAULT NULL,
@@ -351,6 +351,28 @@ CREATE TABLE `nguoidung` (
   `trangthai` int(11) NOT NULL,
   `manhomquyen` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `nguoidung`
+--
+
+INSERT INTO `nguoidung` (`id`, `username`, `hoten`, `gioitinh`, `ngaysinh`, `matkhau`, `trangthai`, `manhomquyen`) VALUES
+(1, 'admin', 'Trương Minh Vũ', 1, '2000-04-01', '123', 1, 1),
+(2, 'gv1', 'Nguyễn Thanh Hưng', 1, '1985-05-20', '123', 1, 2),
+(3, 'gv2', 'Võ Nguyễn Thảo Nguyên', 0, '1988-10-15', '123', 1, 2),
+(4, 'gv3', 'Phạm Hồng Phú', 1, '1982-03-12', '123', 1, 2),
+(5, 'gv4', 'Đoàn Thị Thùy Linh', 0, '1992-07-08', '123', 1, 2),
+(6, 'gv5', 'Dương Long Hải', 1, '1980-12-25', '123', 1, 2),
+(7, 'hs1', 'Hà Huy Tuấn', 1, '2006-02-14', '123', 1, 3),
+(8, 'hs2', 'Nguyễn Huy Hiếu', 1, '2007-09-30', '123', 1, 3),
+(9, 'hs3', 'Huỳnh Quí', 1, '2005-11-11', '123', 1, 3),
+(10, 'hs4', 'Vũ Việt Bách', 1, '2002-06-21', '123', 1, 3),
+(11, 'hs5', 'Trần Văn Nhiều', 1, '2004-01-05', '123', 1, 3),
+(12, 'hs6', 'Huỳnh Ái Quốc', 1, '2005-03-10', '123', 1, 3),
+(13, 'hs7', 'Nguyễn Đình Trường', 1, '2006-05-15', '123', 1, 3),
+(14, 'hs8', 'Phan Sỹ Hùng', 1, '2005-12-20', '123', 1, 3),
+(15, 'hs9', 'Nguyễn Phan Duy Hiếu', 1, '2007-01-25', '123', 1, 3),
+(16, 'hs10', 'Ngô Văn Nghiêm', 1, '2004-08-30', '123', 1, 3);
 
 -- --------------------------------------------------------
 
@@ -364,6 +386,15 @@ CREATE TABLE `nhomquyen` (
   `trangthai` tinyint(1) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Dumping data for table `nhomquyen`
+--
+
+INSERT INTO `nhomquyen` (`manhomquyen`, `tennhomquyen`, `trangthai`) VALUES
+(1, 'Admin', 1),
+(2, 'Giáo viên', 1),
+(3, 'Học sinh', 1);
+
 -- --------------------------------------------------------
 
 --
@@ -372,7 +403,7 @@ CREATE TABLE `nhomquyen` (
 
 CREATE TABLE `phancong` (
   `mamonhoc` int(11) NOT NULL,
-  `manguoidung` varchar(50) NOT NULL
+  `manguoidung` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
@@ -562,10 +593,16 @@ ALTER TABLE `monhoc`
   MODIFY `mamonhoc` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
+-- AUTO_INCREMENT for table `nguoidung`
+--
+ALTER TABLE `nguoidung`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
+
+--
 -- AUTO_INCREMENT for table `nhomquyen`
 --
 ALTER TABLE `nhomquyen`
-  MODIFY `manhomquyen` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `manhomquyen` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- Constraints for dumped tables

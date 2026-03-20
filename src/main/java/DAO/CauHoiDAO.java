@@ -11,7 +11,7 @@ public class CauHoiDAO {
 
     public List<CauHoiDTO> getAll() {
         List<CauHoiDTO> list = new ArrayList<>();
-        String sql = "SELECT macauhoi, noidung, madokho, maloai, mamonhoc, nguoitao, trangthai FROM cauhoi";
+        String sql = "SELECT macauhoi, noidung, madokho, maloai, mamonhoc, nguoitao, trangthai FROM cauhoi WHERE trangthai = 1";
         try (Connection c = JDBCUtil.getConnection(); PreparedStatement ps = c.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 CauHoiDTO ch = new CauHoiDTO(
@@ -73,7 +73,7 @@ public class CauHoiDAO {
     }
 
     public boolean delete(int macauhoi) {
-        String sql = "DELETE FROM cauhoi WHERE macauhoi = ?";
+        String sql = "UPDATE cauhoi SET trangthai = 0 WHERE macauhoi = ?";
         try (Connection c = JDBCUtil.getConnection(); PreparedStatement ps = c.prepareStatement(sql)) {
             ps.setInt(1, macauhoi);
             return ps.executeUpdate() > 0;
@@ -85,7 +85,7 @@ public class CauHoiDAO {
 
     public List<CauHoiDTO> search(String keyword) {
         List<CauHoiDTO> list = new ArrayList<>();
-        String sql = "SELECT macauhoi, noidung, madokho, maloai, mamonhoc, nguoitao, trangthai FROM cauhoi WHERE noidung LIKE ? OR nguoitao LIKE ?";
+        String sql = "SELECT macauhoi, noidung, madokho, maloai, mamonhoc, nguoitao, trangthai FROM cauhoi WHERE trangthai = 1 AND (noidung LIKE ? OR nguoitao LIKE ?)";
         try (Connection c = JDBCUtil.getConnection(); PreparedStatement ps = c.prepareStatement(sql)) {
             String k = "%" + keyword + "%";
             ps.setString(1, k);

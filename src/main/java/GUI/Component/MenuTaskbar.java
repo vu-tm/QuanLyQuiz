@@ -14,7 +14,7 @@ public class MenuTaskbar extends JPanel {
         {"Trang chủ", "home.svg"},
         {"Môn học", "subject.svg"},
         {"Câu hỏi", "question.svg"},
-        {"Loại câu hỏi", "question.svg"},
+        {"Loại câu hỏi", "loaicauhoi.svg"},
         {"Độ khó", "dokho.svg"},
         {"Đề thi", "dethi.svg"},
         {"Kỳ thi", "kythi.svg"},

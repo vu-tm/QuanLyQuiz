@@ -22,6 +22,7 @@ public class MenuTaskbar extends JPanel {
         {"Người dùng", "nguoidung.svg"},
         {"Nhóm quyền", "nhomquyen.svg"},
         {"Bài thi", "baithi.svg"},
+        {"Phân công", "phancong.svg"},
         {"Đăng xuất", "logout.svg"}
     };
 
@@ -134,7 +135,7 @@ public class MenuTaskbar extends JPanel {
                             main.setPanel(new NhomQuyen());
                             break;
                         case 10:
-                            main.setPanel(new BaiThi());
+                            main.setPanel(new PhanCong());
                             break;
                         case 11:
                             if (JOptionPane.showConfirmDialog(null, "Đăng xuất?", "Xác nhận", 0) == 0) {

@@ -78,6 +78,15 @@ public class DeThi extends JPanel implements ActionListener, ItemListener {
             table.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);
         }
 
+        table.getColumnModel().getColumn(0).setPreferredWidth(50);  // Mã đề
+        table.getColumnModel().getColumn(1).setPreferredWidth(250); // Tên đề thi
+        table.getColumnModel().getColumn(2).setPreferredWidth(120); // Kỳ thi
+        table.getColumnModel().getColumn(3).setPreferredWidth(150); // Môn học
+        table.getColumnModel().getColumn(4).setPreferredWidth(100); // Thời gian
+        table.getColumnModel().getColumn(5).setPreferredWidth(70);  // Tổng câu
+        table.getColumnModel().getColumn(6).setPreferredWidth(120); // Người tạo
+        table.getColumnModel().getColumn(7).setPreferredWidth(100); // Trạng thái
+
         table.setAutoCreateRowSorter(true);
         TableSorter.configureTableColumnSorter(table, 0, TableSorter.INTEGER_COMPARATOR);
 

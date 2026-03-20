@@ -57,10 +57,10 @@ public final class ChiTietDeThiDialog extends JDialog implements ActionListener 
         pnmain_top.setBorder(new EmptyBorder(10, 10, 10, 10));
         pnmain_top.setBackground(Color.WHITE);
 
-        txtTenDe       = new InputForm("Tên đề thi");
-        txtKyThi       = new InputForm("Kỳ thi");
-        txtMonHoc      = new InputForm("Môn học");
-        txtNguoiTao    = new InputForm("Người tạo");
+        txtTenDe = new InputForm("Tên đề thi");
+        txtKyThi = new InputForm("Kỳ thi");
+        txtMonHoc = new InputForm("Môn học");
+        txtNguoiTao = new InputForm("Người tạo");
         txtThoiGianTao = new InputForm("Thời gian tạo");
         txtThoiGianThi = new InputForm("Thời gian thi (phút)");
 
@@ -76,7 +76,12 @@ public final class ChiTietDeThiDialog extends JDialog implements ActionListener 
         pnmain_bottom.setBorder(new EmptyBorder(5, 10, 5, 10));
         pnmain_bottom.setBackground(Color.WHITE);
 
-        tblModel = new DefaultTableModel();
+        tblModel = new DefaultTableModel() {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false; // Không cho sửa
+            }
+        };
         tblModel.setColumnIdentifiers(new String[]{"STT", "Mã CH", "Nội dung câu hỏi", "Độ khó"});
 
         table = new JTable(tblModel);
@@ -106,8 +111,8 @@ public final class ChiTietDeThiDialog extends JDialog implements ActionListener 
         pnmain_btn.setBorder(new EmptyBorder(10, 10, 10, 10));
         pnmain_btn.setBackground(Color.WHITE);
 
-        btnPdf   = new ButtonCustom("Xuất PDF", "success", 14);
-        btnHuyBo = new ButtonCustom("Đóng",     "danger",  14);
+        btnPdf = new ButtonCustom("Xuất PDF", "success", 14);
+        btnHuyBo = new ButtonCustom("Đóng", "danger", 14);
 
         btnPdf.addActionListener(this);
         btnHuyBo.addActionListener(this);

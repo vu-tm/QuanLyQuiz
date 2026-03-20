@@ -1,10 +1,23 @@
 package GUI.Panel;
 
-import GUI.Main;
 import BUS.NguoiDungBUS;
 import DTO.NguoiDungDTO;
-import helper.IconHelper;
+import GUI.Component.IntegratedSearch;
+import GUI.Component.MainFunction;
+import GUI.Component.PanelBorderRadius;
+import GUI.Component.TableSorter;
+import GUI.Dialog.ChiTietNguoiDungDialog;
+import GUI.Dialog.AddNguoiDungDialog;
+import helper.Formater;
+import helper.Validation;
 import java.awt.*;
+import java.awt.event.*;
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -13,41 +26,45 @@ import java.sql.Date;
 import java.time.LocalDate;
 import java.util.List;
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.CellType;
-import org.apache.poi.ss.usermodel.DataFormatter;
-import org.apache.poi.ss.usermodel.DateUtil;
-import org.apache.poi.xssf.usermodel.XSSFRow;
-import org.apache.poi.xssf.usermodel.XSSFSheet;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
-public class NguoiDung extends JPanel {
+public class NguoiDung extends JPanel implements ActionListener, ItemListener {
+
     private JTextField searchField;
     private JTable table;
     private DefaultTableModel tableModel;
     private NguoiDungBUS bus = new NguoiDungBUS();
 
+    private PanelBorderRadius main, functionBar;
+    private JPanel pnlBorder1, pnlBorder2, pnlBorder3, pnlBorder4, contentCenter;
+    private JScrollPane scrollTable;
+    private MainFunction mainFunction;
+    private IntegratedSearch search;
+
+    private List<NguoiDungDTO> listHienTai = bus.getAll();
+    private Color BackgroundColor = new Color(240, 247, 250);
+
     public NguoiDung() {
         initComponent();
-        loadDataToTable();
-        setupEvents();
+        loadDataTable();
     }
 
     private void initComponent() {
-        setLayout(new BorderLayout());
-        setBackground(Color.WHITE);
+        setBackground(BackgroundColor);
+        setLayout(new BorderLayout(0, 0));
 
-        // HEADER
-        JPanel northPanel = new JPanel(new BorderLayout());
-        northPanel.setBackground(Color.WHITE);
-        northPanel.setBorder(BorderFactory.createEmptyBorder(15, 20, 15, 20));
+        pnlBorder1 = new JPanel();
+        pnlBorder1.setPreferredSize(new Dimension(0, 10));
+        pnlBorder1.setBackground(BackgroundColor);
+        add(pnlBorder1, BorderLayout.NORTH);
 
-        JLabel titleLabel = new JLabel("Tất cả người dùng");
-        titleLabel.setFont(new Font("Arial", Font.BOLD, 18));
-        northPanel.add(titleLabel, BorderLayout.WEST);
+        pnlBorder2 = new JPanel();
+        pnlBorder2.setPreferredSize(new Dimension(0, 10));
+        pnlBorder2.setBackground(BackgroundColor);
+        add(pnlBorder2, BorderLayout.SOUTH);
 
         JButton btnAdd = new JButton("+ Thêm mới");
         btnAdd.setFont(new Font("Arial", Font.BOLD, 14));
@@ -56,30 +73,7 @@ public class NguoiDung extends JPanel {
         btnAdd.setFocusPainted(false);
         btnAdd.setBorder(BorderFactory.createEmptyBorder(8, 15, 8, 15));
         btnAdd.addActionListener(e -> themNguoiDung()); // NÚT THÊM NGƯỜI DÙNG
-
-        JPanel actionPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
-        actionPanel.setBackground(Color.WHITE);
-
-        JButton btnImport = new JButton("Nhập Excel");
-        btnImport.setFont(new Font("Arial", Font.BOLD, 14));
-        btnImport.setBackground(new Color(76, 175, 80));
-        btnImport.setForeground(Color.WHITE);
-        btnImport.setFocusPainted(false);
-        btnImport.setBorder(BorderFactory.createEmptyBorder(8, 15, 8, 15));
-        btnImport.addActionListener(e -> importExcel());
-
-        JButton btnExport = new JButton("Xuất Excel");
-        btnExport.setFont(new Font("Arial", Font.BOLD, 14));
-        btnExport.setBackground(new Color(33, 150, 243));
-        btnExport.setForeground(Color.WHITE);
-        btnExport.setFocusPainted(false);
-        btnExport.setBorder(BorderFactory.createEmptyBorder(8, 15, 8, 15));
-        btnExport.addActionListener(e -> exportExcel());
-
-        actionPanel.add(btnImport);
-        actionPanel.add(btnExport);
-        actionPanel.add(btnAdd);
-        northPanel.add(actionPanel, BorderLayout.EAST);
+        northPanel.add(btnAdd, BorderLayout.EAST);
 
         add(northPanel, BorderLayout.NORTH);
 
@@ -93,7 +87,7 @@ public class NguoiDung extends JPanel {
         searchPanel.setBackground(Color.WHITE);
 
         JLabel searchIconLabel = new JLabel();
-        ImageIcon searchIcon = IconHelper.loadIcon("find.svg", 20, 20);
+        ImageIcon searchIcon = IconHelper.loadIcon("find.png", 20, 20);
         if (searchIcon != null) {
             searchIconLabel.setIcon(searchIcon);
             searchIconLabel.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 5));
@@ -106,33 +100,23 @@ public class NguoiDung extends JPanel {
         searchPanel.add(searchField, BorderLayout.CENTER);
         centerPanel.add(searchPanel, BorderLayout.NORTH);
 
-        // DATA TABLE
-        String[] columns = {"ID", "Username", "Họ tên", "Giới tính", "Ngày sinh", "Nhóm quyền", "Trạng thái", "Hành động"};
+        String[] columns = {"ID", "Username", "Họ tên", "Giới tính", "Ngày sinh", "Nhóm quyền", "Trạng thái"};
         tableModel = new DefaultTableModel(columns, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
-                return column == 7;
+                return false;
             }
         };
-
         table = new JTable(tableModel);
-        table.setRowHeight(50);
+        table.setRowHeight(40);
         table.setFont(new Font("Arial", Font.PLAIN, 13));
-
         table.setSelectionBackground(new Color(240, 240, 240));
         table.setSelectionForeground(Color.BLACK);
-        table.setRowSelectionAllowed(true);
-        table.setColumnSelectionAllowed(false);
-
+        table.getTableHeader().setFont(new Font("Arial", Font.BOLD, 13));
+        table.getTableHeader().setBackground(new Color(245, 245, 245));
+        table.getTableHeader().setPreferredSize(new Dimension(0, 40));
         table.setShowGrid(true);
         table.setGridColor(new Color(220, 220, 220));
-        table.setIntercellSpacing(new Dimension(1, 1));
-
-        JTableHeader header = table.getTableHeader();
-        header.setFont(new Font("Arial", Font.BOLD, 13));
-        header.setBackground(new Color(245, 245, 245));
-        header.setPreferredSize(new Dimension(0, 40));
-        header.setBorder(BorderFactory.createMatteBorder(0, 0, 2, 0, new Color(200, 200, 200)));
 
         DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
         centerRenderer.setHorizontalAlignment(JLabel.CENTER);
@@ -147,46 +131,84 @@ public class NguoiDung extends JPanel {
         table.getColumnModel().getColumn(5).setCellRenderer(centerRenderer);
         table.getColumnModel().getColumn(6).setCellRenderer(centerRenderer);
 
-        table.getColumnModel().getColumn(7).setCellRenderer(new ButtonRenderer());
-        table.getColumnModel().getColumn(7).setCellEditor(new ButtonEditor());
+        table.setAutoCreateRowSorter(true);
+        TableSorter.configureTableColumnSorter(table, 0, TableSorter.INTEGER_COMPARATOR);
 
-        table.getColumnModel().getColumn(0).setPreferredWidth(80);
-        table.getColumnModel().getColumn(1).setPreferredWidth(100);
-        table.getColumnModel().getColumn(2).setPreferredWidth(200);
-        table.getColumnModel().getColumn(3).setPreferredWidth(70);
-        table.getColumnModel().getColumn(4).setPreferredWidth(100);
-        table.getColumnModel().getColumn(5).setPreferredWidth(100);
-        table.getColumnModel().getColumn(6).setPreferredWidth(80);
-        table.getColumnModel().getColumn(7).setPreferredWidth(100);
+        scrollTable = new JScrollPane(table);
+        scrollTable.setBorder(BorderFactory.createLineBorder(new Color(220, 220, 220)));
 
-        JScrollPane scrollPane = new JScrollPane(table);
-        scrollPane.getViewport().setBackground(Color.WHITE);
-        scrollPane.setBorder(BorderFactory.createLineBorder(new Color(220, 220, 220)));
-        centerPanel.add(scrollPane, BorderLayout.CENTER);
+        main = new PanelBorderRadius();
+        main.setLayout(new BorderLayout());
+        main.setBackground(Color.WHITE);
+        main.add(scrollTable, BorderLayout.CENTER);
 
-        add(centerPanel, BorderLayout.CENTER);
+        contentCenter.add(main, BorderLayout.CENTER);
     }
 
-    private void setupEvents() {
-        searchField.addActionListener(e -> {
-            String keyword = searchField.getText().trim();
-            List<NguoiDungDTO> list = bus.search(keyword);
-            loadDataToTable(list);
-        });
+    private void thucHienTimKiem() {
+        String kieuTim = (String) search.cbxChoose.getSelectedItem();
+        String tuKhoa = searchField.getText().trim().toLowerCase();
+        List<NguoiDungDTO> all = bus.getAll();
+        List<NguoiDungDTO> result = new ArrayList<>();
+
+        if (tuKhoa.isEmpty()) {
+            result = all;
+        } else {
+            for (NguoiDungDTO user : all) {
+                boolean match = false;
+                switch (kieuTim) {
+                    case "ID":
+                        match = user.getId().toLowerCase().contains(tuKhoa);
+                        break;
+                    case "Username":
+                        match = user.getUsername().toLowerCase().contains(tuKhoa);
+                        break;
+                    case "Họ tên":
+                        match = user.getHoten().toLowerCase().contains(tuKhoa);
+                        break;
+                    case "Nhóm quyền":
+                        String tenNhom = bus.getTenNhomQuyen(user.getManhomquyen());
+                        match = tenNhom != null && tenNhom.toLowerCase().contains(tuKhoa);
+                        break;
+                    case "Giới tính":
+                        String gioiTinh = user.isGioitinh() ? "nam" : "nữ";
+                        match = gioiTinh.contains(tuKhoa);
+                        break;
+                    case "Năm sinh":
+                        if (user.getNgaysinh() != null) {
+                            String namSinh = String.valueOf(user.getNgaysinh().toLocalDate().getYear());
+                            match = namSinh.contains(tuKhoa);
+                        }
+                        break;
+                    default: // Tất cả
+                        String tenNhomAll = bus.getTenNhomQuyen(user.getManhomquyen());
+                        String gioiTinhAll = user.isGioitinh() ? "nam" : "nữ";
+                        String namSinhAll = user.getNgaysinh() != null
+                                ? String.valueOf(user.getNgaysinh().toLocalDate().getYear()) : "";
+                        match = user.getId().toLowerCase().contains(tuKhoa)
+                                || user.getUsername().toLowerCase().contains(tuKhoa)
+                                || user.getHoten().toLowerCase().contains(tuKhoa)
+                                || (tenNhomAll != null && tenNhomAll.toLowerCase().contains(tuKhoa))
+                                || gioiTinhAll.contains(tuKhoa)
+                                || namSinhAll.contains(tuKhoa);
+                        break;
+                }
+                if (match) {
+                    result.add(user);
+                }
+            }
+        }
+        listHienTai = result;
+        loadDataTable();
     }
 
-    private void loadDataToTable() {
-        List<NguoiDungDTO> list = bus.getAll();
-        loadDataToTable(list);
-    }
-
-    private void loadDataToTable(List<NguoiDungDTO> list) {
+    private void loadDataTable() {
         tableModel.setRowCount(0);
-        for (NguoiDungDTO user : list) {
+        for (NguoiDungDTO user : listHienTai) {
             String gioiTinh = user.isGioitinh() ? "Nam" : "Nữ";
             String trangThai = user.getTrangthai() == 1 ? "Hoạt động" : "Đã khóa";
-            String nhomQuyen = bus.getTenNhomQuyen(user.getManhomquyen()); // Dùng bus
-            String ngaySinh = user.getNgaysinh() != null ? user.getNgaysinh().toString() : "N/A";
+            String nhomQuyen = bus.getTenNhomQuyen(user.getManhomquyen());
+            String ngaySinh = user.getNgaysinh() != null ? Formater.FormatDate(user.getNgaysinh()) : "N/A";
 
             tableModel.addRow(new Object[]{
                 user.getId(),
@@ -195,42 +217,97 @@ public class NguoiDung extends JPanel {
                 gioiTinh,
                 ngaySinh,
                 nhomQuyen,
-                trangThai,
-                ""
+                trangThai
             });
         }
     }
 
-    // XOÁ NGƯỜI DÙNG
-    private void xoaNguoiDung(String id, String hoten) {
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        JFrame owner = (JFrame) SwingUtilities.getWindowAncestor(this);
+        Object src = e.getSource();
+
+        if (src == mainFunction.btn.get("create")) {
+            themNguoiDung(owner);
+        } else if (src == mainFunction.btn.get("update")) {
+            suaNguoiDung(owner);
+        } else if (src == mainFunction.btn.get("delete")) {
+            xoaNguoiDung();
+        } else if (src == mainFunction.btn.get("detail")) {
+            xemChiTiet(owner);
+        } else if (src == mainFunction.btn.get("import")) {
+            importExcel();
+        } else if (src == mainFunction.btn.get("export")) {
+            exportExcel();
+        }
+    }
+
+    @Override
+    public void itemStateChanged(ItemEvent e) {
+        if (e.getStateChange() == ItemEvent.SELECTED) {
+            thucHienTimKiem();
+        }
+    }
+
+    private void themNguoiDung(JFrame owner) {
+        AddNguoiDungDialog dialog = new AddNguoiDungDialog(owner, "Thêm người dùng", null, () -> {
+            listHienTai = bus.getAll();
+            loadDataTable();
+        });
+        dialog.setVisible(true);
+    }
+
+    private void suaNguoiDung(JFrame owner) {
+        int row = table.getSelectedRow();
+        if (row == -1) {
+            JOptionPane.showMessageDialog(this, "Vui lòng chọn người dùng cần sửa!");
+            return;
+        }
+        int modelRow = table.convertRowIndexToModel(row);
+        String id = (String) tableModel.getValueAt(modelRow, 0);
+        NguoiDungDTO user = bus.getById(id);
+        if (user != null) {
+            AddNguoiDungDialog dialog = new AddNguoiDungDialog(owner, "Sửa người dùng", user, () -> {
+                listHienTai = bus.getAll();
+                loadDataTable();
+            });
+            dialog.setVisible(true);
+        } else {
+            JOptionPane.showMessageDialog(this, "Không tìm thấy người dùng!");
+        }
+    }
+
+    private void xoaNguoiDung() {
+        int row = table.getSelectedRow();
+        if (row == -1) {
+            JOptionPane.showMessageDialog(this, "Vui lòng chọn người dùng cần xóa!");
+            return;
+        }
+        int modelRow = table.convertRowIndexToModel(row);
+        String id = (String) tableModel.getValueAt(modelRow, 0);
+        String hoten = (String) tableModel.getValueAt(modelRow, 2);
         int confirm = JOptionPane.showConfirmDialog(this,
-                "Bạn có chắc muốn xóa người dùng \"" + hoten + "\"",
+                "Bạn có chắc muốn xóa người dùng \"" + hoten + "\"?",
                 "Xác nhận xóa", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
         if (confirm == JOptionPane.YES_OPTION) {
-            boolean success = bus.deleteHard(id); // Xóa cứng
-            if (success) {
+            if (bus.delete(id)) {
                 JOptionPane.showMessageDialog(this, "Xóa thành công!");
-                loadDataToTable();
+                listHienTai = bus.getAll();
+                loadDataTable();
             } else {
                 JOptionPane.showMessageDialog(this, "Xóa thất bại!");
             }
         }
     }
-    
-    // THÊM NGƯỜI DÙNG
-    private void themNguoiDung() {
-        JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
-        AddNguoiDung dialog = new AddNguoiDung(
-            parentFrame,
-            "Thêm người dùng",
-            null,
-            this::loadDataToTable
-        );
-        dialog.setVisible(true);
-    }
 
-    // SỬA NGƯỜI DÙNG
-    private void suaNguoiDung(String id) {
+    private void xemChiTiet(JFrame owner) {
+        int row = table.getSelectedRow();
+        if (row == -1) {
+            JOptionPane.showMessageDialog(this, "Vui lòng chọn người dùng cần xem!");
+            return;
+        }
+        int modelRow = table.convertRowIndexToModel(row);
+        String id = (String) tableModel.getValueAt(modelRow, 0);
         NguoiDungDTO user = bus.getById(id);
         if (user != null) {
             JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
@@ -244,142 +321,6 @@ public class NguoiDung extends JPanel {
         } else {
             JOptionPane.showMessageDialog(this, "Không tìm thấy người dùng!", "Lỗi", JOptionPane.ERROR_MESSAGE);
         }
-    }
-
-    private void importExcel() {
-        File excelFile;
-        FileInputStream excelFIS = null;
-        BufferedInputStream excelBIS = null;
-        XSSFWorkbook excelJTableImport = null;
-        JFileChooser jf = new JFileChooser();
-        int result = jf.showOpenDialog(this);
-        int countSuccess = 0, countError = 0;
-        DataFormatter formatter = new DataFormatter();
-
-        if (result == JFileChooser.APPROVE_OPTION) {
-            try {
-                excelFile = jf.getSelectedFile();
-                excelFIS = new FileInputStream(excelFile);
-                excelBIS = new BufferedInputStream(excelFIS);
-                excelJTableImport = new XSSFWorkbook(excelBIS);
-                XSSFSheet excelSheet = excelJTableImport.getSheetAt(0);
-
-                for (int row = 1; row <= excelSheet.getLastRowNum(); row++) {
-                    XSSFRow excelRow = excelSheet.getRow(row);
-                    if (excelRow == null) {
-                        continue;
-                    }
-                    try {
-                        String id = formatter.formatCellValue(excelRow.getCell(0)).trim();
-                        String username = formatter.formatCellValue(excelRow.getCell(1)).trim();
-                        String hoten = formatter.formatCellValue(excelRow.getCell(2)).trim();
-                        String gioiTinhText = formatter.formatCellValue(excelRow.getCell(3)).trim();
-                        Date ngaysinh = parseExcelDate(excelRow.getCell(4), formatter);
-                        String matkhau = formatter.formatCellValue(excelRow.getCell(5)).trim();
-                        int manhomquyen = Integer.parseInt(formatter.formatCellValue(excelRow.getCell(6)).trim());
-                        int trangthai = 1;
-
-                        if (excelRow.getCell(7) != null) {
-                            String trangthaiStr = formatter.formatCellValue(excelRow.getCell(7)).trim();
-                            if (!trangthaiStr.isEmpty()) {
-                                trangthai = Integer.parseInt(trangthaiStr);
-                            }
-                        }
-
-                        if (id.isEmpty() || username.isEmpty() || hoten.isEmpty() || ngaysinh == null) {
-                            countError++;
-                            continue;
-                        }
-
-                        if (bus.checkExistId(id) || bus.checkExistUsername(username)) {
-                            countError++;
-                            continue;
-                        }
-
-                        NguoiDungDTO user = new NguoiDungDTO();
-                        user.setId(id);
-                        user.setUsername(username);
-                        user.setHoten(hoten);
-                        user.setGioitinh(parseGender(gioiTinhText));
-                        user.setNgaysinh(ngaysinh);
-                        user.setMatkhau(matkhau);
-                        user.setTrangthai(trangthai);
-                        user.setManhomquyen(manhomquyen);
-
-                        if (bus.insert(user)) {
-                            countSuccess++;
-                        } else {
-                            countError++;
-                        }
-                    } catch (Exception ex) {
-                        countError++;
-                    }
-                }
-
-                JOptionPane.showMessageDialog(this, "Nhập thành công " + countSuccess + " dòng. Lỗi " + countError + " dòng.");
-                loadDataToTable();
-            } catch (IOException ex) {
-                JOptionPane.showMessageDialog(this, "Lỗi đọc file Excel!");
-            } finally {
-                try {
-                    if (excelJTableImport != null) {
-                        excelJTableImport.close();
-                    }
-                    if (excelBIS != null) {
-                        excelBIS.close();
-                    }
-                    if (excelFIS != null) {
-                        excelFIS.close();
-                    }
-                } catch (IOException ex) {
-                    ex.printStackTrace();
-                }
-            }
-        }
-    }
-
-    private void exportExcel() {
-        try {
-            helper.JTableExporter.exportJTableToExcel(table);
-        } catch (IOException ex) {
-            JOptionPane.showMessageDialog(this, "Xuất file Excel thất bại!");
-        }
-    }
-
-    private boolean parseGender(String value) {
-        String normalized = value == null ? "" : value.trim().toLowerCase();
-        return normalized.equals("1") || normalized.equals("true") || normalized.equals("nam") || normalized.equals("male");
-    }
-
-    private Date parseExcelDate(Cell cell, DataFormatter formatter) {
-        if (cell == null) {
-            return null;
-        }
-        if (cell.getCellType() == CellType.NUMERIC && DateUtil.isCellDateFormatted(cell)) {
-            return new Date(cell.getDateCellValue().getTime());
-        }
-
-        String value = formatter.formatCellValue(cell).trim();
-        if (value.isEmpty()) {
-            return null;
-        }
-
-        try {
-            return Date.valueOf(LocalDate.parse(value)); // yyyy-MM-dd
-        } catch (Exception e) {
-            try {
-                String[] parts = value.split("/");
-                if (parts.length == 3) {
-                    int day = Integer.parseInt(parts[0]);
-                    int month = Integer.parseInt(parts[1]);
-                    int year = Integer.parseInt(parts[2]);
-                    return Date.valueOf(LocalDate.of(year, month, day));
-                }
-            } catch (Exception ex) {
-                return null;
-            }
-        }
-        return null;
     }
 
     // ICON THAO TÁC
@@ -399,8 +340,8 @@ public class NguoiDung extends JPanel {
             btnDelete.setContentAreaFilled(false);
             btnDelete.setFocusPainted(false);
 
-            ImageIcon editIcon = IconHelper.loadIcon("edit.svg", 22, 22);
-            ImageIcon deleteIcon = IconHelper.loadIcon("delete.svg", 22, 22);
+            ImageIcon editIcon = IconHelper.loadIcon("edit.png", 22, 22);
+            ImageIcon deleteIcon = IconHelper.loadIcon("delete.png", 22, 22);
 
             if (editIcon != null) btnEdit.setIcon(editIcon);
             else btnEdit.setText("Sửa");
@@ -468,8 +409,8 @@ public class NguoiDung extends JPanel {
             btnDelete.setContentAreaFilled(false);
             btnDelete.setFocusPainted(false);
 
-            ImageIcon editIcon = IconHelper.loadIcon("edit.svg", 22, 22);
-            ImageIcon deleteIcon = IconHelper.loadIcon("delete.svg", 22, 22);
+            ImageIcon editIcon = IconHelper.loadIcon("edit.png", 22, 22);
+            ImageIcon deleteIcon = IconHelper.loadIcon("delete.png", 22, 22);
 
             if (editIcon != null) btnEdit.setIcon(editIcon);
             else btnEdit.setText("Sửa");

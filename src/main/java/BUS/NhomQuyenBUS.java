@@ -13,7 +13,6 @@ public class NhomQuyenBUS {
     
     public boolean delete(int manhomquyen) {
         if (manhomquyen <= 0) return false;
-        nhomQuyenDao.deleteChiTietQuyen(manhomquyen);
         return nhomQuyenDao.delete(manhomquyen);
     }
     
@@ -43,5 +42,11 @@ public class NhomQuyenBUS {
 
     public List<Integer> getQuyenByNhom(int manhomquyen) {
         return nhomQuyenDao.getQuyenIdsByNhom(manhomquyen);
+    }
+    public boolean checkExistId(int manhomquyen) {
+        return nhomQuyenDao.checkExistId(manhomquyen);
+    }
+    public int getNextId() {
+        return nhomQuyenDao.getNextId();
     }
 }

@@ -11,7 +11,6 @@ public class IconHelper {
             if (imgURL != null) {
                 return new ImageIcon(imgURL);
             } else {
-                System.err.println("Không tìm thấy icon: " + fileName);
                 return null;
             }
         } catch (Exception e) {

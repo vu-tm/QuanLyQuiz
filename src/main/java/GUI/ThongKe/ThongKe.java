@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.awt.GridLayout;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
+import javax.swing.event.ChangeEvent;
 
 public class ThongKe extends JPanel {
 
@@ -12,6 +13,7 @@ public class ThongKe extends JPanel {
     ThongKeCauHoi cauHoi;
     ThongKeHocSinh hocSinh;
     ThongKeDiemThi diemThi;
+    Color primaryColor = new Color(6, 101, 208);
 
     public ThongKe() {
         initComponent();
@@ -33,21 +35,42 @@ public class ThongKe extends JPanel {
         tabbedPane.addTab("Học sinh", hocSinh);
         tabbedPane.addTab("Điểm thi", diemThi);
 
-        this.add(tabbedPane);
-
-        tabbedPane.addChangeListener(e -> {
-            String title = tabbedPane.getTitleAt(tabbedPane.getSelectedIndex());
-            switch (title) {
-                case "Tổng quan":
-                    tongQuan.refreshData(); break;
-                case "Câu hỏi":
-                    cauHoi.refreshTable(); break;
-                case "Học sinh":
-                    hocSinh.refreshTable(); break;
-                case "Điểm thi":
-                    diemThi.refreshFirstTab(); break;
+        // đậm tab dc chọn
+        tabbedPane.addChangeListener((ChangeEvent e) -> {
+            for (int i = 0; i < tabbedPane.getTabCount(); i++) {
+                if (i == tabbedPane.getSelectedIndex()) {
+                    tabbedPane.setForegroundAt(i, primaryColor);
+                } else {
+                    tabbedPane.setForegroundAt(i, Color.BLACK);
+                }
             }
+            refreshCurrentTab();
         });
+        
+        this.add(tabbedPane);
+        updateTabStyles();
+    }
+
+        private void updateTabStyles() {
+        for (int i = 0; i < tabbedPane.getTabCount(); i++) {
+            String title = tabbedPane.getTitleAt(i);
+            if (i == tabbedPane.getSelectedIndex()) {
+                tabbedPane.setTitleAt(i, "<html><b>" + title + "</b></html>");
+            } else {
+                tabbedPane.setTitleAt(i, "<html>" + title + "</html>");
+            }
+        }
+    }
+
+    private void refreshCurrentTab() {
+        updateTabStyles();
+        int index = tabbedPane.getSelectedIndex();
+        switch (index) {
+            case 0 -> tongQuan.refreshData();
+            case 1 -> cauHoi.refreshTable();
+            case 2 -> hocSinh.refreshTable();
+            case 3 -> diemThi.refreshFirstTab();
+        }
     }
 
     public void refreshTongQuan() {

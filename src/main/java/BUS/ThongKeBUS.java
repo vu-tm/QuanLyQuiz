@@ -23,6 +23,7 @@ import java.util.Date;
 import java.util.List;
 
 public class ThongKeBUS {
+    private static final int MA_QUYEN_HOC_SINH = 3;
 
     // ==================== TONG QUAN ====================
 
@@ -47,18 +48,10 @@ public class ThongKeBUS {
     }
 
     public static int getTongSoHocSinh() {
-        String sql = "SELECT COUNT(*) FROM nguoidung nd JOIN nhomquyen nq ON nd.manhomquyen = nq.manhomquyen " +
-                     "WHERE LOWER(nq.tennhomquyen) LIKE '%hoc sinh%' AND nd.trangthai = 1";
-        try (Connection con = JDBCUtil.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
-            if (rs.next()) return rs.getInt(1);
-        } catch (Exception e) { e.printStackTrace(); }
-        // fallback: count all active users
-        String fallback = "SELECT COUNT(*) FROM nguoidung WHERE trangthai = 1";
-        try (Connection con = JDBCUtil.getConnection();
-             PreparedStatement ps = con.prepareStatement(fallback);
-             ResultSet rs = ps.executeQuery()) {
+        String sql = "SELECT COUNT(*) FROM nguoidung WHERE manhomquyen = ? AND trangthai = 1";
+        try (Connection con = JDBCUtil.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, MA_QUYEN_HOC_SINH);
+            ResultSet rs = ps.executeQuery();
             if (rs.next()) return rs.getInt(1);
         } catch (Exception e) { e.printStackTrace(); }
         return 0;
@@ -150,38 +143,24 @@ public class ThongKeBUS {
 
     // ==================== HOC SINH ====================
 
-    public static ArrayList<ThongKeHocSinhDTO> getThongKeHocSinh() {
+     public static ArrayList<ThongKeHocSinhDTO> getThongKeHocSinh(LocalDate start, LocalDate end) {
         ArrayList<ThongKeHocSinhDTO> result = new ArrayList<>();
-        // Lấy học sinh (role có "hoc sinh") + số đề đã làm
-        String sql = "SELECT nd.id, nd.hoten, COUNT(DISTINCT bt.made) AS sode " +
+        String sql = "SELECT nd.id, nd.hoten, COUNT(bt.mabaithi) AS sode " +
                      "FROM nguoidung nd " +
-                     "LEFT JOIN nhomquyen nq ON nd.manhomquyen = nq.manhomquyen " +
-                     "LEFT JOIN baithi bt ON bt.manguoidung = nd.id " +
-                     "WHERE nd.trangthai = 1 AND LOWER(nq.tennhomquyen) LIKE '%hoc sinh%' " +
-                     "GROUP BY nd.id, nd.hoten " +
-                     "ORDER BY sode DESC";
-        try (Connection con = JDBCUtil.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
+                     "LEFT JOIN baithi bt ON nd.id = bt.manguoidung " +
+                     "AND DATE(bt.thoigianvaothi) BETWEEN ? AND ? " +
+                     "WHERE nd.manhomquyen = ? AND nd.trangthai = 1 " +
+                     "GROUP BY nd.id, nd.hoten ORDER BY sode DESC";
+        try (Connection con = JDBCUtil.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setDate(1, java.sql.Date.valueOf(start));
+            ps.setDate(2, java.sql.Date.valueOf(end));
+            ps.setInt(3, MA_QUYEN_HOC_SINH);
+            ResultSet rs = ps.executeQuery();
             int stt = 1;
             while (rs.next()) {
                 result.add(new ThongKeHocSinhDTO(stt++, rs.getString("id"), rs.getString("hoten"), rs.getInt("sode")));
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-            // Fallback: lấy tất cả người dùng
-            String fallback = "SELECT nd.id, nd.hoten, COUNT(DISTINCT bt.made) AS sode " +
-                              "FROM nguoidung nd LEFT JOIN baithi bt ON bt.manguoidung = nd.id " +
-                              "WHERE nd.trangthai = 1 GROUP BY nd.id, nd.hoten ORDER BY sode DESC";
-            try (Connection con = JDBCUtil.getConnection();
-                 PreparedStatement ps2 = con.prepareStatement(fallback);
-                 ResultSet rs2 = ps2.executeQuery()) {
-                int stt = 1;
-                while (rs2.next()) {
-                    result.add(new ThongKeHocSinhDTO(stt++, rs2.getString("id"), rs2.getString("hoten"), rs2.getInt("sode")));
-                }
-            } catch (Exception ex) { ex.printStackTrace(); }
-        }
+        } catch (Exception e) { e.printStackTrace(); }
         return result;
     }
 

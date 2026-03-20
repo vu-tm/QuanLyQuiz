@@ -35,8 +35,8 @@ public class ThongKeTongQuan extends JPanel {
 
     // Giống hệt code mẫu: mảng getSt khởi tạo với dữ liệu thực từ DAO
     String[][] getSt = {
-        {"Tổng số đề thi",   "dethi.svg",    Integer.toString(DeThiDAO.getInstance().selectAll().size())},
-        {"Tổng số câu hỏi",  "question.svg", Integer.toString(new CauHoiDAO().getAll().size())},
+        {"Tổng số đề thi", "dethi.svg", Integer.toString(DeThiDAO.getInstance().selectAll().size())},
+        {"Tổng số câu hỏi", "question.svg", Integer.toString(new CauHoiDAO().getAll().size())},
         {"Tổng số học sinh", "nguoidung.svg", Integer.toString(NguoiDungDAO.getInstance().getAll().size())}
     };
 
@@ -71,9 +71,9 @@ public class ThongKeTongQuan extends JPanel {
         for (ThongKeTungNgayTrongThangDTO i : dataset) {
             tblModel.addRow(new Object[]{
                 i.getNgay(),
-                String.format("%.1f", i.getDiemCaoNhat()),
-                String.format("%.1f", i.getDiemThapNhat()),
-                String.format("%.1f", i.getDiemTrungBinh())
+                String.format("%.2f", i.getDiemCaoNhat()),
+                String.format("%.2f", i.getDiemThapNhat()),
+                String.format("%.2f", i.getDiemTrungBinh())
             });
         }
         tableThongKe.setRowHeight(28);
@@ -94,6 +94,8 @@ public class ThongKeTongQuan extends JPanel {
         listitem = new itemTaskbar[getSt.length];
         for (int i = 0; i < getSt.length; i++) {
             listitem[i] = new itemTaskbar(getSt[i][1], getSt[i][2], getSt[i][0], 0);
+            listitem[i].setBackground(Color.WHITE);
+            listitem[i].setForeground(new Color(6, 101, 208));
             jp_top.add(listitem[i]);
         }
 

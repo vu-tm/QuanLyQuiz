@@ -3,36 +3,34 @@ package GUI.ThongKe;
 import BUS.ThongKeBUS;
 import DTO.ThongKe.ThongKeHocSinhDTO;
 import GUI.Component.InputForm;
+import GUI.Component.InputDate;
 import GUI.Component.PanelBorderRadius;
 import GUI.Component.TableSorter;
 import helper.JTableExporter;
-
 import java.awt.*;
 import java.awt.event.*;
-import java.io.IOException;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.Date;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 
 public class ThongKeHocSinh extends JPanel implements ActionListener, KeyListener {
-
     PanelBorderRadius pnlLeft, pnlCenter;
     JTable tblHocSinh;
-    JScrollPane scrollTbl;
     DefaultTableModel tblModel;
     InputForm inputSearch;
+    InputDate dateStart, dateEnd; // Sử dụng class InputDate của bạn
     JButton btnExport, btnReset;
     ArrayList<ThongKeHocSinhDTO> list;
-    private final Font font = new Font("Arial", Font.BOLD, 14);
+    Color primaryColor = new Color(6, 101, 208); // Màu #0665d0 bạn yêu cầu
 
     public ThongKeHocSinh() {
-        list = ThongKeBUS.getThongKeHocSinh();
         initComponent();
-        loadDataTable(list);
+        refreshTable();
     }
 
     private void initComponent() {
@@ -40,74 +38,82 @@ public class ThongKeHocSinh extends JPanel implements ActionListener, KeyListene
         this.setOpaque(false);
         this.setBorder(new EmptyBorder(10, 10, 10, 10));
 
+        // PANEL TRÁI - Chỉnh Layout để không bị "lòi"
         pnlLeft = new PanelBorderRadius();
         pnlLeft.setPreferredSize(new Dimension(300, 100));
-        pnlLeft.setLayout(new BorderLayout());
-        pnlLeft.setBorder(new EmptyBorder(0, 0, 0, 5));
-
-        JPanel leftContent = new JPanel(new GridLayout(3, 1));
-        leftContent.setPreferredSize(new Dimension(300, 200));
-        pnlLeft.add(leftContent, BorderLayout.NORTH);
+        pnlLeft.setLayout(new FlowLayout(FlowLayout.CENTER, 0, 10));
+        pnlLeft.setBackground(Color.WHITE);
 
         inputSearch = new InputForm("Tìm kiếm học sinh");
-        inputSearch.getTxtForm().putClientProperty("JTextField.showClearButton", true);
+        inputSearch.setPreferredSize(new Dimension(280, 80)); // Fix kích thước để nằm gọn trong 300px
         inputSearch.getTxtForm().addKeyListener(this);
-        inputSearch.getLblTitle().setFont(font);
 
-        JPanel btnLayout = new JPanel(new BorderLayout());
-        btnLayout.setPreferredSize(new Dimension(30, 36));
-        btnLayout.setBorder(new EmptyBorder(20, 10, 0, 10));
-        btnLayout.setBackground(Color.WHITE);
+        dateStart = new InputDate("Từ ngày");
+        dateStart.setPreferredSize(new Dimension(280, 80));
+        
+        dateEnd = new InputDate("Đến ngày");
+        dateEnd.setPreferredSize(new Dimension(280, 80));
 
-        JPanel btnInner = new JPanel(new GridLayout(1, 2, 10, 10));
-        btnInner.setOpaque(false);
+        // Thiết lập ngày mặc định dùng hàm setDate(Date d) có sẵn trong component của bạn
+        LocalDate now = LocalDate.now();
+        LocalDate firstDay = now.withDayOfMonth(1);
+        
+        // Chuyển LocalDate sang Date để dùng hàm setDate của bạn
+        Date dStart = Date.from(firstDay.atStartOfDay(ZoneId.systemDefault()).toInstant());
+        Date dEnd = new Date();
+        
+        dateStart.setDate(dStart);
+        dateEnd.setDate(dEnd);
 
+        // Lắng nghe thay đổi ngày (Dùng dateTimePicker trực tiếp từ component của bạn)
+        dateStart.dateTimePicker.addDateTimeChangeListener(e -> refreshTable());
+        dateEnd.dateTimePicker.addDateTimeChangeListener(e -> refreshTable());
+
+        // Group nút bấm
+        JPanel btnGroup = new JPanel(new GridLayout(1, 2, 10, 0));
+        btnGroup.setPreferredSize(new Dimension(280, 45));
+        btnGroup.setOpaque(false);
         btnExport = createButton("Xuất Excel", new Color(76, 175, 80));
-        btnReset = createButton("Làm mới", new Color(72, 118, 255));
+        btnReset = createButton("Làm mới", primaryColor);
         btnExport.addActionListener(this);
         btnReset.addActionListener(this);
+        btnGroup.add(btnExport);
+        btnGroup.add(btnReset);
 
-        btnInner.add(btnExport);
-        btnInner.add(btnReset);
-        btnLayout.add(btnInner, BorderLayout.NORTH);
+        pnlLeft.add(inputSearch);
+        pnlLeft.add(dateStart);
+        pnlLeft.add(dateEnd);
+        pnlLeft.add(btnGroup);
 
-        leftContent.add(inputSearch);
-        leftContent.add(new JPanel());
-        leftContent.add(btnLayout);
-
+        // PANEL GIỮA (Bảng dữ liệu)
         pnlCenter = new PanelBorderRadius();
-        pnlCenter.setLayout(new BoxLayout(pnlCenter, BoxLayout.Y_AXIS));
-
-        tblHocSinh = new JTable();
-        scrollTbl = new JScrollPane();
-        tblModel = new DefaultTableModel();
-        String[] header = {"STT", "Mã học sinh", "Tên học sinh", "Số đề đã làm"};
-        tblModel.setColumnIdentifiers(header);
-        tblHocSinh.setModel(tblModel);
-        tblHocSinh.setAutoCreateRowSorter(true);
-        tblHocSinh.setDefaultEditor(Object.class, null);
-        scrollTbl.setViewportView(tblHocSinh);
-
+        pnlCenter.setLayout(new BorderLayout());
+        tblModel = new DefaultTableModel(new String[]{"STT", "Mã học sinh", "Tên học sinh", "Số đề đã làm"}, 0);
+        tblHocSinh = new JTable(tblModel);
+        tblHocSinh.setRowHeight(35);
+        tblHocSinh.setSelectionBackground(new Color(187, 222, 251));
+        
         DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
         centerRenderer.setHorizontalAlignment(JLabel.CENTER);
         tblHocSinh.setDefaultRenderer(Object.class, centerRenderer);
-        tblHocSinh.setFocusable(false);
-        tblHocSinh.setRowHeight(30);
-
-        tblHocSinh.getColumnModel().getColumn(0).setPreferredWidth(30);
-        tblHocSinh.getColumnModel().getColumn(1).setPreferredWidth(100);
-        tblHocSinh.getColumnModel().getColumn(2).setPreferredWidth(250);
-        tblHocSinh.getColumnModel().getColumn(3).setPreferredWidth(100);
-
-        TableSorter.configureTableColumnSorter(tblHocSinh, 0, TableSorter.INTEGER_COMPARATOR);
-        TableSorter.configureTableColumnSorter(tblHocSinh, 1, TableSorter.STRING_COMPARATOR);
-        TableSorter.configureTableColumnSorter(tblHocSinh, 2, TableSorter.STRING_COMPARATOR);
-        TableSorter.configureTableColumnSorter(tblHocSinh, 3, TableSorter.INTEGER_COMPARATOR);
-
-        pnlCenter.add(scrollTbl);
+        
+        pnlCenter.add(new JScrollPane(tblHocSinh), BorderLayout.CENTER);
 
         this.add(pnlLeft, BorderLayout.WEST);
         this.add(pnlCenter, BorderLayout.CENTER);
+    }
+
+    public void refreshTable() {
+        // Sử dụng hàm getDate() có sẵn trong InputDate của bạn
+        Date start = dateStart.getDate();
+        Date end = dateEnd.getDate();
+        
+        if (start != null && end != null) {
+            LocalDate lStart = start.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+            LocalDate lEnd = end.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+            list = ThongKeBUS.getThongKeHocSinh(lStart, lEnd);
+            loadDataTable(list);
+        }
     }
 
     public void loadDataTable(ArrayList<ThongKeHocSinhDTO> data) {
@@ -117,67 +123,42 @@ public class ThongKeHocSinh extends JPanel implements ActionListener, KeyListene
         }
     }
 
-    public void refreshTable() {
-        list = ThongKeBUS.getThongKeHocSinh();
-        loadDataTable(list);
-    }
-
     @Override
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == btnExport) {
-            try { JTableExporter.exportJTableToExcel(tblHocSinh); }
-            catch (IOException ex) { Logger.getLogger(ThongKeHocSinh.class.getName()).log(Level.SEVERE, null, ex); }
+            try { JTableExporter.exportJTableToExcel(tblHocSinh); } catch (Exception ex) {}
         } else if (e.getSource() == btnReset) {
             inputSearch.setText("");
-            list = ThongKeBUS.getThongKeHocSinh();
-            loadDataTable(list);
+            LocalDate now = LocalDate.now();
+            dateStart.setDate(Date.from(now.withDayOfMonth(1).atStartOfDay(ZoneId.systemDefault()).toInstant()));
+            dateEnd.setDate(new Date());
+            refreshTable();
         }
     }
-
-    @Override
-    public void keyTyped(KeyEvent e) {}
-    @Override
-    public void keyPressed(KeyEvent e) {}
 
     @Override
     public void keyReleased(KeyEvent e) {
-        if (inputSearch.getDocument().isEmpty()) {
-            loadDataTable(list);
-        } else {
-            ArrayList<ThongKeHocSinhDTO> temp = new ArrayList<>();
+        String txt = inputSearch.getText().toLowerCase();
+        ArrayList<ThongKeHocSinhDTO> temp = new ArrayList<>();
+        if (list != null) {
             for (ThongKeHocSinhDTO i : list) {
-                if (i.getManguoidung().toUpperCase().contains(inputSearch.getDocument().toUpperCase()) ||
-                    i.getHoten().toUpperCase().contains(inputSearch.getDocument().toUpperCase())) {
+                if (i.getHoten().toLowerCase().contains(txt) || i.getManguoidung().toLowerCase().contains(txt)) {
                     temp.add(i);
                 }
             }
-            loadDataTable(temp);
         }
+        loadDataTable(temp);
     }
+    public void keyTyped(KeyEvent e) {}
+    public void keyPressed(KeyEvent e) {}
 
-    public JButton createButton(String text, Color bgColor) {
-        JButton button = new JButton(text) {
-            @Override
-            protected void paintComponent(Graphics g) {
-                Graphics2D g2 = (Graphics2D) g.create();
-                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                Color actualBgColor = bgColor;
-                if (getModel().isPressed()) actualBgColor = bgColor.darker();
-                else if (getModel().isRollover()) actualBgColor = bgColor.brighter();
-                g2.setColor(actualBgColor);
-                g2.fillRoundRect(0, 0, getWidth(), getHeight(), 15, 15);
-                super.paintComponent(g2);
-                g2.dispose();
-            }
-        };
-        button.setFont(new Font("Arial", Font.BOLD, 14));
-        button.setForeground(Color.WHITE);
-        button.setFocusPainted(false);
-        button.setBorderPainted(false);
-        button.setContentAreaFilled(false);
-        button.setOpaque(false);
-        button.setPreferredSize(new Dimension(140, 40));
-        button.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
-        return button;
+    private JButton createButton(String text, Color bgColor) {
+        JButton btn = new JButton(text);
+        btn.setBackground(bgColor);
+        btn.setForeground(Color.WHITE);
+        btn.setFont(new Font("Arial", Font.BOLD, 13));
+        btn.setFocusPainted(false);
+        btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        return btn;
     }
 }

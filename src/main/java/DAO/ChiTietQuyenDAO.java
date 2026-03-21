@@ -13,7 +13,7 @@ public class ChiTietQuyenDAO {
     public int insert(ArrayList<ChiTietQuyenDTO> list) {
         int result = 0;
         try (Connection con = JDBCUtil.getConnection()) {
-            String sql = "INSERT INTO ctquyen (manhomquyen, machucnang, hanhdong) VALUES (?,?,?)";
+            String sql = "INSERT INTO chitietquyen (manhomquyen, machucnang, hanhdong) VALUES (?,?,?)";
             PreparedStatement pst = con.prepareStatement(sql);
             for (ChiTietQuyenDTO item : list) {
                 pst.setInt(1, item.getManhomquyen());
@@ -30,7 +30,7 @@ public class ChiTietQuyenDAO {
     public int delete(int manhomquyen) {
         int result = 0;
         try (Connection con = JDBCUtil.getConnection()) {
-            String sql = "DELETE FROM ctquyen WHERE manhomquyen = ?";
+            String sql = "DELETE FROM chitietquyen WHERE manhomquyen = ?";
             PreparedStatement pst = con.prepareStatement(sql);
             pst.setInt(1, manhomquyen);
             result = pst.executeUpdate();
@@ -43,7 +43,7 @@ public class ChiTietQuyenDAO {
     public ArrayList<ChiTietQuyenDTO> selectAll(int manhomquyen) {
         ArrayList<ChiTietQuyenDTO> result = new ArrayList<>();
         try (Connection con = JDBCUtil.getConnection()) {
-            String sql = "SELECT * FROM ctquyen WHERE manhomquyen = ?";
+            String sql = "SELECT * FROM chitietquyen WHERE manhomquyen = ?";
             PreparedStatement pst = con.prepareStatement(sql);
             pst.setInt(1, manhomquyen);
             ResultSet rs = pst.executeQuery();

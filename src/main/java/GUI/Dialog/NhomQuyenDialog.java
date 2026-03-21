@@ -134,12 +134,17 @@ public class NhomQuyenDialog extends JDialog implements ActionListener {
 
     private void initUpdate() {
         txtTennhomquyen.setText(nqDTO.getTennhomquyen());
-        if (ctQuyen == null) return;
+        if (ctQuyen == null) {
+            return;
+        }
         for (ChiTietQuyenDTO k : ctQuyen) {
             for (int i = 0; i < sizeDmCn; i++) {
                 for (int j = 0; j < sizeHanhdong; j++) {
-                    if (k.getHanhdong().equals(mahanhdong[j])
-                            && k.getMachucnang().equals(dmcn.get(i).getMachucnang())) {
+                    String maTrongList = String.valueOf(dmcn.get(i).getMachucnang());
+                    String maTrongDTO = String.valueOf(k.getMachucnang());
+
+                    if (k.getHanhdong().equalsIgnoreCase(mahanhdong[j])
+                            && maTrongDTO.equals(maTrongList)) {
                         listCheckBox[i][j].setSelected(true);
                     }
                 }

@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Mar 21, 2026 at 11:31 AM
+-- Generation Time: Mar 21, 2026 at 12:03 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.0.30
 
@@ -138,49 +138,49 @@ CREATE TABLE `chitietquyen` (
 --
 
 INSERT INTO `chitietquyen` (`manhomquyen`, `machucnang`, `hanhdong`) VALUES
-(1, 1, 'add'),
+(1, 1, 'create'),
 (1, 1, 'delete'),
-(1, 1, 'edit'),
+(1, 1, 'update'),
 (1, 1, 'view'),
-(1, 2, 'add'),
+(1, 2, 'create'),
 (1, 2, 'delete'),
-(1, 2, 'edit'),
+(1, 2, 'update'),
 (1, 2, 'view'),
-(1, 3, 'add'),
+(1, 3, 'create'),
 (1, 3, 'delete'),
-(1, 3, 'edit'),
+(1, 3, 'update'),
 (1, 3, 'view'),
-(1, 4, 'add'),
+(1, 4, 'create'),
 (1, 4, 'delete'),
-(1, 4, 'edit'),
+(1, 4, 'update'),
 (1, 4, 'view'),
-(1, 5, 'add'),
+(1, 5, 'create'),
 (1, 5, 'delete'),
-(1, 5, 'edit'),
+(1, 5, 'update'),
 (1, 5, 'view'),
-(1, 6, 'add'),
+(1, 6, 'create'),
 (1, 6, 'delete'),
-(1, 6, 'edit'),
+(1, 6, 'update'),
 (1, 6, 'view'),
-(1, 7, 'add'),
+(1, 7, 'create'),
 (1, 7, 'delete'),
-(1, 7, 'edit'),
+(1, 7, 'update'),
 (1, 7, 'view'),
-(1, 8, 'add'),
+(1, 8, 'create'),
 (1, 8, 'delete'),
-(1, 8, 'edit'),
+(1, 8, 'update'),
 (1, 8, 'view'),
-(1, 9, 'add'),
+(1, 9, 'create'),
 (1, 9, 'delete'),
-(1, 9, 'edit'),
+(1, 9, 'update'),
 (1, 9, 'view'),
-(1, 10, 'add'),
+(1, 10, 'create'),
 (1, 10, 'delete'),
-(1, 10, 'edit'),
+(1, 10, 'update'),
 (1, 10, 'view'),
-(1, 11, 'add'),
+(1, 11, 'create'),
 (1, 11, 'delete'),
-(1, 11, 'edit'),
+(1, 11, 'update'),
 (1, 11, 'view');
 
 -- --------------------------------------------------------

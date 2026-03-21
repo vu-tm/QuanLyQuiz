@@ -11,6 +11,7 @@ import java.sql.Timestamp;
  * @author Windows
  */
 public class BaiThiDTO {
+
     private int mabaithi;
     private int made;
     private int manguoidung;
@@ -18,7 +19,7 @@ public class BaiThiDTO {
     private Timestamp thoigianvaothi;
     private int thoigianlambai;
     private int socaudung;
-    private int socausai; // Thêm mới
+    private int socausai;
 
     public BaiThiDTO() {
     }
@@ -31,9 +32,9 @@ public class BaiThiDTO {
         this.thoigianvaothi = thoigianvaothi;
         this.thoigianlambai = thoigianlambai;
         this.socaudung = socaudung;
-        this.socausai = socausai; // Thêm mới
+        this.socausai = socausai;
     }
-        
+
     // Getters and Setters
     public int getMabaithi() {
         return mabaithi;

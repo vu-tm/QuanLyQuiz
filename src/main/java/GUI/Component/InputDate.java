@@ -48,7 +48,7 @@ public class InputDate extends JPanel {
         this.add(lbltitle);
         this.add(date);
     }
-    
+
     public JDateChooser getDateChooser() {
         return this.date;
     }
@@ -67,12 +67,20 @@ public class InputDate extends JPanel {
     public JLabel getLbltitle() {
         return lbltitle;
     }
-    
+
     public void setDate(JDateChooser date) {
         this.date = date;
     }
 
     public void setDate(Date date) {
         this.date.setDate(date);
+    }
+
+    public void setDisable() {
+        this.date.setEnabled(false);
+        this.date.getCalendarButton().setEnabled(false);
+        if (this.date.getDateEditor() instanceof com.toedter.calendar.JTextFieldDateEditor) {
+            ((com.toedter.calendar.JTextFieldDateEditor) this.date.getDateEditor()).setEditable(false);
+        }
     }
 }

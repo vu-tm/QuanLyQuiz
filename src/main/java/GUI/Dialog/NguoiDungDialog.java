@@ -5,198 +5,263 @@ import BUS.NhomQuyenBUS;
 import DTO.NguoiDungDTO;
 import DTO.NhomQuyenDTO;
 import GUI.Component.ButtonCustom;
+import GUI.Component.InputDate;
 import GUI.Component.InputForm;
 import GUI.Panel.NguoiDung;
 import helper.Validation;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.sql.Date;
+import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 
 public class NguoiDungDialog extends JDialog {
 
-    private InputForm txtUsername, txtHoten, txtNgaySinh, txtMatKhau;
-    private JComboBox<String> cbxGioiTinh, cbxNhomQuyen, cbxTrangThai;
-    private ButtonCustom btnLuu, btnHuy;
     private NguoiDungBUS bus = new NguoiDungBUS();
     private NhomQuyenBUS nqBus = new NhomQuyenBUS();
     private NguoiDung parent;
     private NguoiDungDTO currentDTO;
-    private JPanel pnlMain, pnlButtons;
+    
+    private JPanel main, bottom;
+    private ButtonCustom btnAdd, btnEdit, btnExit;
+    private InputForm txtUsername, txtHoten, txtMatKhau;
+    private InputDate jcNgaySinh;
+    private JRadioButton male, female;
+    private ButtonGroup genderGroup;
+    private JComboBox<String> cbxNhomQuyen, cbxTrangThai;
     private List<NhomQuyenDTO> listNhomQuyen = nqBus.getAll();
+
+    public NguoiDungDialog(NguoiDung parent, JFrame owner, String title, boolean modal, String type) {
+        super(owner, title, modal);
+        this.parent = parent;
+        init(title, type);
+        this.setLocationRelativeTo(null);
+        this.setVisible(true);
+    }
 
     public NguoiDungDialog(NguoiDung parent, JFrame owner, String title, boolean modal, String type, NguoiDungDTO user) {
         super(owner, title, modal);
         this.parent = parent;
         this.currentDTO = user;
-        init(type);
-    }
-
-    private void init(String type) {
-        this.setSize(500, 600);
-        this.setLayout(new BorderLayout());
-        this.setLocationRelativeTo(null);
-        this.getContentPane().setBackground(Color.WHITE);
-
-        initPnlMain(type);
-        initPnlButtons(type);
-
-        JScrollPane scrollPane = new JScrollPane(pnlMain);
-        scrollPane.setBorder(null);
-        this.add(scrollPane, BorderLayout.CENTER);
-        this.add(pnlButtons, BorderLayout.SOUTH);
-
-        if (type.equals("view")) {
-            disableAll();
-        }
-
-        this.setVisible(true);
-    }
-
-    private void initPnlMain(String type) {
-        pnlMain = new JPanel();
-        pnlMain.setLayout(new BoxLayout(pnlMain, BoxLayout.Y_AXIS));
-        pnlMain.setBorder(new EmptyBorder(20, 25, 20, 25));
-        pnlMain.setBackground(Color.WHITE);
-
-        txtUsername = new InputForm("Username");
-        txtHoten = new InputForm("Họ và tên");
-        txtNgaySinh = new InputForm("Ngày sinh (yyyy-MM-dd)");
-        txtMatKhau = new InputForm("Mật khẩu");
-
-        // Giới tính
-        JPanel pnlGioiTinh = new JPanel(new BorderLayout());
-        pnlGioiTinh.setBackground(Color.WHITE);
-        pnlGioiTinh.add(new JLabel("Giới tính"), BorderLayout.NORTH);
-        cbxGioiTinh = new JComboBox<>(new String[]{"Nam", "Nữ"});
-        cbxGioiTinh.setPreferredSize(new Dimension(0, 40));
-        pnlGioiTinh.add(cbxGioiTinh, BorderLayout.CENTER);
-
-        // Nhóm quyền
-        JPanel pnlNhomQuyen = new JPanel(new BorderLayout());
-        pnlNhomQuyen.setBackground(Color.WHITE);
-        pnlNhomQuyen.add(new JLabel("Nhóm quyền"), BorderLayout.NORTH);
-        cbxNhomQuyen = new JComboBox<>();
-        for (NhomQuyenDTO nq : listNhomQuyen) {
-            cbxNhomQuyen.addItem(nq.getTennhomquyen());
-        }
-        cbxNhomQuyen.setPreferredSize(new Dimension(0, 40));
-        pnlNhomQuyen.add(cbxNhomQuyen, BorderLayout.CENTER);
-
-        // Trạng thái
-        JPanel pnlTrangThai = new JPanel(new BorderLayout());
-        pnlTrangThai.setBackground(Color.WHITE);
-        pnlTrangThai.add(new JLabel("Trạng thái"), BorderLayout.NORTH);
-        cbxTrangThai = new JComboBox<>(new String[]{"Đã khóa", "Hoạt động"});
-        cbxTrangThai.setSelectedIndex(1);
-        cbxTrangThai.setPreferredSize(new Dimension(0, 40));
-        pnlTrangThai.add(cbxTrangThai, BorderLayout.CENTER);
-
-        if (currentDTO != null) {
-            txtUsername.setText(currentDTO.getUsername());
-            txtUsername.setEditable(false);
-            txtHoten.setText(currentDTO.getHoten());
-            txtNgaySinh.setText(currentDTO.getNgaysinh().toString());
-            txtMatKhau.setText(currentDTO.getMatkhau());
-            cbxGioiTinh.setSelectedIndex(currentDTO.isGioitinh() ? 0 : 1);
-            cbxTrangThai.setSelectedIndex(currentDTO.getTrangthai());
-            // Set nhóm quyền
+        init(title, type);
+        
+        if (user != null) {
+            txtUsername.setText(user.getUsername());
+            txtHoten.setText(user.getHoten());
+            txtMatKhau.setText(user.getMatkhau());
+            jcNgaySinh.setDate(user.getNgaysinh());
+            
+            if (user.isGioitinh()) {
+                male.setSelected(true);
+            } else {
+                female.setSelected(true);
+            }
+            
             for (int i = 0; i < listNhomQuyen.size(); i++) {
-                if (listNhomQuyen.get(i).getManhomquyen() == currentDTO.getManhomquyen()) {
+                if (listNhomQuyen.get(i).getManhomquyen() == user.getManhomquyen()) {
                     cbxNhomQuyen.setSelectedIndex(i);
                     break;
                 }
             }
+            cbxTrangThai.setSelectedIndex(user.getTrangthai());
+        }
+        
+        if (type.equals("view")) {
+            setDisableAll();
         }
 
-        pnlMain.add(txtUsername);
-        pnlMain.add(Box.createVerticalStrut(10));
-        pnlMain.add(txtHoten);
-        pnlMain.add(Box.createVerticalStrut(10));
-        pnlMain.add(txtNgaySinh);
-        pnlMain.add(Box.createVerticalStrut(10));
-        pnlMain.add(txtMatKhau);
-        pnlMain.add(Box.createVerticalStrut(10));
-        pnlMain.add(pnlGioiTinh);
-        pnlMain.add(Box.createVerticalStrut(10));
-        pnlMain.add(pnlNhomQuyen);
-        pnlMain.add(Box.createVerticalStrut(10));
-        pnlMain.add(pnlTrangThai);
+        this.setLocationRelativeTo(null);
+        this.setVisible(true);
     }
 
-    private void initPnlButtons(String type) {
-        pnlButtons = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 15));
-        pnlButtons.setBackground(Color.WHITE);
-        pnlButtons.setBorder(new EmptyBorder(0, 0, 10, 0));
+    public void init(String title, String type) {
+        // Giảm kích thước Dialog xuống vì các thành phần đã gọn hơn
+        this.setSize(new Dimension(450, 600));
+        this.setLayout(new BorderLayout(0, 0));
 
-        btnLuu = new ButtonCustom(type.equals("create") ? "Thêm mới" : "Lưu thay đổi", "success", 14);
-        btnHuy = new ButtonCustom("Huỷ bỏ", "danger", 14);
+        main = new JPanel();
+        main.setLayout(new BoxLayout(main, BoxLayout.Y_AXIS));
+        main.setBackground(Color.WHITE);
+        // Padding ngoài cùng nhỏ lại
+        main.setBorder(new EmptyBorder(5, 15, 5, 15));
 
-        btnLuu.addActionListener(e -> {
-            if (validateInput()) {
-                luuDuLieu(type);
+        txtUsername = new InputForm("Username");
+        txtHoten = new InputForm("Họ và tên");
+        txtMatKhau = new InputForm("Mật khẩu");
+
+        male = new JRadioButton("Nam");
+        female = new JRadioButton("Nữ");
+        male.setBackground(Color.WHITE);
+        female.setBackground(Color.WHITE);
+        genderGroup = new ButtonGroup();
+        genderGroup.add(male);
+        genderGroup.add(female);
+
+        JPanel pnlGender = new JPanel(new GridLayout(2, 1, 0, 0));
+        pnlGender.setBackground(Color.WHITE);
+        pnlGender.setBorder(new EmptyBorder(0, 10, 5, 10)); // Giảm padding
+        JLabel lbGender = new JLabel("Giới tính");
+        lbGender.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        JPanel pnlRadio = new JPanel(new GridLayout(1, 2));
+        pnlRadio.setBackground(Color.WHITE);
+        pnlRadio.add(male);
+        pnlRadio.add(female);
+        pnlGender.add(lbGender);
+        pnlGender.add(pnlRadio);
+
+        jcNgaySinh = new InputDate("Ngày sinh");
+        // Thu nhỏ padding bên trong InputDate nếu có thể thông qua component
+
+        // Nhóm quyền
+        JPanel pnlNQ = new JPanel(new GridLayout(2, 1, 0, 5));
+        pnlNQ.setBackground(Color.WHITE);
+        pnlNQ.setBorder(new EmptyBorder(5, 10, 5, 10));
+        JLabel lbNQ = new JLabel("Nhóm quyền");
+        lbNQ.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        pnlNQ.add(lbNQ);
+        cbxNhomQuyen = new JComboBox<>();
+        for (NhomQuyenDTO nq : listNhomQuyen) {
+            cbxNhomQuyen.addItem(nq.getTennhomquyen());
+        }
+        cbxNhomQuyen.setPreferredSize(new Dimension(0, 35)); // Tăng chiều cao Dropdown
+        pnlNQ.add(cbxNhomQuyen);
+
+        // Trạng thái
+        JPanel pnlTT = new JPanel(new GridLayout(2, 1, 0, 5));
+        pnlTT.setBackground(Color.WHITE);
+        pnlTT.setBorder(new EmptyBorder(5, 10, 5, 10));
+        JLabel lbTT = new JLabel("Trạng thái");
+        lbTT.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        pnlTT.add(lbTT);
+        cbxTrangThai = new JComboBox<>(new String[]{"Đã khóa", "Hoạt động"});
+        cbxTrangThai.setSelectedIndex(1);
+        cbxTrangThai.setPreferredSize(new Dimension(0, 35)); // Tăng chiều cao Dropdown
+        pnlTT.add(cbxTrangThai);
+
+        main.add(txtUsername);
+        main.add(txtHoten);
+        main.add(txtMatKhau);
+        main.add(pnlGender);
+        main.add(jcNgaySinh);
+        main.add(pnlNQ);
+        main.add(pnlTT);
+
+        bottom = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
+        bottom.setBackground(Color.WHITE);
+
+        btnAdd = new ButtonCustom("Thêm người dùng", "success", 14);
+        btnEdit = new ButtonCustom("Lưu thông tin", "success", 14);
+        btnExit = new ButtonCustom("Hủy bỏ", "danger", 14);
+
+        btnExit.addActionListener(e -> dispose());
+
+        btnAdd.addActionListener(e -> {
+            try {
+                if (validateInput()) {
+                    if (bus.checkExistUsername(txtUsername.getText().trim())) {
+                        JOptionPane.showMessageDialog(this, "Username đã tồn tại!");
+                    } else {
+                        actionSave("create");
+                    }
+                }
+            } catch (ParseException ex) {
+                Logger.getLogger(NguoiDungDialog.class.getName()).log(Level.SEVERE, null, ex);
             }
         });
 
-        btnHuy.addActionListener(e -> dispose());
+        btnEdit.addActionListener(e -> {
+            try {
+                if (validateInput()) {
+                    actionSave("update");
+                }
+            } catch (ParseException ex) {
+                Logger.getLogger(NguoiDungDialog.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        });
 
-        if (!type.equals("view")) {
-            pnlButtons.add(btnLuu);
+        switch (type) {
+            case "create" -> bottom.add(btnAdd);
+            case "update" -> {
+                txtUsername.setDisable();
+                bottom.add(btnEdit);
+            }
+            case "view" -> { }
         }
-        pnlButtons.add(btnHuy);
+        bottom.add(btnExit);
+
+        this.add(main, BorderLayout.CENTER);
+        this.add(bottom, BorderLayout.SOUTH);
     }
 
-    private void luuDuLieu(String type) {
-        NguoiDungDTO user = new NguoiDungDTO();
-        user.setUsername(txtUsername.getText().trim());
-        user.setHoten(txtHoten.getText().trim());
-        user.setNgaysinh(Date.valueOf(txtNgaySinh.getText().trim()));
-        user.setMatkhau(txtMatKhau.getText());
-        user.setGioitinh(cbxGioiTinh.getSelectedIndex() == 0);
-        user.setTrangthai(cbxTrangThai.getSelectedIndex());
-        user.setManhomquyen(listNhomQuyen.get(cbxNhomQuyen.getSelectedIndex()).getManhomquyen());
+    private void actionSave(String type) throws ParseException {
+        String username = txtUsername.getText().trim();
+        String hoten = txtHoten.getText().trim();
+        String matkhau = txtMatKhau.getText();
+        boolean gioiTinh = male.isSelected();
+        
+        java.util.Date date = jcNgaySinh.getDate();
+        java.sql.Date sqlDate = new java.sql.Date(date.getTime());
+        
+        int manhomquyen = listNhomQuyen.get(cbxNhomQuyen.getSelectedIndex()).getManhomquyen();
+        int trangthai = cbxTrangThai.getSelectedIndex();
 
         if (type.equals("create")) {
-            user.setId(bus.getNextId());
-            if (bus.insert(user)) {
+            int id = bus.getNextId();
+            NguoiDungDTO newUser = new NguoiDungDTO(id, username, hoten, gioiTinh, sqlDate, matkhau, trangthai, manhomquyen);
+            if (bus.insert(newUser)) {
                 JOptionPane.showMessageDialog(this, "Thêm thành công!");
-                parent.loadDataTable((java.util.ArrayList<NguoiDungDTO>) bus.getAll());
+                parent.loadDataTable((ArrayList<NguoiDungDTO>) bus.getAll());
                 dispose();
             }
         } else {
-            user.setId(currentDTO.getId());
-            if (bus.update(user)) {
+            NguoiDungDTO updatedUser = new NguoiDungDTO(currentDTO.getId(), username, hoten, gioiTinh, sqlDate, matkhau, trangthai, manhomquyen);
+            if (bus.update(updatedUser)) {
                 JOptionPane.showMessageDialog(this, "Cập nhật thành công!");
-                parent.loadDataTable((java.util.ArrayList<NguoiDungDTO>) bus.getAll());
+                parent.loadDataTable((ArrayList<NguoiDungDTO>) bus.getAll());
                 dispose();
             }
         }
     }
 
-    private boolean validateInput() {
-        if (Validation.isEmpty(txtUsername.getText()) || Validation.isEmpty(txtHoten.getText())) {
-            JOptionPane.showMessageDialog(this, "Vui lòng nhập đầy đủ thông tin!", "Cảnh báo", JOptionPane.WARNING_MESSAGE);
+    private boolean validateInput() throws ParseException {
+        if (Validation.isEmpty(txtUsername.getText())) {
+            JOptionPane.showMessageDialog(this, "Username không được để trống!");
             return false;
         }
-        try {
-            Date.valueOf(txtNgaySinh.getText());
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Ngày sinh không hợp lệ (yyyy-MM-dd)!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+        if (Validation.isEmpty(txtHoten.getText())) {
+            JOptionPane.showMessageDialog(this, "Họ tên không được để trống!");
+            return false;
+        }
+        if (txtHoten.getText().length() < 6) {
+            JOptionPane.showMessageDialog(this, "Họ tên phải ít nhất 6 ký tự!");
+            return false;
+        }
+        if (Validation.isEmpty(txtMatKhau.getText())) {
+            JOptionPane.showMessageDialog(this, "Mật khẩu không được để trống!");
+            return false;
+        }
+        if (jcNgaySinh.getDate() == null) {
+            JOptionPane.showMessageDialog(this, "Vui lòng chọn ngày sinh!");
+            return false;
+        }
+        if (!male.isSelected() && !female.isSelected()) {
+            JOptionPane.showMessageDialog(this, "Vui lòng chọn giới tính!");
             return false;
         }
         return true;
     }
 
-    private void disableAll() {
-        txtUsername.setEditable(false);
-        txtHoten.setEditable(false);
-        txtNgaySinh.setEditable(false);
-        txtMatKhau.setEditable(false);
-        cbxGioiTinh.setEnabled(false);
+    private void setDisableAll() {
+        txtUsername.setDisable();
+        txtHoten.setDisable();
+        txtMatKhau.setDisable();
+        jcNgaySinh.setDisable();
         cbxNhomQuyen.setEnabled(false);
         cbxTrangThai.setEnabled(false);
+        male.setEnabled(false);
+        female.setEnabled(false);
     }
 }

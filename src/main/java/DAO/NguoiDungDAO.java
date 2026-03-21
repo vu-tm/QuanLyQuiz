@@ -7,13 +7,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class NguoiDungDAO {
-    
+
+    public static NguoiDungDAO getInstance() {
+        return new NguoiDungDAO();
+    }
+
     public List<NguoiDungDTO> getAll() {
         List<NguoiDungDTO> list = new ArrayList<>();
         String sql = "SELECT * FROM nguoidung WHERE trangthai = 1 ORDER BY hoten ASC";
-        try (Connection conn = JDBCUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
+        try (Connection conn = JDBCUtil.getConnection(); PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 NguoiDungDTO user = new NguoiDungDTO();
                 user.setId(rs.getString("id"));
@@ -31,12 +33,11 @@ public class NguoiDungDAO {
         }
         return list;
     }
-    
+
     // Lấy người dùng theo ID (chỉ lấy user có trạng thái = 1)
     public NguoiDungDTO getById(String id) {
         String sql = "SELECT * FROM nguoidung WHERE id = ? AND trangthai = 1";
-        try (Connection conn = JDBCUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (Connection conn = JDBCUtil.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, id);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
@@ -57,12 +58,11 @@ public class NguoiDungDAO {
         }
         return null;
     }
-    
+
     // Lấy người dùng theo ID  
     public NguoiDungDTO getByIdAll(String id) {
         String sql = "SELECT * FROM nguoidung WHERE id = ?";
-        try (Connection conn = JDBCUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (Connection conn = JDBCUtil.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, id);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
@@ -83,12 +83,11 @@ public class NguoiDungDAO {
         }
         return null;
     }
-    
+
     // Lấy người dùng theo username (chỉ lấy user có trạng thái = 1)
     public NguoiDungDTO getByUsername(String username) {
         String sql = "SELECT * FROM nguoidung WHERE username = ? AND trangthai = 1";
-        try (Connection conn = JDBCUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (Connection conn = JDBCUtil.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, username);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
@@ -109,13 +108,12 @@ public class NguoiDungDAO {
         }
         return null;
     }
-    
+
     // Thêm mới người dùng
     public boolean insert(NguoiDungDTO user) {
-        String sql = "INSERT INTO nguoidung (id, username, hoten, gioitinh, ngaysinh, matkhau, trangthai, manhomquyen) " +
-                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-        try (Connection conn = JDBCUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+        String sql = "INSERT INTO nguoidung (id, username, hoten, gioitinh, ngaysinh, matkhau, trangthai, manhomquyen) "
+                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        try (Connection conn = JDBCUtil.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, user.getId());
             ps.setString(2, user.getUsername());
             ps.setString(3, user.getHoten());
@@ -130,13 +128,12 @@ public class NguoiDungDAO {
             return false;
         }
     }
-    
+
     // Cập nhật thông tin người dùng (không cập nhật mật khẩu ở đây, có thể thêm sau)
     public boolean update(NguoiDungDTO user) {
-        String sql = "UPDATE nguoidung SET username = ?, hoten = ?, gioitinh = ?, " +
-                     "ngaysinh = ?, matkhau = ?, manhomquyen = ? WHERE id = ?";
-        try (Connection conn = JDBCUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+        String sql = "UPDATE nguoidung SET username = ?, hoten = ?, gioitinh = ?, "
+                + "ngaysinh = ?, matkhau = ?, manhomquyen = ? WHERE id = ?";
+        try (Connection conn = JDBCUtil.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, user.getUsername());
             ps.setString(2, user.getHoten());
             ps.setBoolean(3, user.isGioitinh());
@@ -150,12 +147,11 @@ public class NguoiDungDAO {
             return false;
         }
     }
-    
+
     // Xóa mềm (cập nhật trạng thái = 0)
     public boolean delete(String id) {
         String sql = "UPDATE nguoidung SET trangthai = 0 WHERE id = ?";
-        try (Connection conn = JDBCUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (Connection conn = JDBCUtil.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, id);
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
@@ -163,12 +159,11 @@ public class NguoiDungDAO {
             return false;
         }
     }
-    
+
     // Xóa cứng khỏi database
     public boolean deleteHard(String id) {
         String sql = "DELETE FROM nguoidung WHERE id = ?";
-        try (Connection conn = JDBCUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (Connection conn = JDBCUtil.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, id);
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
@@ -176,15 +171,14 @@ public class NguoiDungDAO {
             return false;
         }
     }
-    
+
     // Tìm kiếm theo từ khóa (chỉ user có trạng thái = 1)
     public List<NguoiDungDTO> search(String keyword) {
         List<NguoiDungDTO> list = new ArrayList<>();
-        String sql = "SELECT * FROM nguoidung WHERE trangthai = 1 AND " +
-                     "(id LIKE ? OR username LIKE ? OR hoten LIKE ?) " +
-                     "ORDER BY hoten ASC";
-        try (Connection conn = JDBCUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+        String sql = "SELECT * FROM nguoidung WHERE trangthai = 1 AND "
+                + "(id LIKE ? OR username LIKE ? OR hoten LIKE ?) "
+                + "ORDER BY hoten ASC";
+        try (Connection conn = JDBCUtil.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             String searchPattern = "%" + keyword + "%";
             ps.setString(1, searchPattern);
             ps.setString(2, searchPattern);
@@ -208,12 +202,11 @@ public class NguoiDungDAO {
         }
         return list;
     }
-    
+
     // Kiểm tra tồn tại username (chỉ user có trạng thái = 1)
     public boolean checkExistUsername(String username) {
         String sql = "SELECT COUNT(*) FROM nguoidung WHERE username = ? AND trangthai = 1";
-        try (Connection conn = JDBCUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (Connection conn = JDBCUtil.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, username);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
@@ -225,12 +218,11 @@ public class NguoiDungDAO {
         }
         return false;
     }
-    
+
     // Kiểm tra tồn tại username (không phân biệt trạng thái) - dùng cho thêm mới
     public boolean checkExistUsernameAll(String username) {
         String sql = "SELECT COUNT(*) FROM nguoidung WHERE username = ?";
-        try (Connection conn = JDBCUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (Connection conn = JDBCUtil.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, username);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
@@ -242,12 +234,11 @@ public class NguoiDungDAO {
         }
         return false;
     }
-    
+
     // Kiểm tra tồn tại ID (chỉ user có trạng thái = 1)
     public boolean checkExistId(String id) {
         String sql = "SELECT COUNT(*) FROM nguoidung WHERE id = ? AND trangthai = 1";
-        try (Connection conn = JDBCUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (Connection conn = JDBCUtil.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, id);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
@@ -259,12 +250,11 @@ public class NguoiDungDAO {
         }
         return false;
     }
-    
+
     // Kiểm tra tồn tại ID (không phân biệt trạng thái) - dùng cho thêm mới
     public boolean checkExistIdAll(String id) {
         String sql = "SELECT COUNT(*) FROM nguoidung WHERE id = ?";
-        try (Connection conn = JDBCUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (Connection conn = JDBCUtil.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, id);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
@@ -276,12 +266,11 @@ public class NguoiDungDAO {
         }
         return false;
     }
-    
+
     // đếm số lượng role trên user
     public int countByRole(int manhomquyen) {
         String sql = "SELECT COUNT(*) FROM nguoidung WHERE manhomquyen = ? AND trangthai = 1";
-        try (Connection conn = JDBCUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (Connection conn = JDBCUtil.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, manhomquyen);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
@@ -293,12 +282,10 @@ public class NguoiDungDAO {
         }
         return 0;
     }
-    
+
     public String getNextId() {
         String sql = "SELECT MAX(CAST(id AS UNSIGNED)) FROM nguoidung";
-        try (Connection conn = JDBCUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
+        try (Connection conn = JDBCUtil.getConnection(); PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
             if (rs.next()) {
                 int max = rs.getInt(1);
                 return String.valueOf(max + 1);

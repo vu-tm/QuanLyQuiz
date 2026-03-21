@@ -13,7 +13,7 @@ import java.sql.Timestamp;
 public class BaiThiDTO {
     private int mabaithi;
     private int made;
-    private String manguoidung;
+    private int manguoidung;
     private double diemthi;
     private Timestamp thoigianvaothi;
     private int thoigianlambai;
@@ -23,7 +23,7 @@ public class BaiThiDTO {
     public BaiThiDTO() {
     }
 
-    public BaiThiDTO(int mabaithi, int made, String manguoidung, double diemthi, Timestamp thoigianvaothi, int thoigianlambai, int socaudung, int socausai) {
+    public BaiThiDTO(int mabaithi, int made, int manguoidung, double diemthi, Timestamp thoigianvaothi, int thoigianlambai, int socaudung, int socausai) {
         this.mabaithi = mabaithi;
         this.made = made;
         this.manguoidung = manguoidung;
@@ -51,11 +51,11 @@ public class BaiThiDTO {
         this.made = made;
     }
 
-    public String getManguoidung() {
+    public int getManguoidung() {
         return manguoidung;
     }
 
-    public void setManguoidung(String manguoidung) {
+    public void setManguoidung(int manguoidung) {
         this.manguoidung = manguoidung;
     }
 

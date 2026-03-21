@@ -26,7 +26,7 @@ public class ThongKeBUS {
                 LocalDate ngay = ts != null ? ts.toLocalDateTime().toLocalDate() : null;
                 list.add(new Object[]{
                     rs.getInt("mabaithi"), // [0]
-                    rs.getString("manguoidung"), // [1]
+                    rs.getInt("manguoidung"), // [1]
                     rs.getDouble("diemthi"), // [2]
                     ngay // [3]
                 });
@@ -128,9 +128,9 @@ public class ThongKeBUS {
         List<NguoiDungDTO> listND = NguoiDungDAO.getInstance().getAll();
         ArrayList<Object[]> listBT = loadAllBaiThi();
 
-        Map<String, Integer> mapSoLanThi = new HashMap<>();
+        Map<Integer, Integer> mapSoLanThi = new HashMap<>();
         for (Object[] bt : listBT) {
-            String manguoidung = (String) bt[1];
+            int manguoidung = (int) bt[1];
             mapSoLanThi.put(manguoidung, mapSoLanThi.getOrDefault(manguoidung, 0) + 1);
         }
 

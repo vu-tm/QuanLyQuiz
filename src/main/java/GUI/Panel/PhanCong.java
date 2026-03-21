@@ -106,7 +106,9 @@ public class PhanCong extends JPanel implements ActionListener, ItemListener {
         search = new IntegratedSearch(new String[]{"Tất cả", "Mã giảng viên", "Họ tên", "Môn học"});
         search.txtSearchForm.addKeyListener(new KeyAdapter() {
             @Override
-            public void keyReleased(KeyEvent e) { thucHienTimKiem(); }
+            public void keyReleased(KeyEvent e) {
+                thucHienTimKiem();
+            }
         });
         search.cbxChoose.addItemListener(this);
         functionBar.add(search);
@@ -150,7 +152,7 @@ public class PhanCong extends JPanel implements ActionListener, ItemListener {
                 JOptionPane.showMessageDialog(this, "Vui lòng chọn dòng dữ liệu!");
                 return;
             }
-            
+
             PhanCongDTO selected = listHienTai.get(index);
 
             if (source == mainFunction.btn.get("update")) {
@@ -165,7 +167,11 @@ public class PhanCong extends JPanel implements ActionListener, ItemListener {
                     }
                 }
             } else if (source == mainFunction.btn.get("export")) {
-                try { helper.JTableExporter.exportJTableToExcel(table); } catch (IOException ex) { ex.printStackTrace(); }
+                try {
+                    helper.JTableExporter.exportJTableToExcel(table);
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
             } else if (source == mainFunction.btn.get("import")) {
                 importExcel();
             }
@@ -175,21 +181,27 @@ public class PhanCong extends JPanel implements ActionListener, ItemListener {
     private void importExcel() {
         JFileChooser jf = new JFileChooser();
         if (jf.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
-            try (FileInputStream fis = new FileInputStream(jf.getSelectedFile());
-                 XSSFWorkbook wb = new XSSFWorkbook(fis)) {
+            try (FileInputStream fis = new FileInputStream(jf.getSelectedFile()); XSSFWorkbook wb = new XSSFWorkbook(fis)) {
                 XSSFSheet sheet = wb.getSheetAt(0);
                 for (int i = 1; i <= sheet.getLastRowNum(); i++) {
                     XSSFRow row = sheet.getRow(i);
-                    if (row == null) continue;
-                    String mand = row.getCell(0).getStringCellValue();
+                    if (row == null) {
+                        continue;
+                    }
+                    int mand = (int) row.getCell(0).getNumericCellValue();
                     int mamh = (int) row.getCell(1).getNumericCellValue();
                     bus.add(new PhanCongDTO(mamh, mand));
                 }
                 listHienTai = bus.getAll();
                 loadDataTable(listHienTai);
-            } catch (Exception ex) { JOptionPane.showMessageDialog(this, "Lỗi file!"); }
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "Lỗi file!");
+            }
         }
     }
 
-    @Override public void itemStateChanged(ItemEvent e) { thucHienTimKiem(); }
+    @Override
+    public void itemStateChanged(ItemEvent e) {
+        thucHienTimKiem();
+    }
 }

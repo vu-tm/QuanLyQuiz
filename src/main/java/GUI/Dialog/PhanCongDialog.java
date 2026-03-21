@@ -21,11 +21,11 @@ public class PhanCongDialog extends JDialog {
     private SelectForm cbxNguoiDung, cbxMonHoc;
     private ButtonCustom btnLuu, btnHuy;
     private JPanel pnlContent, pnlButtons;
-    
+
     private MonHocBUS mhBUS = new MonHocBUS();
     private NguoiDungBUS ndBUS = new NguoiDungBUS();
     private PhanCongBUS pcBUS = new PhanCongBUS();
-    
+
     private PhanCong parent;
     private PhanCongDTO currentDTO;
     private String currentType;
@@ -102,7 +102,7 @@ public class PhanCongDialog extends JDialog {
             return;
         }
 
-        String mand = ((String) cbxNguoiDung.getValue()).split(" - ")[0];
+        int mand = Integer.parseInt(((String) cbxNguoiDung.getValue()).split(" - ")[0]);
         int mamh = Integer.parseInt(((String) cbxMonHoc.getValue()).split(" - ")[0]);
         PhanCongDTO newDTO = new PhanCongDTO(mamh, mand);
 
@@ -111,13 +111,17 @@ public class PhanCongDialog extends JDialog {
                 JOptionPane.showMessageDialog(this, "Thêm thành công!");
                 parent.loadDataTable(pcBUS.getAll());
                 dispose();
-            } else JOptionPane.showMessageDialog(this, "Đã tồn tại phân công này!");
+            } else {
+                JOptionPane.showMessageDialog(this, "Đã tồn tại phân công này!");
+            }
         } else {
             if (pcBUS.update(currentDTO, newDTO)) {
                 JOptionPane.showMessageDialog(this, "Cập nhật thành công!");
                 parent.loadDataTable(pcBUS.getAll());
                 dispose();
-            } else JOptionPane.showMessageDialog(this, "Cập nhật thất bại!");
+            } else {
+                JOptionPane.showMessageDialog(this, "Cập nhật thất bại!");
+            }
         }
     }
 }

@@ -16,7 +16,7 @@ public class PhanCongDAO {
             String sql = "INSERT INTO phancong (mamonhoc, manguoidung) VALUES (?, ?)";
             PreparedStatement pst = con.prepareStatement(sql);
             pst.setInt(1, t.getMamonhoc());
-            pst.setString(2, t.getManguoidung());
+            pst.setInt(2, t.getManguoidung());
             result = pst.executeUpdate();
         } catch (SQLException ex) {
             ex.printStackTrace();
@@ -30,9 +30,9 @@ public class PhanCongDAO {
             String sql = "UPDATE phancong SET mamonhoc = ?, manguoidung = ? WHERE mamonhoc = ? AND manguoidung = ?";
             PreparedStatement pst = con.prepareStatement(sql);
             pst.setInt(1, t.getMamonhoc());
-            pst.setString(2, t.getManguoidung());
+            pst.setInt(2, t.getManguoidung());
             pst.setInt(3, old.getMamonhoc());
-            pst.setString(4, old.getManguoidung());
+            pst.setInt(4, old.getManguoidung());
             result = pst.executeUpdate();
         } catch (SQLException ex) {
             ex.printStackTrace();
@@ -40,13 +40,13 @@ public class PhanCongDAO {
         return result;
     }
 
-    public int delete(int mamonhoc, String manguoidung) {
+    public int delete(int mamonhoc, int manguoidung) {
         int result = 0;
         try (Connection con = JDBCUtil.getConnection()) {
             String sql = "DELETE FROM phancong WHERE mamonhoc = ? AND manguoidung = ?";
             PreparedStatement pst = con.prepareStatement(sql);
             pst.setInt(1, mamonhoc);
-            pst.setString(2, manguoidung);
+            pst.setInt(2, manguoidung);
             result = pst.executeUpdate();
         } catch (SQLException ex) {
             ex.printStackTrace();
@@ -61,7 +61,7 @@ public class PhanCongDAO {
             PreparedStatement pst = con.prepareStatement(sql);
             ResultSet rs = pst.executeQuery();
             while (rs.next()) {
-                result.add(new PhanCongDTO(rs.getInt("mamonhoc"), rs.getString("manguoidung")));
+                result.add(new PhanCongDTO(rs.getInt("mamonhoc"), rs.getInt("manguoidung")));
             }
         } catch (SQLException ex) {
             ex.printStackTrace();

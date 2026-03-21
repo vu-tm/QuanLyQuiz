@@ -10,12 +10,12 @@ package DTO;
  */
 public class PhanCongDTO {
     private int mamonhoc;
-    private String manguoidung;
+    private int manguoidung;
 
     public PhanCongDTO() {
     }
 
-    public PhanCongDTO(int mamonhoc, String manguoidung) {
+    public PhanCongDTO(int mamonhoc, int manguoidung) {
         this.mamonhoc = mamonhoc;
         this.manguoidung = manguoidung;
     }
@@ -29,11 +29,11 @@ public class PhanCongDTO {
         this.mamonhoc = mamonhoc;
     }
 
-    public String getManguoidung() {
+    public int getManguoidung() {
         return manguoidung;
     }
 
-    public void setManguoidung(String manguoidung) {
+    public void setManguoidung(int manguoidung) {
         this.manguoidung = manguoidung;
     }
     

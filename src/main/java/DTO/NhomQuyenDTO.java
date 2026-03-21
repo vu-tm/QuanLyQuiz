@@ -1,8 +1,5 @@
 package DTO;
 
-import java.util.ArrayList;
-import java.util.Objects;
-
 public class NhomQuyenDTO {
 
     private int manhomquyen;

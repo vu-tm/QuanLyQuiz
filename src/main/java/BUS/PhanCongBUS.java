@@ -5,6 +5,7 @@ import DTO.PhanCongDTO;
 import java.util.ArrayList;
 
 public class PhanCongBUS {
+
     private final PhanCongDAO pcDAO = PhanCongDAO.getInstance();
     private ArrayList<PhanCongDTO> listPhanCong;
 
@@ -19,19 +20,25 @@ public class PhanCongBUS {
 
     public boolean add(PhanCongDTO pc) {
         boolean check = pcDAO.insert(pc) > 0;
-        if (check) getAll();
+        if (check) {
+            getAll();
+        }
         return check;
     }
 
     public boolean update(PhanCongDTO old, PhanCongDTO pc) {
         boolean check = pcDAO.update(old, pc) > 0;
-        if (check) getAll();
+        if (check) {
+            getAll();
+        }
         return check;
     }
 
-    public boolean delete(int mamonhoc, String manguoidung) {
+    public boolean delete(int mamonhoc, int manguoidung) {
         boolean check = pcDAO.delete(mamonhoc, manguoidung) > 0;
-        if (check) getAll();
+        if (check) {
+            getAll();
+        }
         return check;
     }
 
@@ -41,13 +48,15 @@ public class PhanCongBUS {
         for (PhanCongDTO pc : this.listPhanCong) {
             String tenND = ndBUS.getById(pc.getManguoidung()).getHoten().toLowerCase();
             String tenMH = mhBUS.getTenById(pc.getMamonhoc()).toLowerCase();
+            String maNDStr = Integer.toString(pc.getManguoidung());
+
             boolean match = false;
             switch (type) {
                 case "Tất cả":
-                    match = pc.getManguoidung().toLowerCase().contains(text) || tenND.contains(text) || tenMH.contains(text);
+                    match = maNDStr.contains(text) || tenND.contains(text) || tenMH.contains(text);
                     break;
                 case "Mã giảng viên":
-                    match = pc.getManguoidung().toLowerCase().contains(text);
+                    match = maNDStr.contains(text);
                     break;
                 case "Họ tên":
                     match = tenND.contains(text);
@@ -56,7 +65,9 @@ public class PhanCongBUS {
                     match = tenMH.contains(text);
                     break;
             }
-            if (match) result.add(pc);
+            if (match) {
+                result.add(pc);
+            }
         }
         return result;
     }

@@ -88,7 +88,7 @@ public class ChiTietNguoiDungDialog extends JDialog implements ActionListener {
     }
 
     private void fillData() {
-        txtID.setText(nguoiDung.getId());
+        txtID.setText(String.valueOf(nguoiDung.getId()));
         txtUsername.setText(nguoiDung.getUsername());
         txtHoTen.setText(nguoiDung.getHoten());
         txtGioiTinh.setText(nguoiDung.isGioitinh() ? "Nam" : "Nữ");

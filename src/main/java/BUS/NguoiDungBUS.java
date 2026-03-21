@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.ArrayList;
 
 public class NguoiDungBUS {
+
     private NguoiDungDAO dao = new NguoiDungDAO();
 
     // Lấy tất cả người dùng (kể cả đã khóa)
@@ -14,12 +15,12 @@ public class NguoiDungBUS {
     }
 
     // Lấy người dùng theo ID (không phân biệt trạng thái) - dùng cho sửa
-    public NguoiDungDTO getById(String id) {
+    public NguoiDungDTO getById(int id) {
         return dao.getById(id);
     }
 
     // Kiểm tra tồn tại ID (không phân biệt trạng thái) - dùng cho thêm mới
-    public boolean checkExistId(String id) {
+    public boolean checkExistId(int id) {
         return dao.checkExistIdAll(id);
     }
 
@@ -39,12 +40,12 @@ public class NguoiDungBUS {
     }
 
     // Xóa mềm (cập nhật trạng thái = 0)
-    public boolean delete(String id) {
+    public boolean delete(int id) {
         return dao.delete(id);
     }
 
     // Xóa cứng khỏi database
-    public boolean deleteHard(String id) {
+    public boolean deleteHard(int id) {
         return dao.deleteHard(id);
     }
 
@@ -57,9 +58,9 @@ public class NguoiDungBUS {
         String kw = keyword.toLowerCase().trim();
         List<NguoiDungDTO> result = new ArrayList<>();
         for (NguoiDungDTO user : all) {
-            if (user.getId().toLowerCase().contains(kw) ||
-                user.getUsername().toLowerCase().contains(kw) ||
-                user.getHoten().toLowerCase().contains(kw)) {
+            if (String.valueOf(user.getId()).contains(kw)
+                    || user.getUsername().toLowerCase().contains(kw)
+                    || user.getHoten().toLowerCase().contains(kw)) {
                 result.add(user);
             }
         }
@@ -69,10 +70,14 @@ public class NguoiDungBUS {
     // Lấy tên nhóm quyền theo mã
     public String getTenNhomQuyen(int manhomquyen) {
         switch (manhomquyen) {
-            case 1: return "Admin";
-            case 2: return "Giảng viên";
-            case 3: return "Sinh viên";
-            default: return "Không xác định";
+            case 1:
+                return "Admin";
+            case 2:
+                return "Giảng viên";
+            case 3:
+                return "Sinh viên";
+            default:
+                return "Không xác định";
         }
     }
 
@@ -85,8 +90,8 @@ public class NguoiDungBUS {
     public String getTrangThaiText(int trangthai) {
         return trangthai == 1 ? "Hoạt động" : "Đã khóa";
     }
-    
-    public String getNextId() {
+
+    public int getNextId() {
         return dao.getNextId();
     }
 }

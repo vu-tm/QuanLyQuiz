@@ -1,34 +1,23 @@
 package BUS;
 
-import DAO.CauHoiDAO;
-import DAO.DapAnDAO;
-import DAO.DeThiDAO;
-import DAO.NguoiDungDAO;
-import DTO.CauHoiDTO;
-import DTO.DapAnDTO;
-import DTO.DeThiDTO;
-import DTO.NguoiDungDTO;
-import DTO.ThongKe.ThongKeCauHoiDTO;
-import DTO.ThongKe.ThongKeDiemThiDTO;
-import DTO.ThongKe.ThongKeHocSinhDTO;
-import DTO.ThongKe.ThongKeTheoThangDTO;
-import DTO.ThongKe.ThongKeTungNgayTrongThangDTO;
+import DAO.*;
+import DTO.*;
+import DTO.ThongKe.*;
 import config.JDBCUtil;
-
 import java.sql.*;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class ThongKeBUS {
 
     private static final int MA_QUYEN_HOC_SINH = 3;
 
-    /** Load toàn bộ bài thi có điểm vào RAM */
     private static ArrayList<Object[]> loadAllBaiThi() {
-        // Object[]: [mabaithi, manguoidung, diemthi, thoigianvaothi(LocalDate)]
         ArrayList<Object[]> list = new ArrayList<>();
         String sql = "SELECT mabaithi, manguoidung, diemthi, thoigianvaothi FROM baithi WHERE diemthi IS NOT NULL";
         try (Connection con = JDBCUtil.getConnection(); PreparedStatement ps = con.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
@@ -36,10 +25,10 @@ public class ThongKeBUS {
                 Timestamp ts = rs.getTimestamp("thoigianvaothi");
                 LocalDate ngay = ts != null ? ts.toLocalDateTime().toLocalDate() : null;
                 list.add(new Object[]{
-                    rs.getInt("mabaithi"),
-                    rs.getString("manguoidung"),
-                    rs.getDouble("diemthi"),
-                    ngay
+                    rs.getInt("mabaithi"), // [0]
+                    rs.getString("manguoidung"), // [1]
+                    rs.getDouble("diemthi"), // [2]
+                    ngay // [3]
                 });
             }
         } catch (Exception e) {
@@ -48,17 +37,15 @@ public class ThongKeBUS {
         return list;
     }
 
-    /** Load toàn bộ chi tiết bài thi vào RAM */
     private static ArrayList<Object[]> loadAllChiTietBaiThi() {
-        // Object[]: [mabaithi, macauhoi, dapanchon]
         ArrayList<Object[]> list = new ArrayList<>();
         String sql = "SELECT mabaithi, macauhoi, dapanchon FROM chitietbaithi";
         try (Connection con = JDBCUtil.getConnection(); PreparedStatement ps = con.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 list.add(new Object[]{
-                    rs.getInt("mabaithi"),
-                    rs.getInt("macauhoi"),
-                    rs.getInt("dapanchon")
+                    rs.getInt("mabaithi"), // [0]
+                    rs.getInt("macauhoi"), // [1]
+                    rs.getInt("dapanchon") // [2]
                 });
             }
         } catch (Exception e) {
@@ -67,7 +54,7 @@ public class ThongKeBUS {
         return list;
     }
 
-    // ==================== TONG QUAN ====================
+    // TỔNG QUAN 
     public static int getTongSoDeThi() {
         return DeThiDAO.getInstance().selectAll().size();
     }
@@ -77,7 +64,6 @@ public class ThongKeBUS {
     }
 
     public static int getTongSoHocSinh() {
-        // Đếm số user có manhomquyen = hoc sinh và trangthai = 1
         int count = 0;
         for (NguoiDungDTO nd : NguoiDungDAO.getInstance().getAll()) {
             if (nd.getManhomquyen() == MA_QUYEN_HOC_SINH && nd.getTrangthai() == 1) {
@@ -87,249 +73,80 @@ public class ThongKeBUS {
         return count;
     }
 
-    /**
-     * Thống kê điểm thi 7 ngày gần nhất - giống getThongKe7NgayGanNhat() code mẫu
-     * Load bài thi vào RAM, vòng lặp Java để tính max/min/avg theo từng ngày
-     */
     public static ArrayList<ThongKeTungNgayTrongThangDTO> getThongKe7NgayGanNhat() {
-        ArrayList<ThongKeTungNgayTrongThangDTO> result = new ArrayList<>();
-        ArrayList<Object[]> allBaiThi = loadAllBaiThi(); // Load 1 lần vào RAM
-
-        LocalDate now = LocalDate.now();
-        LocalDate past = now.minusDays(6); // 7 ngày gồm cả hôm nay
-
-        for (LocalDate i = past; i.isBefore(now) || i.isEqual(now); i = i.plusDays(1)) {
-            double cao = 0, thap = Double.MAX_VALUE, tongDiem = 0;
-            int soLuong = 0;
-
-            for (Object[] bt : allBaiThi) {
-                LocalDate ngay = (LocalDate) bt[3];
-                if (ngay != null && ngay.isEqual(i)) {
-                    double diem = (double) bt[2];
-                    if (diem > cao) {
-                        cao = diem;
-                    }
-                    if (diem < thap) {
-                        thap = diem;
-                    }
-                    tongDiem += diem;
-                    soLuong++;
-                }
-            }
-
-            double diemThap = soLuong > 0 ? thap : 0;
-            double diemTB = soLuong > 0 ? tongDiem / soLuong : 0;
-            double diemCao = soLuong > 0 ? cao : 0;
-
-            Date d = Date.from(i.atStartOfDay(ZoneId.systemDefault()).toInstant());
-            result.add(new ThongKeTungNgayTrongThangDTO(d, diemCao, diemThap, diemTB));
-        }
-        return result;
+        return getThongKeDiemThiTuNgayDenNgay(
+                Date.from(LocalDate.now().minusDays(6).atStartOfDay(ZoneId.systemDefault()).toInstant()),
+                Date.from(LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant())
+        );
     }
 
-    // ==================== CAU HOI ====================
-    /**
-     * Thống kê câu hỏi - giống getTonKho() code mẫu
-     * Load câu hỏi + đáp án + chi tiết bài thi vào RAM, tính tỷ lệ đúng/sai bằng Java
-     */
+    // THỐNG KÊ CÂU HỎI
     public static ArrayList<ThongKeCauHoiDTO> getThongKeCauHoi() {
         ArrayList<ThongKeCauHoiDTO> result = new ArrayList<>();
 
-        // Load tất cả vào RAM
-        List<CauHoiDTO> danhSachCauHoi = new CauHoiDAO().getAll();
-        ArrayList<DapAnDTO> danhSachDapAn = new DapAnDAO().selectAll(); // cần thêm hàm selectAll vào DapAnDAO
-        ArrayList<Object[]> chiTietBaiThi = loadAllChiTietBaiThi();
+        List<CauHoiDTO> listCH = new CauHoiDAO().getAll();
+        ArrayList<DapAnDTO> listDA = new DapAnDAO().selectAll();
+        ArrayList<Object[]> listCTBT = loadAllChiTietBaiThi();
+
+        Map<Integer, Integer> mapDapAnDung = new HashMap<>();
+        for (DapAnDTO da : listDA) {
+            if (da.isLadapan()) {
+                mapDapAnDung.put(da.getMacauhoi(), da.getMadapan());
+            }
+        }
 
         int stt = 1;
-        for (CauHoiDTO ch : danhSachCauHoi) {
+        for (CauHoiDTO ch : listCH) {
             if (ch.getTrangthai() != 1) {
                 continue;
             }
 
-            // Tìm madapan đúng của câu hỏi này
-            int maDapAnDung = -1;
-            for (DapAnDTO da : danhSachDapAn) {
-                if (da.getMacauhoi() == ch.getMacauhoi() && da.isLadapan()) {
-                    maDapAnDung = da.getMadapan();
-                    break;
-                }
-            }
-
-            // Đếm số lần thi và số lần đúng
+            int maCH = ch.getMacauhoi();
+            int maDADung = mapDapAnDung.getOrDefault(maCH, -1);
             int tongLan = 0, soDung = 0;
-            for (Object[] ct : chiTietBaiThi) {
-                int maCauHoiCT = (int) ct[1];
-                int dapAnChon = (int) ct[2];
-                if (maCauHoiCT == ch.getMacauhoi()) {
+
+            for (Object[] ct : listCTBT) {
+                if ((int) ct[1] == maCH) {
                     tongLan++;
-                    if (dapAnChon == maDapAnDung) {
+                    if ((int) ct[2] == maDADung) {
                         soDung++;
                     }
                 }
             }
 
-            double tyleDung = tongLan > 0 ? Math.round((double) soDung / tongLan * 1000.0) / 10.0 : 0;
-            double tyleSai = tongLan > 0 ? Math.round((100.0 - tyleDung) * 10.0) / 10.0 : 0;
+            double tyleDung = tongLan > 0 ? (double) Math.round((double) soDung / tongLan * 1000) / 10 : 0;
+            double tyleSai = tongLan > 0 ? (double) Math.round((100 - tyleDung) * 10) / 10 : 0;
 
-            result.add(new ThongKeCauHoiDTO(stt++, ch.getMacauhoi(), ch.getNoidung(), tongLan, tyleDung, tyleSai));
+            result.add(new ThongKeCauHoiDTO(stt++, maCH, ch.getNoidung(), tongLan, tyleDung, tyleSai));
         }
         return result;
     }
 
-    // ==================== HOC SINH ====================
+    // THỐNG KÊ HỌC SINH
     public static ArrayList<ThongKeHocSinhDTO> getThongKeHocSinh() {
         ArrayList<ThongKeHocSinhDTO> result = new ArrayList<>();
+        List<NguoiDungDTO> listND = NguoiDungDAO.getInstance().getAll();
+        ArrayList<Object[]> listBT = loadAllBaiThi();
 
-        // Load vào RAM
-        List<NguoiDungDTO> danhSachND = NguoiDungDAO.getInstance().getAll();
-        ArrayList<Object[]> allBaiThi = loadAllBaiThi();
-
-        int stt = 1;
-        for (NguoiDungDTO nd : danhSachND) {
-            // Chỉ lấy những người dùng là Học sinh và đang hoạt động
-            if (nd.getManhomquyen() != MA_QUYEN_HOC_SINH || nd.getTrangthai() != 1) {
-                continue;
-            }
-
-            int soDe = 0;
-            for (Object[] bt : allBaiThi) {
-                String maNguoiDung = (String) bt[1];
-                // Đếm tất cả bài thi của học sinh này (không check ngày)
-                if (nd.getId().equals(maNguoiDung)) {
-                    soDe++;
-                }
-            }
-            result.add(new ThongKeHocSinhDTO(stt++, nd.getId(), nd.getHoten(), soDe));
+        Map<String, Integer> mapSoLanThi = new HashMap<>();
+        for (Object[] bt : listBT) {
+            String manguoidung = (String) bt[1];
+            mapSoLanThi.put(manguoidung, mapSoLanThi.getOrDefault(manguoidung, 0) + 1);
         }
 
-        // Sắp xếp giảm dần theo số đề đã làm
+        int stt = 1;
+        for (NguoiDungDTO nd : listND) {
+            if (nd.getManhomquyen() == MA_QUYEN_HOC_SINH && nd.getTrangthai() == 1) {
+                int soDe = mapSoLanThi.getOrDefault(nd.getId(), 0);
+                result.add(new ThongKeHocSinhDTO(stt++, nd.getId(), nd.getHoten(), soDe));
+            }
+        }
+
         result.sort((a, b) -> Integer.compare(b.getSoDedalLam(), a.getSoDedalLam()));
         return result;
     }
-    // ==================== DIEM THI ====================
 
-    /**
-     * Thống kê điểm từng ngày trong tháng - giống getThongKeTungNgayTrongThang() code mẫu
-     */
-    public static ArrayList<ThongKeTungNgayTrongThangDTO> getThongKeDiemThiTrongThang(int thang, int nam) {
-        ArrayList<ThongKeTungNgayTrongThangDTO> result = new ArrayList<>();
-        ArrayList<Object[]> allBaiThi = loadAllBaiThi();
-
-        LocalDate from = LocalDate.of(nam, thang, 1);
-        LocalDate to = from.plusMonths(1).minusDays(1);
-
-        for (LocalDate i = from; i.isBefore(to) || i.isEqual(to); i = i.plusDays(1)) {
-            double cao = 0, thap = Double.MAX_VALUE, tongDiem = 0;
-            int soLuong = 0;
-
-            for (Object[] bt : allBaiThi) {
-                LocalDate ngay = (LocalDate) bt[3];
-                if (ngay != null && ngay.isEqual(i)) {
-                    double diem = (double) bt[2];
-                    if (diem > cao) {
-                        cao = diem;
-                    }
-                    if (diem < thap) {
-                        thap = diem;
-                    }
-                    tongDiem += diem;
-                    soLuong++;
-                }
-            }
-
-            double diemThap = soLuong > 0 ? thap : 0;
-            double diemTB = soLuong > 0 ? tongDiem / soLuong : 0;
-            double diemCao = soLuong > 0 ? cao : 0;
-
-            Date d = Date.from(i.atStartOfDay(ZoneId.systemDefault()).toInstant());
-            result.add(new ThongKeTungNgayTrongThangDTO(d, diemCao, diemThap, diemTB));
-        }
-        return result;
-    }
-
-    /**
-     * Thống kê điểm từng tháng trong năm - giống getThongKeTheoThang() code mẫu
-     */
-    public static ArrayList<ThongKeTheoThangDTO> getThongKeDiemThiTungThang(int nam) {
-        ArrayList<ThongKeTheoThangDTO> result = new ArrayList<>();
-        ArrayList<Object[]> allBaiThi = loadAllBaiThi();
-
-        LocalDate start = LocalDate.of(nam, 1, 1);
-        LocalDate end = LocalDate.of(nam, 12, 31);
-
-        for (LocalDate i = start; i.isBefore(end) || i.isEqual(end); i = i.plusMonths(1)) {
-            LocalDate lastDayOfMonth = i.plusMonths(1).minusDays(1);
-            double cao = 0, thap = Double.MAX_VALUE, tongDiem = 0;
-            int soLuong = 0;
-
-            for (Object[] bt : allBaiThi) {
-                LocalDate ngay = (LocalDate) bt[3];
-                // Giống code mẫu: isEqual(i) || isEqual(lastDay) || (isBefore(lastDay) && isAfter(i))
-                if (ngay != null && (ngay.isEqual(i) || ngay.isEqual(lastDayOfMonth)
-                        || (ngay.isBefore(lastDayOfMonth) && ngay.isAfter(i)))) {
-                    double diem = (double) bt[2];
-                    if (diem > cao) {
-                        cao = diem;
-                    }
-                    if (diem < thap) {
-                        thap = diem;
-                    }
-                    tongDiem += diem;
-                    soLuong++;
-                }
-            }
-
-            double diemThap = soLuong > 0 ? thap : 0;
-            double diemTB = soLuong > 0 ? tongDiem / soLuong : 0;
-            double diemCao = soLuong > 0 ? cao : 0;
-
-            result.add(new ThongKeTheoThangDTO(i.getMonthValue(), diemCao, diemThap, diemTB));
-        }
-        return result;
-    }
-
-    /**
-     * Thống kê điểm theo năm - giống getThongKeTheoNam() code mẫu
-     * Gọi lại getThongKeDiemThiTungThang() cho mỗi năm rồi tổng hợp
-     */
-    public static ArrayList<ThongKeDiemThiDTO> getThongKeDiemThiTheoNam(int namBD, int namKT) {
-        ArrayList<ThongKeDiemThiDTO> result = new ArrayList<>();
-        ArrayList<Object[]> allBaiThi = loadAllBaiThi(); // Load 1 lần dùng cho tất cả năm
-
-        for (int nam = namBD; nam <= namKT; nam++) {
-            double cao = 0, thap = Double.MAX_VALUE, tongDiem = 0;
-            int soLuong = 0;
-
-            LocalDate startOfYear = LocalDate.of(nam, 1, 1);
-            LocalDate endOfYear = LocalDate.of(nam, 12, 31);
-
-            for (Object[] bt : allBaiThi) {
-                LocalDate ngay = (LocalDate) bt[3];
-                if (ngay != null && !ngay.isBefore(startOfYear) && !ngay.isAfter(endOfYear)) {
-                    double diem = (double) bt[2];
-                    if (diem > cao) {
-                        cao = diem;
-                    }
-                    if (diem < thap) {
-                        thap = diem;
-                    }
-                    tongDiem += diem;
-                    soLuong++;
-                }
-            }
-
-            double diemThap = soLuong > 0 ? thap : 0;
-            double diemTB = soLuong > 0 ? tongDiem / soLuong : 0;
-            double diemCao = soLuong > 0 ? cao : 0;
-
-            result.add(new ThongKeDiemThiDTO(nam, diemCao, diemThap, diemTB));
-        }
-        return result;
-    }
-
-    /**
-     * Thống kê điểm từ ngày đến ngày - giống getThongKeTuNgayDenNgay() code mẫu
-     */
+    // THỐNG KÊ ĐIỂM THI
     public static ArrayList<ThongKeTungNgayTrongThangDTO> getThongKeDiemThiTuNgayDenNgay(Date start, Date end) {
         ArrayList<ThongKeTungNgayTrongThangDTO> result = new ArrayList<>();
         ArrayList<Object[]> allBaiThi = loadAllBaiThi();
@@ -337,31 +154,99 @@ public class ThongKeBUS {
         LocalDate from = start.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
         LocalDate to = end.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
 
-        for (LocalDate i = from; i.isBefore(to) || i.isEqual(to); i = i.plusDays(1)) {
-            double cao = 0, thap = Double.MAX_VALUE, tongDiem = 0;
-            int soLuong = 0;
+        for (LocalDate date = from; !date.isAfter(to); date = date.plusDays(1)) {
+            double max = 0, min = Double.MAX_VALUE, tong = 0;
+            int count = 0;
 
             for (Object[] bt : allBaiThi) {
-                LocalDate ngay = (LocalDate) bt[3];
-                if (ngay != null && ngay.isEqual(i)) {
+                LocalDate ngayThi = (LocalDate) bt[3];
+                if (ngayThi != null && ngayThi.isEqual(date)) {
                     double diem = (double) bt[2];
-                    if (diem > cao) {
-                        cao = diem;
+                    if (diem > max) {
+                        max = diem;
                     }
-                    if (diem < thap) {
-                        thap = diem;
+                    if (diem < min) {
+                        min = diem;
                     }
-                    tongDiem += diem;
-                    soLuong++;
+                    tong += diem;
+                    count++;
                 }
             }
 
-            double diemThap = soLuong > 0 ? thap : 0;
-            double diemTB = soLuong > 0 ? tongDiem / soLuong : 0;
-            double diemCao = soLuong > 0 ? cao : 0;
+            Date d = Date.from(date.atStartOfDay(ZoneId.systemDefault()).toInstant());
+            result.add(new ThongKeTungNgayTrongThangDTO(d,
+                    count > 0 ? max : 0,
+                    count > 0 ? min : 0,
+                    count > 0 ? tong / count : 0));
+        }
+        return result;
+    }
 
-            Date d = Date.from(i.atStartOfDay(ZoneId.systemDefault()).toInstant());
-            result.add(new ThongKeTungNgayTrongThangDTO(d, diemCao, diemThap, diemTB));
+    public static ArrayList<ThongKeTungNgayTrongThangDTO> getThongKeDiemThiTrongThang(int thang, int nam) {
+        LocalDate from = LocalDate.of(nam, thang, 1);
+        LocalDate to = from.plusMonths(1).minusDays(1);
+        return getThongKeDiemThiTuNgayDenNgay(
+                Date.from(from.atStartOfDay(ZoneId.systemDefault()).toInstant()),
+                Date.from(to.atStartOfDay(ZoneId.systemDefault()).toInstant())
+        );
+    }
+
+    public static ArrayList<ThongKeTheoThangDTO> getThongKeDiemThiTungThang(int nam) {
+        ArrayList<ThongKeTheoThangDTO> result = new ArrayList<>();
+        ArrayList<Object[]> allBaiThi = loadAllBaiThi();
+
+        for (int m = 1; m <= 12; m++) {
+            double max = 0, min = Double.MAX_VALUE, tong = 0;
+            int count = 0;
+
+            for (Object[] bt : allBaiThi) {
+                LocalDate ngay = (LocalDate) bt[3];
+                if (ngay != null && ngay.getYear() == nam && ngay.getMonthValue() == m) {
+                    double diem = (double) bt[2];
+                    if (diem > max) {
+                        max = diem;
+                    }
+                    if (diem < min) {
+                        min = diem;
+                    }
+                    tong += diem;
+                    count++;
+                }
+            }
+            result.add(new ThongKeTheoThangDTO(m,
+                    count > 0 ? max : 0,
+                    count > 0 ? min : 0,
+                    count > 0 ? tong / count : 0));
+        }
+        return result;
+    }
+
+    public static ArrayList<ThongKeDiemThiDTO> getThongKeDiemThiTheoNam(int namBD, int namKT) {
+        ArrayList<ThongKeDiemThiDTO> result = new ArrayList<>();
+        ArrayList<Object[]> allBaiThi = loadAllBaiThi();
+
+        for (int nam = namBD; nam <= namKT; nam++) {
+            double max = 0, min = Double.MAX_VALUE, tong = 0;
+            int count = 0;
+
+            for (Object[] bt : allBaiThi) {
+                LocalDate ngay = (LocalDate) bt[3];
+                if (ngay != null && ngay.getYear() == nam) {
+                    double diem = (double) bt[2];
+                    if (diem > max) {
+                        max = diem;
+                    }
+                    if (diem < min) {
+                        min = diem;
+                    }
+                    tong += diem;
+                    count++;
+                }
+            }
+            result.add(new ThongKeDiemThiDTO(nam,
+                    count > 0 ? max : 0,
+                    count > 0 ? min : 0,
+                    count > 0 ? tong / count : 0));
         }
         return result;
     }

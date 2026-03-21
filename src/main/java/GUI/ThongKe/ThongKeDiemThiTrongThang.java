@@ -117,33 +117,47 @@ public class ThongKeDiemThiTrongThang extends JPanel {
 
     public void loadThongKe(int thang, int nam) {
         ArrayList<ThongKeTungNgayTrongThangDTO> list = ThongKeBUS.getThongKeDiemThiTrongThang(thang, nam);
-
         pnlChart.remove(chart);
         chart = new Chart();
         chart.addLegend("Điểm cao nhất", new Color(12, 84, 175));
         chart.addLegend("Điểm thấp nhất", new Color(211, 84, 0));
         chart.addLegend("Điểm trung bình", new Color(54, 143, 4));
 
-        // 3 ngày
-        int sumCao = 0, sumThap = 0;
-        double sumTB = 0;
-        int count = 0;
+        // Khởi tạo các biến tích lũy cho nhóm 3 ngày (giống sum_chiphi, sum_doanhthu...)
+        double max_nhom = 0;
+        double min_nhom = 0;
+        double sum_tb_nhom = 0;
+
         for (int i = 0; i < list.size(); i++) {
+            int index = i + 1;
+
+            if (index > 30) {
+                break;
+            }
+
             ThongKeTungNgayTrongThangDTO d = list.get(i);
-            sumCao = Math.max(sumCao, (int) d.getDiemCaoNhat());
-            sumThap = sumThap == 0 ? (int) d.getDiemThapNhat() : Math.min(sumThap, (int) d.getDiemThapNhat());
-            sumTB += d.getDiemTrungBinh();
-            count++;
-            if (count == 3 || i == list.size() - 1) {
-                int startIdx = i - count + 2;
-                chart.addData(new ModelChart("Ngày " + (startIdx) + "->" + (i + 1),
-                        new double[]{sumCao, sumThap, count > 0 ? sumTB / count : 0}));
-                sumCao = 0;
-                sumThap = 0;
-                sumTB = 0;
-                count = 0;
+            max_nhom = Math.max(max_nhom, d.getDiemCaoNhat());
+
+            // nếu là ngày đầu tiên của cụm (1, 4, 7...) thì gán luôn, sau đó mới so sánh min
+            if (index % 3 == 1) {
+                min_nhom = d.getDiemThapNhat();
+            } else {
+                min_nhom = Math.min(min_nhom, d.getDiemThapNhat());
+            }
+
+            sum_tb_nhom += d.getDiemTrungBinh();
+
+            // Cứ mỗi 3 ngày thì add vào Chart
+            if (index % 3 == 0) {
+                chart.addData(new ModelChart("Ngày " + (index - 2) + "->" + (index),
+                        new double[]{max_nhom, min_nhom, sum_tb_nhom / 3}));
+                max_nhom = 0;
+                min_nhom = 0;
+                sum_tb_nhom = 0;
             }
         }
+
+        // Refresh giao diện Chart
         chart.repaint();
         chart.validate();
         pnlChart.add(chart);

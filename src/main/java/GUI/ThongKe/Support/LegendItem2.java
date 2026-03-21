@@ -1,11 +1,15 @@
 package GUI.ThongKe.Support;
 
-public class LegendItem extends javax.swing.JPanel {
+import GUI.ThongKe.Support.BlankChart.ModelLegend2;
+import java.awt.Color;
 
-    public LegendItem(ModelLegend data) {
+public class LegendItem2 extends javax.swing.JPanel {
+
+    public LegendItem2(ModelLegend2 data) {
         initComponents();
         setOpaque(false);
         lbColor.setBackground(data.getColor());
+        lbColor.setForeground(data.getColorLight());
         lbName.setText(data.getName());
     }
 
@@ -13,11 +17,12 @@ public class LegendItem extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">                          
     private void initComponents() {
 
-        lbColor = new LabelColor();
+        lbColor = new LabelColor2();
         lbName = new javax.swing.JLabel();
 
         lbColor.setText("labelColor1");
-        lbName.setForeground(new java.awt.Color(100, 100, 100));
+
+        lbName.setForeground(new java.awt.Color(180, 180, 180));
         lbName.setText("Name");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
@@ -46,7 +51,7 @@ public class LegendItem extends javax.swing.JPanel {
 
 
     // Variables declaration - do not modify                     
-    private LabelColor lbColor;
+    private LabelColor2 lbColor;
     private javax.swing.JLabel lbName;
     // End of variables declaration                   
 }

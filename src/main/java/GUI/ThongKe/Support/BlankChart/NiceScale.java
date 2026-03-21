@@ -99,5 +99,4 @@ public class NiceScale {
         this.max = max;
         calculate();
     }
-
 }

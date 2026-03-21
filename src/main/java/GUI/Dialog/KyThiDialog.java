@@ -3,7 +3,7 @@ package GUI.Dialog;
 import BUS.KyThiBUS;
 import DTO.KyThiDTO;
 import GUI.Component.ButtonCustom;
-import GUI.Component.InputDate;
+import GUI.Component.InputDateTime;
 import GUI.Component.InputForm;
 import GUI.Panel.KyThi;
 import helper.Validation;
@@ -18,7 +18,7 @@ import javax.swing.border.EmptyBorder;
 public class KyThiDialog extends JDialog {
 
     private InputForm tenKyThi;
-    private InputDate thoiGianBatDau, thoiGianKetThuc;
+    private InputDateTime thoiGianBatDau, thoiGianKetThuc;
     private ButtonCustom btnLuu, btnHuy;
     private KyThiBUS bus = new KyThiBUS();
     private KyThi parent;
@@ -63,8 +63,8 @@ public class KyThiDialog extends JDialog {
         pnlMain.setBackground(Color.WHITE);
 
         tenKyThi = new InputForm("Tên kỳ thi");
-        thoiGianBatDau = new InputDate("Thời gian bắt đầu");
-        thoiGianKetThuc = new InputDate("Thời gian kết thúc");
+        thoiGianBatDau = new InputDateTime("Thời gian bắt đầu");
+        thoiGianKetThuc = new InputDateTime("Thời gian kết thúc");
 
         if (currentDTO != null) {
             tenKyThi.setText(currentDTO.getTenkythi());

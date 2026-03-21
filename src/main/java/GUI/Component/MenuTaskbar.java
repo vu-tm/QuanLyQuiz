@@ -2,6 +2,7 @@ package GUI.Component;
 
 import GUI.Main;
 import GUI.Panel.*;
+import GUI.ThongKe.ThongKe;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -22,6 +23,7 @@ public class MenuTaskbar extends JPanel {
         {"Nhóm quyền", "nhomquyen.svg"},
         {"Bài thi", "baithi.svg"},
         {"Phân công", "phancong.svg"},
+        {"Thống kê", "thongke.svg"},
         {"Đăng xuất", "logout.svg"}
     };
 
@@ -137,6 +139,9 @@ public class MenuTaskbar extends JPanel {
                             main.setPanel(new PhanCong());
                             break;
                         case 11:
+                            main.setPanel(new ThongKe());
+                            break;
+                        case 12:
                             if (JOptionPane.showConfirmDialog(null, "Đăng xuất?", "Xác nhận", 0) == 0) {
                                 System.exit(0);
                             }
@@ -161,5 +166,7 @@ public class MenuTaskbar extends JPanel {
                 listitem[i].setForeground(new Color(96, 125, 139));
             }
         }
+        this.revalidate();
+        this.repaint();
     }
 }

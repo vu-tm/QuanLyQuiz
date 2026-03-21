@@ -102,8 +102,14 @@ public class KetQuaHS extends JPanel implements ActionListener {
         search.txtSearchForm.addKeyListener(new KeyAdapter() {
             @Override
             public void keyReleased(KeyEvent e) {
-                // Implement search if needed
+                search();
             }
+        });
+        
+        search.btnReset.addActionListener(e -> {
+            search.txtSearchForm.setText("");
+            search.cbxChoose.setSelectedIndex(0);
+            loadDataTable();
         });
         functionBar.add(search);
 
@@ -121,6 +127,27 @@ public class KetQuaHS extends JPanel implements ActionListener {
         tblModel.setRowCount(0);
         for (BaiThiDTO bt : listHienTai) {
             DeThiDTO deThi = deThiBUS.getById(bt.getMade());
+            tblModel.addRow(new Object[] {
+                    bt.getMabaithi(),
+                    bt.getMade(),
+                    deThi != null ? deThi.getTende() : "N/A",
+                    bt.getDiemthi(),
+                    bt.getThoigianlambai() + " giây",
+                    bt.getThoigianvaothi()
+            });
+        }
+    }
+
+    private void search() {
+        String text = search.txtSearchForm.getText().toLowerCase();
+        String type = search.cbxChoose.getSelectedItem().toString();
+        
+        ArrayList<BaiThiDTO> result = bus.search(text, type, listHienTai);
+        
+        tblModel.setRowCount(0);
+        for (BaiThiDTO bt : result) {
+            DeThiDTO deThi = deThiBUS.getById(bt.getMade());
+            
             tblModel.addRow(new Object[] {
                     bt.getMabaithi(),
                     bt.getMade(),

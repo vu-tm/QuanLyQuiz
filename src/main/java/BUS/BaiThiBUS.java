@@ -52,8 +52,31 @@ public class BaiThiBUS {
         ArrayList<BaiThiDTO> result = new ArrayList<>();
         for (BaiThiDTO bt : listBaiThi) {
             // Có thể mở rộng search theo ID người dùng hoặc mã đề
-            if (bt.getManguoidung().toLowerCase().contains(keyword.toLowerCase()) || 
-                String.valueOf(bt.getMabaithi()).contains(keyword)) {
+            if (bt.getManguoidung().toLowerCase().contains(keyword.toLowerCase()) ||
+                    String.valueOf(bt.getMabaithi()).contains(keyword)) {
+                result.add(bt);
+            }
+        }
+        return result;
+    }
+
+    public ArrayList<BaiThiDTO> search(String text, String type, ArrayList<BaiThiDTO> list) {
+        ArrayList<BaiThiDTO> result = new ArrayList<>();
+        text = text.toLowerCase();
+        for (BaiThiDTO bt : list) {
+            boolean match = false;
+            switch (type) {
+                case "Tất cả":
+                    match = String.valueOf(bt.getMabaithi()).contains(text) || String.valueOf(bt.getMade()).contains(text);
+                    break;
+                case "Mã bài thi":
+                    match = String.valueOf(bt.getMabaithi()).contains(text);
+                    break;
+                case "Mã đề":
+                    match = String.valueOf(bt.getMade()).contains(text);
+                    break;
+            }
+            if (match) {
                 result.add(bt);
             }
         }
@@ -82,14 +105,15 @@ public class BaiThiBUS {
         DeThiBUS deThiBUS = new DeThiBUS();
         DapAnBUS dapAnBUS = new DapAnBUS();
         ArrayList<CauHoiDTO> dsCauHoi = deThiBUS.getDanhSachCauHoiByMade(deThi.getMade());
-        
+
         int soCauDung = 0;
         for (int i = 0; i < dsCauHoi.size(); i++) {
             CauHoiDTO ch = dsCauHoi.get(i);
             ArrayList<DapAnDTO> listDA = dapAnBUS.getByMaCauHoi(ch.getMacauhoi());
             String userAnswer = i < answers.size() ? answers.get(i) : "";
-            
-            if (userAnswer == null || userAnswer.trim().isEmpty()) continue;
+
+            if (userAnswer == null || userAnswer.trim().isEmpty())
+                continue;
 
             if (ch.getMaloai() == 1) { // Trắc nghiệm
                 try {
@@ -100,7 +124,8 @@ public class BaiThiBUS {
                             break;
                         }
                     }
-                } catch (NumberFormatException e) {}
+                } catch (NumberFormatException e) {
+                }
             } else if (ch.getMaloai() == 2) { // Điền khuyết
                 for (DapAnDTO da : listDA) {
                     if (da.isLadapan() && da.getNoidungtl().trim().equalsIgnoreCase(userAnswer.trim())) {
@@ -110,10 +135,11 @@ public class BaiThiBUS {
                 }
             }
         }
-        
-        double diem = (double) soCauDung * 10 / dsCauHoi.size();
+
+        int tongSoCau = dsCauHoi.size();
+        double diem = tongSoCau > 0 ? (double) soCauDung / tongSoCau * 10.0 : 0;
         diem = Math.round(diem * 100.0) / 100.0;
-        
+
         BaiThiDTO bt = new BaiThiDTO();
         bt.setMade(deThi.getMade());
         bt.setManguoidung(userId);
@@ -121,18 +147,18 @@ public class BaiThiBUS {
         bt.setThoigianvaothi(new Timestamp(System.currentTimeMillis()));
         bt.setThoigianlambai(timeSpent);
         bt.setSocaudung(soCauDung);
-        bt.setSocausai(dsCauHoi.size() - soCauDung);
-        
+        bt.setSocausai(tongSoCau - soCauDung);
+
         int maBaiThi = add(bt);
         if (maBaiThi > 0) {
             for (int i = 0; i < dsCauHoi.size(); i++) {
                 CauHoiDTO ch = dsCauHoi.get(i);
                 String userAnswer = i < answers.size() ? answers.get(i) : "";
-                
+
                 ChiTietBaiThiDTO ct = new ChiTietBaiThiDTO();
                 ct.setMabaithi(maBaiThi);
                 ct.setMacauhoi(ch.getMacauhoi());
-                
+
                 if (ch.getMaloai() == 1 && !userAnswer.isEmpty()) {
                     ct.setDapanchon(Integer.parseInt(userAnswer));
                     ct.setNoidungdienkhuyet(null);
@@ -144,5 +170,50 @@ public class BaiThiBUS {
             }
         }
         return diem;
+    }
+
+    public String evaluateAnswer(ChiTietBaiThiDTO ct) {
+        CauHoiBUS cauHoiBUS = new CauHoiBUS();
+        DapAnBUS dapAnBUS = new DapAnBUS();
+        CauHoiDTO ch = cauHoiBUS.getById(ct.getMacauhoi());
+        if (ch == null) return "Sai";
+
+        if (ct.getDapanchon() == 0 && (ct.getNoidungdienkhuyet() == null || ct.getNoidungdienkhuyet().trim().isEmpty())) {
+            return "Chưa làm";
+        }
+
+        ArrayList<DapAnDTO> listDA = dapAnBUS.getByMaCauHoi(ch.getMacauhoi());
+        if (ch.getMaloai() == 1) { // Trắc nghiệm
+            for (DapAnDTO da : listDA) {
+                if (da.isLadapan() && da.getMadapan() == ct.getDapanchon()) {
+                    return "Đúng";
+                }
+            }
+        } else if (ch.getMaloai() == 2) { // Điền khuyết
+            for (DapAnDTO da : listDA) {
+                if (da.isLadapan() && da.getNoidungtl().trim().equalsIgnoreCase(ct.getNoidungdienkhuyet().trim())) {
+                    return "Đúng";
+                }
+            }
+        }
+        return "Sai";
+    }
+
+    public String getAnswerText(ChiTietBaiThiDTO ct) {
+        if (ct.getDapanchon() == 0 && (ct.getNoidungdienkhuyet() == null || ct.getNoidungdienkhuyet().trim().isEmpty())) {
+            return "Chưa chọn";
+        }
+        CauHoiBUS cauHoiBUS = new CauHoiBUS();
+        DapAnBUS dapAnBUS = new DapAnBUS();
+        CauHoiDTO ch = cauHoiBUS.getById(ct.getMacauhoi());
+        if (ch != null && ch.getMaloai() == 1) { // Trắc nghiệm
+            ArrayList<DapAnDTO> listDA = dapAnBUS.getByMaCauHoi(ch.getMacauhoi());
+            for (DapAnDTO da : listDA) {
+                if (da.getMadapan() == ct.getDapanchon()) {
+                    return da.getNoidungtl();
+                }
+            }
+        }
+        return String.valueOf(ct.getDapanchon());
     }
 }

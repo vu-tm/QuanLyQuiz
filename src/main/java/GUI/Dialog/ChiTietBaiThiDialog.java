@@ -59,7 +59,7 @@ public class ChiTietBaiThiDialog extends JDialog {
                 return false;
             }
         };
-        String[] header = {"STT", "Mã câu hỏi", "Nội dung câu hỏi", "Đáp án đã chọn", "Nội dung điền khuyết"};
+        String[] header = {"STT", "Mã câu hỏi", "Nội dung câu hỏi", "Đáp án đã chọn", "Nội dung điền khuyết", "Kết quả"};
         tblModel.setColumnIdentifiers(header);
         table = new JTable(tblModel);
         table.setRowHeight(30);
@@ -69,6 +69,26 @@ public class ChiTietBaiThiDialog extends JDialog {
         table.getColumnModel().getColumn(0).setCellRenderer(centerRenderer);
         table.getColumnModel().getColumn(1).setCellRenderer(centerRenderer);
         table.getColumnModel().getColumn(3).setCellRenderer(centerRenderer);
+        
+        table.getColumnModel().getColumn(5).setCellRenderer(new DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+                Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+                if (!isSelected) {
+                    if ("Đúng".equals(value)) {
+                        c.setForeground(new Color(34, 197, 94)); // Green
+                        c.setFont(c.getFont().deriveFont(Font.BOLD));
+                    } else if ("Sai".equals(value)) {
+                        c.setForeground(new Color(239, 68, 68)); // Red
+                        c.setFont(c.getFont().deriveFont(Font.BOLD));
+                    } else {
+                        c.setForeground(Color.GRAY);
+                    }
+                }
+                setHorizontalAlignment(JLabel.CENTER);
+                return c;
+            }
+        });
 
         JScrollPane scrollPane = new JScrollPane(table);
         this.add(scrollPane, BorderLayout.CENTER);
@@ -86,12 +106,16 @@ public class ChiTietBaiThiDialog extends JDialog {
         int stt = 1;
         for (ChiTietBaiThiDTO ct : listCT) {
             CauHoiDTO ch = cauHoiBUS.getById(ct.getMacauhoi());
+            String ketQua = baiThiBUS.evaluateAnswer(ct);
+            String dapAnDaChon = baiThiBUS.getAnswerText(ct);
+
             tblModel.addRow(new Object[]{
                 stt++,
                 ct.getMacauhoi(),
                 ch != null ? ch.getNoidung() : "N/A",
-                ct.getDapanchon() == 0 ? "Chưa chọn" : ct.getDapanchon(),
-                ct.getNoidungdienkhuyet() != null ? ct.getNoidungdienkhuyet() : ""
+                dapAnDaChon,
+                ct.getNoidungdienkhuyet() != null ? ct.getNoidungdienkhuyet() : "",
+                ketQua
             });
         }
     }

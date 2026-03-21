@@ -116,7 +116,9 @@ public class MenuTaskbar extends JPanel {
                             case 2: main.setPanel(new KetQuaHS()); break;
                             case 3:
                                 if (JOptionPane.showConfirmDialog(null, "Đăng xuất?", "Xác nhận", 0) == 0) {
-                                    System.exit(0);
+                                    Main.user = null;
+                                    main.dispose();
+                                    new GUI.DangNhap().setVisible(true);
                                 }
                                 break;
                         }
@@ -154,7 +156,9 @@ public class MenuTaskbar extends JPanel {
                                 break;
                             case 10:
                                 if (JOptionPane.showConfirmDialog(null, "Đăng xuất?", "Xác nhận", 0) == 0) {
-                                    System.exit(0);
+                                    Main.user = null;
+                                    main.dispose();
+                                    new GUI.DangNhap().setVisible(true);
                                 }
                                 break;
                         }

@@ -73,6 +73,29 @@ public class DeThiBUS {
         return result;
     }
 
+    public ArrayList<DeThiDTO> search(String text, String type, ArrayList<DeThiDTO> list) {
+        ArrayList<DeThiDTO> result = new ArrayList<>();
+        text = text.toLowerCase();
+        for (DeThiDTO dt : list) {
+            boolean match = false;
+            switch (type) {
+                case "Tất cả":
+                    match = Integer.toString(dt.getMade()).contains(text) || dt.getTende().toLowerCase().contains(text);
+                    break;
+                case "Mã đề":
+                    match = Integer.toString(dt.getMade()).contains(text);
+                    break;
+                case "Tên đề":
+                    match = dt.getTende().toLowerCase().contains(text);
+                    break;
+            }
+            if (match) {
+                result.add(dt);
+            }
+        }
+        return result;
+    }
+
     public void saveChiTiet(int made, ArrayList<Integer> listMaCauHoi) {
         ctdtDAO.deleteByMade(made);
         for (int i = 0; i < listMaCauHoi.size(); i++) {

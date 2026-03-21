@@ -107,8 +107,14 @@ public class VaoThi extends JPanel implements ActionListener {
         search.txtSearchForm.addKeyListener(new KeyAdapter() {
             @Override
             public void keyReleased(KeyEvent e) {
-                // Implement search logic if needed
+                search();
             }
+        });
+        
+        search.btnReset.addActionListener(e -> {
+            search.txtSearchForm.setText("");
+            search.cbxChoose.setSelectedIndex(0);
+            loadDataTable();
         });
         functionBar.add(search);
 
@@ -133,6 +139,28 @@ public class VaoThi extends JPanel implements ActionListener {
         for (DeThiDTO dt : listDeThi) {
             String tenMon = monHocBUS.getTenById(dt.getMonthi());
             boolean daThi = baiThiBUS.hasTakenExam(Main.user.getId(), dt.getMade());
+            tblModel.addRow(new Object[] {
+                    dt.getMade(),
+                    dt.getTende(),
+                    tenMon,
+                    dt.getTongsocau(),
+                    dt.getThoigianthi() + " phút",
+                    daThi ? "Đã thi" : "Chưa thi"
+            });
+        }
+    }
+
+    private void search() {
+        String text = search.txtSearchForm.getText().toLowerCase();
+        String type = search.cbxChoose.getSelectedItem().toString();
+        
+        ArrayList<DeThiDTO> result = deThiBUS.search(text, type, listDeThi);
+        
+        tblModel.setRowCount(0);
+        for (DeThiDTO dt : result) {
+            String tenMon = monHocBUS.getTenById(dt.getMonthi());
+            boolean daThi = baiThiBUS.hasTakenExam(Main.user.getId(), dt.getMade());
+            
             tblModel.addRow(new Object[] {
                     dt.getMade(),
                     dt.getTende(),

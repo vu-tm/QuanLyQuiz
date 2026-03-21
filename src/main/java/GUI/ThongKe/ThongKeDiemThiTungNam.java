@@ -2,6 +2,7 @@ package GUI.ThongKe;
 
 import BUS.ThongKeBUS;
 import DTO.ThongKe.ThongKeDiemThiDTO;
+import GUI.Component.ButtonCustom;
 import GUI.Component.PanelBorderRadius;
 import GUI.ThongKe.Support.Chart;
 import GUI.ThongKe.Support.ModelChart;
@@ -28,7 +29,7 @@ public class ThongKeDiemThiTungNam extends JPanel implements ActionListener {
     JPanel pnl_top;
     JTextField txfNamBD, txfNamKT;
     Chart chart;
-    JButton btnThongKe, btnReset, btnExport;
+    ButtonCustom btnThongKe, btnReset, btnExport;
     private JTable tableThongKe;
     private JScrollPane scrollTableThongKe;
     private DefaultTableModel tblModel;
@@ -62,9 +63,9 @@ public class ThongKeDiemThiTungNam extends JPanel implements ActionListener {
         PlainDocument docKT = (PlainDocument) txfNamKT.getDocument();
         docKT.setDocumentFilter(new NumericDocumentFilter());
 
-        btnThongKe = createButton("Thống kê", new Color(72, 118, 255));
-        btnReset = createButton("Làm mới", new Color(72, 118, 255));
-        btnExport = createButton("Xuất Excel", new Color(76, 175, 80));
+        btnThongKe = new ButtonCustom("Thống kê", "warning", 14, 100, 30);
+        btnReset = new ButtonCustom("Làm mới", "success", 14, 100, 30);
+        btnExport = new ButtonCustom("Xuất Excel", "excel", 14, 120, 30);
         btnThongKe.addActionListener(this);
         btnReset.addActionListener(this);
         btnExport.addActionListener(this);
@@ -160,28 +161,5 @@ public class ThongKeDiemThiTungNam extends JPanel implements ActionListener {
         dataset = ThongKeBUS.getThongKeDiemThiTheoNam(currentYear - 6, currentYear);
         loadDataChart(dataset);
         loadDataTable(dataset);
-    }
-
-    private JButton createButton(String text, Color bgColor) {
-        JButton button = new JButton(text) {
-            @Override
-            protected void paintComponent(Graphics g) {
-                Graphics2D g2 = (Graphics2D) g.create();
-                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                Color c = bgColor;
-                if (getModel().isPressed()) c = bgColor.darker();
-                else if (getModel().isRollover()) c = bgColor.brighter();
-                g2.setColor(c);
-                g2.fillRoundRect(0, 0, getWidth(), getHeight(), 10, 10);
-                super.paintComponent(g2); g2.dispose();
-            }
-        };
-        button.setFont(new Font("Arial", Font.BOLD, 11));
-        button.setForeground(Color.WHITE);
-        button.setFocusPainted(false); button.setBorderPainted(false);
-        button.setContentAreaFilled(false); button.setOpaque(false);
-        button.setPreferredSize(new Dimension(100, 25));
-        button.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
-        return button;
     }
 }

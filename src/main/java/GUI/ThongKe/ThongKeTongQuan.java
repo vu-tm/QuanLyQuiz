@@ -1,9 +1,6 @@
 package GUI.ThongKe;
 
 import BUS.ThongKeBUS;
-import DAO.CauHoiDAO;
-import DAO.DeThiDAO;
-import DAO.NguoiDungDAO;
 import DTO.ThongKe.ThongKeTungNgayTrongThangDTO;
 import GUI.Component.itemTaskbar;
 import GUI.ThongKe.Support.Chart;
@@ -33,11 +30,10 @@ public class ThongKeTongQuan extends JPanel {
     private DefaultTableModel tblModel;
     ArrayList<ThongKeTungNgayTrongThangDTO> dataset;
 
-    // Giống hệt code mẫu: mảng getSt khởi tạo với dữ liệu thực từ DAO
     String[][] getSt = {
-        {"Tổng số đề thi", "dethi.svg", Integer.toString(DeThiDAO.getInstance().selectAll().size())},
-        {"Tổng số câu hỏi", "question.svg", Integer.toString(new CauHoiDAO().getAll().size())},
-        {"Tổng số học sinh", "nguoidung.svg", Integer.toString(NguoiDungDAO.getInstance().getAll().size())}
+        {"Tổng số đề thi", "dethi.svg", Integer.toString(ThongKeBUS.getTongSoDeThi())},
+        {"Tổng số câu hỏi", "question.svg", Integer.toString(ThongKeBUS.getTongSoCauHoi())},
+        {"Tổng số học sinh", "nguoidung.svg", Integer.toString(ThongKeBUS.getTongSoHocSinh())}
     };
 
     public ThongKeTongQuan() {
@@ -84,7 +80,7 @@ public class ThongKeTongQuan extends JPanel {
         this.setOpaque(false);
         this.setBorder(new EmptyBorder(10, 10, 10, 10));
 
-        // TOP: 3 card - constructor itemTaskbar(icon, value, title, 0) giống hệt code mẫu
+        // TOP: 3 card
         jp_top = new JPanel();
         jp_top.setLayout(new GridLayout(1, 3, 20, 0));
         jp_top.setOpaque(false);
@@ -147,7 +143,6 @@ public class ThongKeTongQuan extends JPanel {
         this.add(scrollTableThongKe, BorderLayout.SOUTH);
     }
 
-    // Giống hệt refreshData() trong code mẫu - được gọi từ ThongKe.java
     public void refreshData() {
         this.dataset = ThongKeBUS.getThongKe7NgayGanNhat();
         loadDataTable(this.dataset);

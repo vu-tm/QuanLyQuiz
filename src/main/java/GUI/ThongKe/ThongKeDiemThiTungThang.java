@@ -2,6 +2,7 @@ package GUI.ThongKe;
 
 import BUS.ThongKeBUS;
 import DTO.ThongKe.ThongKeTheoThangDTO;
+import GUI.Component.ButtonCustom;
 import GUI.Component.PanelBorderRadius;
 import GUI.ThongKe.Support.Chart;
 import GUI.ThongKe.Support.ModelChart;
@@ -27,7 +28,7 @@ public class ThongKeDiemThiTungThang extends JPanel implements ActionListener {
     JPanel pnl_top;
     JYearChooser yearChooser;
     Chart chart;
-    JButton btnExport;
+    ButtonCustom btnExport;
     private JTable tableThongKe;
     private JScrollPane scrollTableThongKe;
     private DefaultTableModel tblModel;
@@ -44,16 +45,19 @@ public class ThongKeDiemThiTungThang extends JPanel implements ActionListener {
         this.setBorder(new EmptyBorder(10, 10, 10, 10));
 
         pnl_top = new JPanel(new FlowLayout());
-        JLabel lblNam = new JLabel("Chọn năm thống kê"); lblNam.setFont(font);
+        JLabel lblNam = new JLabel("Chọn năm thống kê");
+        lblNam.setFont(font);
         yearChooser = new JYearChooser();
         yearChooser.setPreferredSize(new Dimension(60, 25));
         yearChooser.addPropertyChangeListener("year", (PropertyChangeEvent e) -> {
             loadThongKeThang((Integer) e.getNewValue());
         });
 
-        btnExport = createButton("Xuất Excel", new Color(76, 175, 80));
+        btnExport = new ButtonCustom("Xuất Excel", "excel", 14, 120, 30);
         btnExport.addActionListener(this);
-        pnl_top.add(lblNam); pnl_top.add(yearChooser); pnl_top.add(btnExport);
+        pnl_top.add(lblNam);
+        pnl_top.add(yearChooser);
+        pnl_top.add(btnExport);
 
         pnlChart = new PanelBorderRadius();
         pnlChart.setLayout(new BoxLayout(pnlChart, BoxLayout.Y_AXIS));
@@ -95,11 +99,13 @@ public class ThongKeDiemThiTungThang extends JPanel implements ActionListener {
         chart.addLegend("Điểm trung bình", new Color(54, 143, 4));
         for (ThongKeTheoThangDTO i : list) {
             chart.addData(new ModelChart("Tháng " + i.getThang(),
-                new double[]{i.getDiemCaoNhat(), i.getDiemThapNhat(), i.getDiemTrungBinh()}));
+                    new double[]{i.getDiemCaoNhat(), i.getDiemThapNhat(), i.getDiemTrungBinh()}));
         }
-        chart.repaint(); chart.validate();
+        chart.repaint();
+        chart.validate();
         pnlChart.add(chart);
-        pnlChart.repaint(); pnlChart.validate();
+        pnlChart.repaint();
+        pnlChart.validate();
 
         tblModel.setRowCount(0);
         for (ThongKeTheoThangDTO i : list) {
@@ -115,34 +121,15 @@ public class ThongKeDiemThiTungThang extends JPanel implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == btnExport) {
-            try { JTableExporter.exportJTableToExcel(tableThongKe); }
-            catch (IOException ex) { Logger.getLogger(ThongKeDiemThiTungThang.class.getName()).log(Level.SEVERE, null, ex); }
+            try {
+                JTableExporter.exportJTableToExcel(tableThongKe);
+            } catch (IOException ex) {
+                Logger.getLogger(ThongKeDiemThiTungThang.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
     }
 
     public void refreshTable() {
         loadThongKeThang(yearChooser.getYear());
-    }
-
-    private JButton createButton(String text, Color bgColor) {
-        JButton button = new JButton(text) {
-            @Override
-            protected void paintComponent(Graphics g) {
-                Graphics2D g2 = (Graphics2D) g.create();
-                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                Color c = bgColor;
-                if (getModel().isPressed()) c = bgColor.darker();
-                else if (getModel().isRollover()) c = bgColor.brighter();
-                g2.setColor(c); g2.fillRoundRect(0, 0, getWidth(), getHeight(), 10, 10);
-                super.paintComponent(g2); g2.dispose();
-            }
-        };
-        button.setFont(new Font("Arial", Font.BOLD, 11));
-        button.setForeground(Color.WHITE);
-        button.setFocusPainted(false); button.setBorderPainted(false);
-        button.setContentAreaFilled(false); button.setOpaque(false);
-        button.setPreferredSize(new Dimension(100, 25));
-        button.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
-        return button;
     }
 }

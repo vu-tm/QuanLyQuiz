@@ -7,12 +7,13 @@ import java.util.Comparator;
 import java.util.Date;
 
 public class TableSorter {
+
     public static final Comparator<Object> STRING_COMPARATOR = (Object o1, Object o2) -> {
         String s1 = (String) o1;
         String s2 = (String) o2;
         return s1.compareTo(s2);
     };
-    
+
     public static final Comparator<Object> DATE_COMPARATOR = (Object o1, Object o2) -> {
         Date s1 = (Date) o1;
         Date s2 = (Date) o2;
@@ -20,9 +21,13 @@ public class TableSorter {
     };
 
     public static final Comparator<Object> INTEGER_COMPARATOR = (Object o1, Object o2) -> {
-        Integer i1 = (Integer) o1;
-        Integer i2 = (Integer) o2;
-        return i1.compareTo(i2);
+        try {
+            Integer i1 = Integer.valueOf(o1.toString());
+            Integer i2 = Integer.valueOf(o2.toString());
+            return i1.compareTo(i2);
+        } catch (Exception e) {
+            return 0;
+        }
     };
 
     public static final Comparator<Object> DOUBLE_COMPARATOR = (Object o1, Object o2) -> {
@@ -62,4 +67,3 @@ public class TableSorter {
         sorter.setComparator(columnIndex, comparator);
     }
 }
-

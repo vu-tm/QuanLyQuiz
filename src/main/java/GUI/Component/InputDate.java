@@ -1,70 +1,78 @@
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ */
 package GUI.Component;
 
-import com.formdev.flatlaf.extras.FlatSVGIcon;
-import com.github.lgooddatepicker.components.DatePickerSettings;
-import com.github.lgooddatepicker.components.DateTimePicker;
-import com.github.lgooddatepicker.components.TimePickerSettings;
-import java.awt.*;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
+import com.toedter.calendar.JDateChooser;
+//import com.toedter.calendar.JTextFieldDateEditor;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.GridLayout;
+import java.text.DecimalFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Locale;
-import javax.swing.*;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 
 public class InputDate extends JPanel {
 
-    private JLabel lblTitle;
-    public DateTimePicker dateTimePicker;
+    JLabel lbltitle;
+    public JDateChooser date;
+    DecimalFormat formatter = new DecimalFormat("###,###,###");
+    SimpleDateFormat formatDate = new SimpleDateFormat("dd/MM/YYYY HH:mm");
+    private final SimpleDateFormat dateFormat;
 
     public InputDate(String title) {
-        this.setLayout(new GridLayout(2, 1, 0, 4));
-        this.setBackground(Color.WHITE);
-        this.setBorder(new EmptyBorder(0, 10, 5, 10));
-        this.setPreferredSize(new Dimension(100, 90));
-
-        lblTitle = new JLabel(title);
-
-        Locale localeVI = new Locale("vi", "VN");
-
-        DatePickerSettings dateSettings = new DatePickerSettings(localeVI);
-        dateSettings.setFormatForDatesCommonEra("dd/MM/yyyy");
-
-        TimePickerSettings timeSettings = new TimePickerSettings(localeVI);
-        timeSettings.setFormatForDisplayTime("HH:mm:ss");
-        timeSettings.setFormatForMenuTimes("HH:mm:ss");
-        timeSettings.use24HourClockFormat();
-
-        dateTimePicker = new DateTimePicker(dateSettings, timeSettings);
-
-        JButton calendarBtn = dateTimePicker.getDatePicker().getComponentToggleCalendarButton();
-        calendarBtn.setText("");
-        calendarBtn.setIcon(new FlatSVGIcon("icon/calendar.svg", 16, 16));
-
-        JButton clockBtn = dateTimePicker.getTimePicker().getComponentToggleTimeMenuButton();
-        clockBtn.setText("");
-        clockBtn.setIcon(new FlatSVGIcon("icon/clock.svg", 16, 16));
-
-        this.add(lblTitle);
-        this.add(dateTimePicker);
+        this.setLayout(new GridLayout(2, 1));
+        this.setBackground(Color.white);
+        this.setBorder(new EmptyBorder(10, 10, 10, 10));
+        lbltitle = new JLabel(title);
+        date = new JDateChooser();
+        date.setDateFormatString("dd/MM/yyyy");
+        dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+        this.add(lbltitle);
+        this.add(date);
     }
 
-    public Date getDate() {
-        LocalDateTime ldt = dateTimePicker.getDateTimePermissive();
-        if (ldt == null) return null;
-        return Date.from(ldt.atZone(ZoneId.systemDefault()).toInstant());
+    public InputDate(String title, int w, int h) {
+        this.setLayout(new GridLayout(2, 1));
+        this.setBackground(Color.white);
+        this.setPreferredSize(new Dimension(w, h));
+        lbltitle = new JLabel(title);
+        date = new JDateChooser();
+        date.setDateFormatString("dd/MM/yyyy");
+        dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+        this.add(lbltitle);
+        this.add(date);
+    }
+    
+    public JDateChooser getDateChooser() {
+        return this.date;
     }
 
-    public void setDate(Date d) {
-        if (d == null) return;
-        LocalDateTime ldt = d.toInstant()
-                .atZone(ZoneId.systemDefault())
-                .toLocalDateTime();
-        dateTimePicker.setDateTimePermissive(ldt);
+    public Date getDate() throws ParseException {
+        Date dt = date.getDate();
+        if (dt != null) {
+//            String txt_date = dateFormat.format(dt);
+//            return dateFormat.parse(txt_date);
+            return dt;
+        } else {
+            return null;
+        }
     }
 
-    public void setDisable() {
-        dateTimePicker.getDatePicker().setEnabled(false);
-        dateTimePicker.getTimePicker().setEnabled(false);
+    public JLabel getLbltitle() {
+        return lbltitle;
+    }
+    
+    public void setDate(JDateChooser date) {
+        this.date = date;
+    }
+
+    public void setDate(Date date) {
+        this.date.setDate(date);
     }
 }

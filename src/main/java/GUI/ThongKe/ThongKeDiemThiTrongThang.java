@@ -2,6 +2,7 @@ package GUI.ThongKe;
 
 import BUS.ThongKeBUS;
 import DTO.ThongKe.ThongKeTungNgayTrongThangDTO;
+import GUI.Component.ButtonCustom;
 import GUI.Component.PanelBorderRadius;
 import GUI.ThongKe.Support.Chart;
 import GUI.ThongKe.Support.ModelChart;
@@ -29,7 +30,7 @@ public class ThongKeDiemThiTrongThang extends JPanel {
     JMonthChooser monthChooser;
     JYearChooser yearChooser;
     Chart chart;
-    JButton btnThongKe, btnReset, btnExport;
+    ButtonCustom btnThongKe, btnReset, btnExport;
     private JTable tableThongKe;
     private JScrollPane scrollTableThongKe;
     private DefaultTableModel tblModel;
@@ -48,20 +49,26 @@ public class ThongKeDiemThiTrongThang extends JPanel {
         this.setBorder(new EmptyBorder(10, 10, 10, 10));
 
         pnl_top = new JPanel(new FlowLayout());
-        JLabel lblThang = new JLabel("Chọn tháng"); lblThang.setFont(font);
-        JLabel lblNam = new JLabel("Chọn năm"); lblNam.setFont(font);
+        JLabel lblThang = new JLabel("Chọn tháng");
+        lblThang.setFont(font);
+        JLabel lblNam = new JLabel("Chọn năm");
+        lblNam.setFont(font);
         monthChooser = new JMonthChooser();
         monthChooser.setPreferredSize(new Dimension(100, 25));
         yearChooser = new JYearChooser();
         yearChooser.setPreferredSize(new Dimension(60, 25));
 
-        btnThongKe = createButton("Thống kê", new Color(72, 118, 255));
-        btnReset = createButton("Làm mới", new Color(72, 118, 255));
-        btnExport = createButton("Xuất Excel", new Color(76, 175, 80));
+        btnThongKe = new ButtonCustom("Thống kê", "warning", 14, 100, 30);
+        btnReset = new ButtonCustom("Làm mới", "success", 14, 100, 30);
+        btnExport = new ButtonCustom("Xuất Excel", "excel", 14, 120, 30);
 
-        pnl_top.add(lblThang); pnl_top.add(monthChooser);
-        pnl_top.add(lblNam); pnl_top.add(yearChooser);
-        pnl_top.add(btnThongKe); pnl_top.add(btnReset); pnl_top.add(btnExport);
+        pnl_top.add(lblThang);
+        pnl_top.add(monthChooser);
+        pnl_top.add(lblNam);
+        pnl_top.add(yearChooser);
+        pnl_top.add(btnThongKe);
+        pnl_top.add(btnReset);
+        pnl_top.add(btnExport);
 
         btnThongKe.addActionListener(e -> loadThongKe(monthChooser.getMonth() + 1, yearChooser.getYear()));
         btnReset.addActionListener(e -> {
@@ -71,8 +78,11 @@ public class ThongKeDiemThiTrongThang extends JPanel {
             loadThongKe(now.getMonthValue(), now.getYear());
         });
         btnExport.addActionListener(e -> {
-            try { JTableExporter.exportJTableToExcel(tableThongKe); }
-            catch (IOException ex) { Logger.getLogger(ThongKeDiemThiTrongThang.class.getName()).log(Level.SEVERE, null, ex); }
+            try {
+                JTableExporter.exportJTableToExcel(tableThongKe);
+            } catch (IOException ex) {
+                Logger.getLogger(ThongKeDiemThiTrongThang.class.getName()).log(Level.SEVERE, null, ex);
+            }
         });
 
         pnlChart = new PanelBorderRadius();
@@ -114,8 +124,10 @@ public class ThongKeDiemThiTrongThang extends JPanel {
         chart.addLegend("Điểm thấp nhất", new Color(211, 84, 0));
         chart.addLegend("Điểm trung bình", new Color(54, 143, 4));
 
-        // Nhóm 3 ngày 1 bar để tránh quá dày
-        int sumCao = 0, sumThap = 0; double sumTB = 0; int count = 0;
+        // 3 ngày
+        int sumCao = 0, sumThap = 0;
+        double sumTB = 0;
+        int count = 0;
         for (int i = 0; i < list.size(); i++) {
             ThongKeTungNgayTrongThangDTO d = list.get(i);
             sumCao = Math.max(sumCao, (int) d.getDiemCaoNhat());
@@ -125,48 +137,31 @@ public class ThongKeDiemThiTrongThang extends JPanel {
             if (count == 3 || i == list.size() - 1) {
                 int startIdx = i - count + 2;
                 chart.addData(new ModelChart("Ngày " + (startIdx) + "->" + (i + 1),
-                    new double[]{sumCao, sumThap, count > 0 ? sumTB / count : 0}));
-                sumCao = 0; sumThap = 0; sumTB = 0; count = 0;
+                        new double[]{sumCao, sumThap, count > 0 ? sumTB / count : 0}));
+                sumCao = 0;
+                sumThap = 0;
+                sumTB = 0;
+                count = 0;
             }
         }
-        chart.repaint(); chart.validate();
+        chart.repaint();
+        chart.validate();
         pnlChart.add(chart);
-        pnlChart.repaint(); pnlChart.validate();
+        pnlChart.repaint();
+        pnlChart.validate();
 
         tblModel.setRowCount(0);
         for (ThongKeTungNgayTrongThangDTO i : list) {
             tblModel.addRow(new Object[]{
                 i.getNgay(),
-                i.getDiemCaoNhat() > 0 ? String.format("%.2f", i.getDiemCaoNhat()) : "-",
-                i.getDiemThapNhat() > 0 ? String.format("%.2f", i.getDiemThapNhat()) : "-",
-                i.getDiemTrungBinh() > 0 ? String.format("%.2f", i.getDiemTrungBinh()) : "-"
+                String.format("%.2f", i.getDiemCaoNhat()),
+                String.format("%.2f", i.getDiemThapNhat()),
+                String.format("%.2f", i.getDiemTrungBinh())
             });
         }
     }
 
     public void refreshTable() {
         loadThongKe(monthChooser.getMonth() + 1, yearChooser.getYear());
-    }
-
-    private JButton createButton(String text, Color bgColor) {
-        JButton button = new JButton(text) {
-            @Override
-            protected void paintComponent(Graphics g) {
-                Graphics2D g2 = (Graphics2D) g.create();
-                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                Color c = bgColor;
-                if (getModel().isPressed()) c = bgColor.darker();
-                else if (getModel().isRollover()) c = bgColor.brighter();
-                g2.setColor(c); g2.fillRoundRect(0, 0, getWidth(), getHeight(), 10, 10);
-                super.paintComponent(g2); g2.dispose();
-            }
-        };
-        button.setFont(new Font("Arial", Font.BOLD, 11));
-        button.setForeground(Color.WHITE);
-        button.setFocusPainted(false); button.setBorderPainted(false);
-        button.setContentAreaFilled(false); button.setOpaque(false);
-        button.setPreferredSize(new Dimension(100, 25));
-        button.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
-        return button;
     }
 }

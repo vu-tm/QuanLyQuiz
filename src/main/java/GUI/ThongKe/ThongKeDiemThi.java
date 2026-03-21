@@ -19,7 +19,7 @@ public class ThongKeDiemThi extends JPanel {
 
     private void initComponent() {
         this.setLayout(new GridLayout(1, 1));
-        this.setBackground(new Color(72, 118, 255));
+        this.setBackground(new Color(240, 247, 250));
 
         diemThiTungNam = new ThongKeDiemThiTungNam();
         diemThiTungThang = new ThongKeDiemThiTungThang();

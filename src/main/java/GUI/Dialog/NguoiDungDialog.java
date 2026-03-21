@@ -24,7 +24,7 @@ public class NguoiDungDialog extends JDialog {
     private NhomQuyenBUS nqBus = new NhomQuyenBUS();
     private NguoiDung parent;
     private NguoiDungDTO currentDTO;
-    
+
     private JPanel main, bottom;
     private ButtonCustom btnAdd, btnEdit, btnExit;
     private InputForm txtUsername, txtHoten, txtMatKhau;
@@ -47,19 +47,19 @@ public class NguoiDungDialog extends JDialog {
         this.parent = parent;
         this.currentDTO = user;
         init(title, type);
-        
+
         if (user != null) {
             txtUsername.setText(user.getUsername());
             txtHoten.setText(user.getHoten());
             txtMatKhau.setText(user.getMatkhau());
             jcNgaySinh.setDate(user.getNgaysinh());
-            
+
             if (user.isGioitinh()) {
                 male.setSelected(true);
             } else {
                 female.setSelected(true);
             }
-            
+
             for (int i = 0; i < listNhomQuyen.size(); i++) {
                 if (listNhomQuyen.get(i).getManhomquyen() == user.getManhomquyen()) {
                     cbxNhomQuyen.setSelectedIndex(i);
@@ -68,7 +68,7 @@ public class NguoiDungDialog extends JDialog {
             }
             cbxTrangThai.setSelectedIndex(user.getTrangthai());
         }
-        
+
         if (type.equals("view")) {
             setDisableAll();
         }
@@ -136,9 +136,9 @@ public class NguoiDungDialog extends JDialog {
         JLabel lbTT = new JLabel("Trạng thái");
         lbTT.setFont(new Font("Segoe UI", Font.BOLD, 13));
         pnlTT.add(lbTT);
-        cbxTrangThai = new JComboBox<>(new String[]{"Đã khóa", "Hoạt động"});
+        cbxTrangThai = new JComboBox<>(new String[]{"Ngưng hoạt động", "Hoạt động"});
         cbxTrangThai.setSelectedIndex(1);
-        cbxTrangThai.setPreferredSize(new Dimension(0, 35)); // Tăng chiều cao Dropdown
+        cbxTrangThai.setPreferredSize(new Dimension(0, 35));
         pnlTT.add(cbxTrangThai);
 
         main.add(txtUsername);
@@ -183,12 +183,13 @@ public class NguoiDungDialog extends JDialog {
         });
 
         switch (type) {
-            case "create" -> bottom.add(btnAdd);
+            case "create" ->
+                bottom.add(btnAdd);
             case "update" -> {
-                txtUsername.setDisable();
                 bottom.add(btnEdit);
             }
-            case "view" -> { }
+            case "view" -> {
+            }
         }
         bottom.add(btnExit);
 
@@ -201,17 +202,17 @@ public class NguoiDungDialog extends JDialog {
         String hoten = txtHoten.getText().trim();
         String matkhau = txtMatKhau.getText();
         boolean gioiTinh = male.isSelected();
-        
+
         java.util.Date date = jcNgaySinh.getDate();
         java.sql.Date sqlDate = new java.sql.Date(date.getTime());
-        
+
         int manhomquyen = listNhomQuyen.get(cbxNhomQuyen.getSelectedIndex()).getManhomquyen();
         int trangthai = cbxTrangThai.getSelectedIndex();
 
         if (type.equals("create")) {
             int id = bus.getNextId();
             NguoiDungDTO newUser = new NguoiDungDTO(id, username, hoten, gioiTinh, sqlDate, matkhau, trangthai, manhomquyen);
-            if (bus.insert(newUser)) {
+            if (bus.add(newUser)) {
                 JOptionPane.showMessageDialog(this, "Thêm thành công!");
                 parent.loadDataTable((ArrayList<NguoiDungDTO>) bus.getAll());
                 dispose();
@@ -227,19 +228,27 @@ public class NguoiDungDialog extends JDialog {
     }
 
     private boolean validateInput() throws ParseException {
-        if (Validation.isEmpty(txtUsername.getText())) {
+        String hoTen = txtHoten.getText().trim();
+        String userName = txtUsername.getText().trim();
+        String matKhau = txtMatKhau.getText();
+
+        if (Validation.isEmpty(userName)) {
             JOptionPane.showMessageDialog(this, "Username không được để trống!");
             return false;
         }
-        if (Validation.isEmpty(txtHoten.getText())) {
+        if (Validation.isEmpty(hoTen)) {
             JOptionPane.showMessageDialog(this, "Họ tên không được để trống!");
             return false;
         }
-        if (txtHoten.getText().length() < 6) {
+        if (!hoTen.matches("^[\\p{L} ]+$")) {
+            JOptionPane.showMessageDialog(this, "Họ tên không hợp lệ! (Không được chứa số hoặc ký tự đặc biệt)");
+            return false;
+        }
+        if (hoTen.length() < 6) {
             JOptionPane.showMessageDialog(this, "Họ tên phải ít nhất 6 ký tự!");
             return false;
         }
-        if (Validation.isEmpty(txtMatKhau.getText())) {
+        if (Validation.isEmpty(matKhau)) {
             JOptionPane.showMessageDialog(this, "Mật khẩu không được để trống!");
             return false;
         }

@@ -2,96 +2,89 @@ package BUS;
 
 import DAO.NguoiDungDAO;
 import DTO.NguoiDungDTO;
-import java.util.List;
+import DTO.NhomQuyenDTO;
 import java.util.ArrayList;
+import java.util.List;
 
 public class NguoiDungBUS {
 
-    private NguoiDungDAO dao = new NguoiDungDAO();
+    private final NguoiDungDAO dao = NguoiDungDAO.getInstance();
+    private final NhomQuyenBUS nqBUS = new NhomQuyenBUS();
+    private ArrayList<NguoiDungDTO> listNguoiDung;
 
-    // Lấy tất cả người dùng (kể cả đã khóa)
-    public List<NguoiDungDTO> getAll() {
-        return dao.getAll();
+    public NguoiDungBUS() {
+        this.listNguoiDung = dao.selectAll();
     }
 
-    // Lấy người dùng theo ID (không phân biệt trạng thái) - dùng cho sửa
+    public ArrayList<NguoiDungDTO> getAll() {
+        this.listNguoiDung = dao.selectAll();
+        return this.listNguoiDung;
+    }
+
     public NguoiDungDTO getById(int id) {
-        return dao.getById(id);
+        for (NguoiDungDTO u : listNguoiDung) {
+            if (u.getId() == id) return u;
+        }
+        return null;
     }
 
-    // Kiểm tra tồn tại ID (không phân biệt trạng thái) - dùng cho thêm mới
-    public boolean checkExistId(int id) {
-        return dao.checkExistIdAll(id);
+    public boolean add(NguoiDungDTO user) {
+        boolean check = dao.insert(user) > 0;
+        if (check) getAll();
+        return check;
     }
 
-    // Kiểm tra tồn tại username (không phân biệt trạng thái) - dùng cho thêm mới
-    public boolean checkExistUsername(String username) {
-        return dao.checkExistUsernameAll(username);
-    }
-
-    // Thêm mới người dùng
-    public boolean insert(NguoiDungDTO user) {
-        return dao.insert(user);
-    }
-
-    // Cập nhật người dùng
     public boolean update(NguoiDungDTO user) {
-        return dao.update(user);
+        boolean check = dao.update(user) > 0;
+        if (check) getAll();
+        return check;
     }
 
-    // Xóa mềm (cập nhật trạng thái = 0)
     public boolean delete(int id) {
-        return dao.delete(id);
+        boolean check = dao.delete(id) > 0;
+        if (check) getAll();
+        return check;
     }
 
-    // Xóa cứng khỏi database
-    public boolean deleteHard(int id) {
-        return dao.deleteHard(id);
-    }
-
-    // Tìm kiếm người dùng theo từ khóa (trên tất cả dữ liệu)
-    public List<NguoiDungDTO> search(String keyword) {
-        List<NguoiDungDTO> all = dao.getAll();
-        if (keyword == null || keyword.trim().isEmpty()) {
-            return all;
-        }
-        String kw = keyword.toLowerCase().trim();
-        List<NguoiDungDTO> result = new ArrayList<>();
-        for (NguoiDungDTO user : all) {
-            if (String.valueOf(user.getId()).contains(kw)
-                    || user.getUsername().toLowerCase().contains(kw)
-                    || user.getHoten().toLowerCase().contains(kw)) {
-                result.add(user);
-            }
-        }
-        return result;
-    }
-
-    // Lấy tên nhóm quyền theo mã
-    public String getTenNhomQuyen(int manhomquyen) {
-        switch (manhomquyen) {
-            case 1:
-                return "Admin";
-            case 2:
-                return "Giảng viên";
-            case 3:
-                return "Sinh viên";
-            default:
-                return "Không xác định";
-        }
-    }
-
-    // Chuyển giới tính thành text
-    public String getGioiTinhText(boolean gioitinh) {
-        return gioitinh ? "Nam" : "Nữ";
-    }
-
-    // Chuyển trạng thái thành text
-    public String getTrangThaiText(int trangthai) {
-        return trangthai == 1 ? "Hoạt động" : "Đã khóa";
+    public boolean checkExistUsername(String username) {
+        return dao.checkExistUsername(username);
     }
 
     public int getNextId() {
         return dao.getNextId();
+    }
+
+    public ArrayList<NguoiDungDTO> search(String text, String type) {
+        ArrayList<NguoiDungDTO> result = new ArrayList<>();
+        text = text.toLowerCase().trim();
+        for (NguoiDungDTO u : listNguoiDung) {
+            boolean match = false;
+            switch (type) {
+                case "Tất cả" -> match = Integer.toString(u.getId()).contains(text)
+                        || u.getUsername().toLowerCase().contains(text)
+                        || u.getHoten().toLowerCase().contains(text);
+                case "ID" -> match = Integer.toString(u.getId()).contains(text);
+                case "Username" -> match = u.getUsername().toLowerCase().contains(text);
+                case "Họ tên" -> match = u.getHoten().toLowerCase().contains(text);
+            }
+            if (match) result.add(u);
+        }
+        return result;
+    }
+
+    public String getTenNhomQuyen(int manhomquyen) {
+        List<NhomQuyenDTO> list = nqBUS.getAll();
+        for (NhomQuyenDTO nq : list) {
+            if (nq.getManhomquyen() == manhomquyen) return nq.getTennhomquyen();
+        }
+        return "Không xác định";
+    }
+
+    public String getGioiTinhText(boolean gioitinh) {
+        return gioitinh ? "Nam" : "Nữ";
+    }
+
+    public String getTrangThaiText(int trangthai) {
+        return trangthai == 1 ? "Hoạt động" : "Đã khóa";
     }
 }

@@ -65,7 +65,7 @@ public class ThongKeBUS {
 
     public static int getTongSoHocSinh() {
         int count = 0;
-        for (NguoiDungDTO nd : NguoiDungDAO.getInstance().getAll()) {
+        for (NguoiDungDTO nd : NguoiDungDAO.getInstance().selectAll()) {
             if (nd.getManhomquyen() == MA_QUYEN_HOC_SINH && nd.getTrangthai() == 1) {
                 count++;
             }
@@ -125,7 +125,7 @@ public class ThongKeBUS {
     // THỐNG KÊ HỌC SINH
     public static ArrayList<ThongKeHocSinhDTO> getThongKeHocSinh() {
         ArrayList<ThongKeHocSinhDTO> result = new ArrayList<>();
-        List<NguoiDungDTO> listND = NguoiDungDAO.getInstance().getAll();
+        List<NguoiDungDTO> listND = NguoiDungDAO.getInstance().selectAll();
         ArrayList<Object[]> listBT = loadAllBaiThi();
 
         Map<Integer, Integer> mapSoLanThi = new HashMap<>();

@@ -1,6 +1,7 @@
 package GUI.Panel;
 
 import BUS.NguoiDungBUS;
+import DAO.NguoiDungDAO;
 import DTO.NguoiDungDTO;
 import GUI.Component.IntegratedSearch;
 import GUI.Component.MainFunction;
@@ -35,7 +36,8 @@ public class NguoiDung extends JPanel implements ActionListener, ItemListener {
     DefaultTableModel tblModel;
 
     NguoiDungBUS nguoidungBUS = new NguoiDungBUS();
-    ArrayList<NguoiDungDTO> listHienTai = (ArrayList<NguoiDungDTO>) nguoidungBUS.getAll();
+    ArrayList<NguoiDungDTO> listHienTai = nguoidungBUS.getAll();
+    ;
 
     Color BackgroundColor = new Color(240, 247, 250);
 
@@ -141,15 +143,21 @@ public class NguoiDung extends JPanel implements ActionListener, ItemListener {
     public void thucHienTimKiem() {
         String kieuTimKiem = (String) search.cbxChoose.getSelectedItem();
         String noiDungTim = search.txtSearchForm.getText();
-        listHienTai = (ArrayList<NguoiDungDTO>) nguoidungBUS.search(noiDungTim);
-        // Lưu ý: BUS hiện tại chỉ search chung, nếu muốn search theo kieuTimKiem 
-        // bạn có thể cập nhật thêm logic trong BUS tương tự KyThiBUS.
+        listHienTai = (ArrayList<NguoiDungDTO>) nguoidungBUS.search(noiDungTim, kieuTimKiem);
         loadDataTable(listHienTai);
     }
 
     public void loadDataTable(ArrayList<NguoiDungDTO> danhSach) {
         tblModel.setRowCount(0);
         for (NguoiDungDTO user : danhSach) {
+            String trangThaiText = "";
+            int tt = user.getTrangthai();
+            if (tt == 1) {
+                trangThaiText = "Hoạt động";
+            } else if (tt == 0) {
+                trangThaiText = "Ngưng hoạt động";
+            }
+
             tblModel.addRow(new Object[]{
                 user.getId(),
                 user.getUsername(),
@@ -157,7 +165,7 @@ public class NguoiDung extends JPanel implements ActionListener, ItemListener {
                 nguoidungBUS.getGioiTinhText(user.isGioitinh()),
                 user.getNgaysinh() != null ? Formater.FormatDate(user.getNgaysinh()) : "",
                 nguoidungBUS.getTenNhomQuyen(user.getManhomquyen()),
-                nguoidungBUS.getTrangThaiText(user.getTrangthai())
+                trangThaiText
             });
         }
     }
@@ -207,7 +215,7 @@ public class NguoiDung extends JPanel implements ActionListener, ItemListener {
                         user.setTrangthai(1);
                         user.setManhomquyen(3); // Default Sinh viên
 
-                        if (nguoidungBUS.insert(user)) {
+                        if (nguoidungBUS.add(user)) {
                             countSuccess++;
                         } else {
                             countError++;
@@ -260,11 +268,10 @@ public class NguoiDung extends JPanel implements ActionListener, ItemListener {
                 int confirm = JOptionPane.showConfirmDialog(this, "Bạn có chắc chắn muốn xóa?", "Xác nhận xóa", JOptionPane.YES_NO_OPTION);
                 if (confirm == JOptionPane.YES_OPTION) {
                     int modelRow = tableNguoiDung.convertRowIndexToModel(index);
-                    // SỬA TẠI ĐÂY: Lấy giá trị int từ table model
                     int id = (int) tblModel.getValueAt(modelRow, 0);
-                    if (nguoidungBUS.delete(id)) {
+                    if (NguoiDungDAO.getInstance().delete(id) > 0) {
                         JOptionPane.showMessageDialog(this, "Xóa thành công!");
-                        listHienTai = (ArrayList<NguoiDungDTO>) nguoidungBUS.getAll();
+                        listHienTai = nguoidungBUS.getAll();
                         loadDataTable(listHienTai);
                     }
                 }

@@ -56,9 +56,8 @@ public class InputDate extends JPanel {
     public Date getDate() throws ParseException {
         Date dt = date.getDate();
         if (dt != null) {
-//            String txt_date = dateFormat.format(dt);
-//            return dateFormat.parse(txt_date);
-            return dt;
+            String txt_date = dateFormat.format(dt);
+            return dateFormat.parse(txt_date);
         } else {
             return null;
         }

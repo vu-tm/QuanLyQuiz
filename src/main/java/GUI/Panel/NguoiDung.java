@@ -37,7 +37,6 @@ public class NguoiDung extends JPanel implements ActionListener, ItemListener {
 
     NguoiDungBUS nguoidungBUS = new NguoiDungBUS();
     ArrayList<NguoiDungDTO> listHienTai = nguoidungBUS.getAll();
-    ;
 
     Color BackgroundColor = new Color(240, 247, 250);
 
@@ -269,7 +268,7 @@ public class NguoiDung extends JPanel implements ActionListener, ItemListener {
                 if (confirm == JOptionPane.YES_OPTION) {
                     int modelRow = tableNguoiDung.convertRowIndexToModel(index);
                     int id = (int) tblModel.getValueAt(modelRow, 0);
-                    if (NguoiDungDAO.getInstance().delete(id) > 0) {
+                    if (nguoidungBUS.delete(id)) {
                         JOptionPane.showMessageDialog(this, "Xóa thành công!");
                         listHienTai = nguoidungBUS.getAll();
                         loadDataTable(listHienTai);

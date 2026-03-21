@@ -11,9 +11,11 @@ public class NguoiDungBUS {
     private final NguoiDungDAO dao = NguoiDungDAO.getInstance();
     private final NhomQuyenBUS nqBUS = new NhomQuyenBUS();
     private ArrayList<NguoiDungDTO> listNguoiDung;
+    private List<NhomQuyenDTO> listNQ; 
 
     public NguoiDungBUS() {
         this.listNguoiDung = dao.selectAll();
+        this.listNQ = nqBUS.getAll();
     }
 
     public ArrayList<NguoiDungDTO> getAll() {
@@ -75,7 +77,7 @@ public class NguoiDungBUS {
     public String getTenNhomQuyen(int manhomquyen) {
         List<NhomQuyenDTO> list = nqBUS.getAll();
         for (NhomQuyenDTO nq : list) {
-            if (nq.getManhomquyen() == manhomquyen) return nq.getTennhomquyen();
+           if (nq.getManhomquyen() == manhomquyen) return nq.getTennhomquyen();
         }
         return "Không xác định";
     }

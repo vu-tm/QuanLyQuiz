@@ -231,6 +231,8 @@ public class NguoiDungDialog extends JDialog {
         String hoTen = txtHoten.getText().trim();
         String userName = txtUsername.getText().trim();
         String matKhau = txtMatKhau.getText();
+        java.util.Date birthday = jcNgaySinh.getDate();
+        java.util.Date today = new java.util.Date();
 
         if (Validation.isEmpty(userName)) {
             JOptionPane.showMessageDialog(this, "Username không được để trống!");
@@ -252,8 +254,12 @@ public class NguoiDungDialog extends JDialog {
             JOptionPane.showMessageDialog(this, "Mật khẩu không được để trống!");
             return false;
         }
-        if (jcNgaySinh.getDate() == null) {
+        if (birthday == null) {
             JOptionPane.showMessageDialog(this, "Vui lòng chọn ngày sinh!");
+            return false;
+        }
+        if (birthday.after(today)) {
+            JOptionPane.showMessageDialog(this, "Ngày sinh không được lớn hơn ngày hiện tại!");
             return false;
         }
         if (!male.isSelected() && !female.isSelected()) {

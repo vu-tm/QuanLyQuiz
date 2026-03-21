@@ -1,52 +1,80 @@
 package BUS;
 
+import DAO.ChiTietQuyenDAO;
 import DAO.NhomQuyenDAO;
+import DTO.ChiTietQuyenDTO;
 import DTO.NhomQuyenDTO;
-import java.util.List;
+import java.util.ArrayList;
 
 public class NhomQuyenBUS {
-    private NhomQuyenDAO nhomQuyenDao = new NhomQuyenDAO();
 
-    public List<NhomQuyenDTO> getAll() {
-        return nhomQuyenDao.getAll();
+    private final NhomQuyenDAO nhomquyenDAO = NhomQuyenDAO.getInstance();
+    private final ChiTietQuyenDAO chitietquyenDAO = ChiTietQuyenDAO.getInstance();
+    private ArrayList<NhomQuyenDTO> listNhomQuyen;
+
+    public NhomQuyenBUS() {
+        this.listNhomQuyen = nhomquyenDAO.selectAll();
     }
-    
-    public boolean delete(int manhomquyen) {
-        if (manhomquyen <= 0) return false;
-        return nhomQuyenDao.delete(manhomquyen);
+
+    public ArrayList<NhomQuyenDTO> getAll() {
+        this.listNhomQuyen = nhomquyenDAO.selectAll();
+        return this.listNhomQuyen;
     }
-    
+
+    public boolean add(NhomQuyenDTO nq, ArrayList<ChiTietQuyenDTO> ctList) {
+        boolean check = nhomquyenDAO.insert(nq) > 0;
+        if (check) {
+            chitietquyenDAO.insert(ctList);
+        }
+        return check;
+    }
+
+    public boolean update(NhomQuyenDTO nq, ArrayList<ChiTietQuyenDTO> ctList) {
+        boolean check = nhomquyenDAO.update(nq) > 0;
+        if (check) {
+            chitietquyenDAO.delete(nq.getManhomquyen());
+            chitietquyenDAO.insert(ctList);
+        }
+        return check;
+    }
+
+    public boolean delete(int id) {
+        return nhomquyenDAO.delete(id) > 0;
+    }
+
+    public ArrayList<ChiTietQuyenDTO> getChiTietQuyen(int ma) {
+        return chitietquyenDAO.selectAll(ma);
+    }
+
     public NhomQuyenDTO getById(int manhomquyen) {
-        return nhomQuyenDao.getById(manhomquyen);
+        return nhomquyenDAO.selectAll().stream().filter(n -> n.getManhomquyen() == manhomquyen).findFirst().orElse(null);
     }
 
-    public List<NhomQuyenDTO> search(String keyword) {
-        return nhomQuyenDao.search(keyword);
+    public int getAutoIncrement() {
+        return nhomquyenDAO.getAutoIncrement();
     }
 
-    public int insert(NhomQuyenDTO nq) {
-        return nhomQuyenDao.insert(nq);
-    }
-
-    public boolean update(NhomQuyenDTO nq) {
-        return nhomQuyenDao.update(nq);
-    }
-
-    public boolean insertChiTietQuyen(int manhomquyen, List<Integer> dsQuyen) {
-        return nhomQuyenDao.insertChiTietQuyen(manhomquyen, dsQuyen);
-    }
-
-    public boolean deleteChiTietQuyen(int manhomquyen) {
-        return nhomQuyenDao.deleteChiTietQuyen(manhomquyen);
-    }
-
-    public List<Integer> getQuyenByNhom(int manhomquyen) {
-        return nhomQuyenDao.getQuyenIdsByNhom(manhomquyen);
-    }
-    public boolean checkExistId(int manhomquyen) {
-        return nhomQuyenDao.checkExistId(manhomquyen);
-    }
-    public int getNextId() {
-        return nhomQuyenDao.getNextId();
+    public ArrayList<NhomQuyenDTO> search(String text, String type) {
+        ArrayList<NhomQuyenDTO> result = new ArrayList<>();
+        text = text.toLowerCase();
+        for (NhomQuyenDTO nq : this.listNhomQuyen) {
+            boolean match = false;
+            switch (type) {
+                case "Tất cả":
+                    match = Integer.toString(nq.getManhomquyen()).contains(text)
+                            || nq.getTennhomquyen().toLowerCase().contains(text);
+                    break;
+                case "Mã nhóm":
+                    match = Integer.toString(nq.getManhomquyen()).contains(text);
+                    break;
+                case "Tên nhóm":
+                    match = nq.getTennhomquyen().toLowerCase().contains(text);
+                    break;
+            }
+            if (match) {
+                result.add(nq);
+            }
+        }
+        return result;
     }
 }

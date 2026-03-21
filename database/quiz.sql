@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Mar 20, 2026 at 11:23 AM
+-- Generation Time: Mar 21, 2026 at 11:31 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.0.30
 
@@ -129,9 +129,59 @@ CREATE TABLE `chitietlop` (
 
 CREATE TABLE `chitietquyen` (
   `manhomquyen` int(11) NOT NULL,
-  `chucnang` varchar(50) NOT NULL,
+  `machucnang` int(11) NOT NULL,
   `hanhdong` varchar(50) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `chitietquyen`
+--
+
+INSERT INTO `chitietquyen` (`manhomquyen`, `machucnang`, `hanhdong`) VALUES
+(1, 1, 'add'),
+(1, 1, 'delete'),
+(1, 1, 'edit'),
+(1, 1, 'view'),
+(1, 2, 'add'),
+(1, 2, 'delete'),
+(1, 2, 'edit'),
+(1, 2, 'view'),
+(1, 3, 'add'),
+(1, 3, 'delete'),
+(1, 3, 'edit'),
+(1, 3, 'view'),
+(1, 4, 'add'),
+(1, 4, 'delete'),
+(1, 4, 'edit'),
+(1, 4, 'view'),
+(1, 5, 'add'),
+(1, 5, 'delete'),
+(1, 5, 'edit'),
+(1, 5, 'view'),
+(1, 6, 'add'),
+(1, 6, 'delete'),
+(1, 6, 'edit'),
+(1, 6, 'view'),
+(1, 7, 'add'),
+(1, 7, 'delete'),
+(1, 7, 'edit'),
+(1, 7, 'view'),
+(1, 8, 'add'),
+(1, 8, 'delete'),
+(1, 8, 'edit'),
+(1, 8, 'view'),
+(1, 9, 'add'),
+(1, 9, 'delete'),
+(1, 9, 'edit'),
+(1, 9, 'view'),
+(1, 10, 'add'),
+(1, 10, 'delete'),
+(1, 10, 'edit'),
+(1, 10, 'view'),
+(1, 11, 'add'),
+(1, 11, 'delete'),
+(1, 11, 'edit'),
+(1, 11, 'view');
 
 -- --------------------------------------------------------
 
@@ -140,9 +190,27 @@ CREATE TABLE `chitietquyen` (
 --
 
 CREATE TABLE `danhmucchucnang` (
-  `chucnang` varchar(50) NOT NULL,
-  `tenchucnang` varchar(255) DEFAULT NULL
+  `machucnang` int(11) NOT NULL,
+  `tenchucnang` varchar(255) DEFAULT NULL,
+  `trangthai` int(1) DEFAULT 1
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `danhmucchucnang`
+--
+
+INSERT INTO `danhmucchucnang` (`machucnang`, `tenchucnang`, `trangthai`) VALUES
+(1, 'Quản lý câu hỏi', 1),
+(2, 'Quản lý đề thi', 1),
+(3, 'Quản lý kỳ thi', 1),
+(4, 'Quản lý môn học', 1),
+(5, 'Quản lý lớp học', 1),
+(6, 'Quản lý người dùng', 1),
+(7, 'Quản lý nhóm quyền', 1),
+(8, 'Phân công giảng dạy', 1),
+(9, 'Thống kê báo cáo', 1),
+(10, 'Quản lý độ khó', 1),
+(11, 'Quản lý bài thi', 1);
 
 -- --------------------------------------------------------
 
@@ -452,14 +520,14 @@ ALTER TABLE `chitietlop`
 -- Indexes for table `chitietquyen`
 --
 ALTER TABLE `chitietquyen`
-  ADD PRIMARY KEY (`manhomquyen`,`chucnang`,`hanhdong`),
-  ADD KEY `chucnang` (`chucnang`);
+  ADD PRIMARY KEY (`manhomquyen`,`machucnang`,`hanhdong`),
+  ADD KEY `chucnang` (`machucnang`);
 
 --
 -- Indexes for table `danhmucchucnang`
 --
 ALTER TABLE `danhmucchucnang`
-  ADD PRIMARY KEY (`chucnang`);
+  ADD PRIMARY KEY (`machucnang`);
 
 --
 -- Indexes for table `dapan`
@@ -648,8 +716,7 @@ ALTER TABLE `chitietlop`
 -- Constraints for table `chitietquyen`
 --
 ALTER TABLE `chitietquyen`
-  ADD CONSTRAINT `chitietquyen_ibfk_1` FOREIGN KEY (`manhomquyen`) REFERENCES `nhomquyen` (`manhomquyen`),
-  ADD CONSTRAINT `chitietquyen_ibfk_2` FOREIGN KEY (`chucnang`) REFERENCES `danhmucchucnang` (`chucnang`);
+  ADD CONSTRAINT `chitietquyen_ibfk_1` FOREIGN KEY (`manhomquyen`) REFERENCES `nhomquyen` (`manhomquyen`);
 
 --
 -- Constraints for table `dapan`

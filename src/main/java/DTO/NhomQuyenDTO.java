@@ -1,26 +1,34 @@
 package DTO;
 
+import java.util.ArrayList;
+import java.util.Objects;
+
 public class NhomQuyenDTO {
+
     private int manhomquyen;
     private String tennhomquyen;
-    private int trangthai;
 
-    public NhomQuyenDTO() {}
+    public NhomQuyenDTO() {
+    }
 
-    public NhomQuyenDTO(int manhomquyen, String tennhomquyen, int trangthai) {
+    public NhomQuyenDTO(int manhomquyen, String tennhomquyen) {
         this.manhomquyen = manhomquyen;
         this.tennhomquyen = tennhomquyen;
-        this.trangthai = trangthai;
     }
-            
-    // Getters, Setters
-    public int getManhomquyen() {return manhomquyen;}
-    public void setManhomquyen(int manhomquyen) {this.manhomquyen = manhomquyen;}
 
-    public String getTennhomquyen() {return tennhomquyen;}
-    public void setTennhomquyen(String tennhomquyen) {this.tennhomquyen = tennhomquyen;}
+    public int getManhomquyen() {
+        return manhomquyen;
+    }
 
-    public int getTrangthai() {return trangthai;}
-    public void setTrangthai(int trangthai) {this.trangthai = trangthai;}
-    
+    public void setManhomquyen(int manhomquyen) {
+        this.manhomquyen = manhomquyen;
+    }
+
+    public String getTennhomquyen() {
+        return tennhomquyen;
+    }
+
+    public void setTennhomquyen(String tennhomquyen) {
+        this.tennhomquyen = tennhomquyen;
+    }
 }

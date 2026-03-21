@@ -1,28 +1,20 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package DTO;
 
-/**
- *
- * @author Windows
- */
 public class ChiTietQuyenDTO {
+
     private int manhomquyen;
-    private String chucnang;
+    private String machucnang;
     private String hanhdong;
 
     public ChiTietQuyenDTO() {
     }
 
-    public ChiTietQuyenDTO(int manhomquyen, String chucnang, String hanhdong) {
+    public ChiTietQuyenDTO(int manhomquyen, String machucnang, String hanhdong) {
         this.manhomquyen = manhomquyen;
-        this.chucnang = chucnang;
+        this.machucnang = machucnang;
         this.hanhdong = hanhdong;
     }
-            
-    // Getters, Setters
+
     public int getManhomquyen() {
         return manhomquyen;
     }
@@ -31,12 +23,12 @@ public class ChiTietQuyenDTO {
         this.manhomquyen = manhomquyen;
     }
 
-    public String getChucnang() {
-        return chucnang;
+    public String getMachucnang() {
+        return machucnang;
     }
 
-    public void setChucnang(String chucnang) {
-        this.chucnang = chucnang;
+    public void setMachucnang(String machucnang) {
+        this.machucnang = machucnang;
     }
 
     public String getHanhdong() {
@@ -46,5 +38,4 @@ public class ChiTietQuyenDTO {
     public void setHanhdong(String hanhdong) {
         this.hanhdong = hanhdong;
     }
-    
 }

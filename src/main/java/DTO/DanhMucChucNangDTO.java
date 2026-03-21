@@ -9,24 +9,24 @@ package DTO;
  * @author Windows
  */
 public class DanhMucChucNangDTO {
-    private String chucnang;
+
+    private String machucnang;
     private String tenchucnang;
 
     public DanhMucChucNangDTO() {
     }
 
-    public DanhMucChucNangDTO(String chucnang, String tenchucnang) {
-        this.chucnang = chucnang;
+    public DanhMucChucNangDTO(String machucnang, String tenchucnang) {
+        this.machucnang = machucnang;
         this.tenchucnang = tenchucnang;
-    }   
-        
-    // Getters, Setters
-    public String getChucnang() {
-        return chucnang;
     }
 
-    public void setChucnang(String chucnang) {
-        this.chucnang = chucnang;
+    public String getMachucnang() {
+        return machucnang;
+    }
+
+    public void setMachucnang(String machucnang) {
+        this.machucnang = machucnang;
     }
 
     public String getTenchucnang() {
@@ -36,5 +36,4 @@ public class DanhMucChucNangDTO {
     public void setTenchucnang(String tenchucnang) {
         this.tenchucnang = tenchucnang;
     }
-    
 }

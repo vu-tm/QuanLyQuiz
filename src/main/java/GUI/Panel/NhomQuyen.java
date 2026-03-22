@@ -7,6 +7,7 @@ import GUI.Component.MainFunction;
 import GUI.Component.PanelBorderRadius;
 import GUI.Component.TableSorter;
 import GUI.Dialog.NhomQuyenDialog;
+import GUI.Main;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.ArrayList;
@@ -17,20 +18,22 @@ import javax.swing.table.DefaultTableModel;
 
 public class NhomQuyen extends JPanel implements ActionListener, ItemListener {
 
-    PanelBorderRadius main, functionBar;
+    PanelBorderRadius pnlMain, functionBar;
     JPanel pnlBorder1, pnlBorder2, pnlBorder3, pnlBorder4, contentCenter;
     JTable tableNhomQuyen;
     JScrollPane scrollTableNhomQuyen;
     MainFunction mainFunction;
     IntegratedSearch search;
     DefaultTableModel tblModel;
+    private Main main;
 
     NhomQuyenBUS nhomquyenBUS = new NhomQuyenBUS();
     ArrayList<NhomQuyenDTO> listHienTai = nhomquyenBUS.getAll();
 
     Color BackgroundColor = new Color(240, 247, 250);
 
-    public NhomQuyen() {
+    public NhomQuyen(Main main) {
+        this.main = main;
         initComponent();
         loadDataTable(listHienTai);
     }
@@ -98,7 +101,7 @@ public class NhomQuyen extends JPanel implements ActionListener, ItemListener {
         functionBar.setBackground(Color.WHITE);
 
         String[] action = {"create", "update", "delete", "detail", "export"};
-        mainFunction = new MainFunction(action);
+        mainFunction = new MainFunction(main.getNguoiDung().getManhomquyen(), "7", action);
         for (String ac : action) {
             mainFunction.btn.get(ac).addActionListener(this);
         }
@@ -122,11 +125,11 @@ public class NhomQuyen extends JPanel implements ActionListener, ItemListener {
         functionBar.add(search);
         contentCenter.add(functionBar, BorderLayout.NORTH);
 
-        main = new PanelBorderRadius();
-        main.setLayout(new BorderLayout());
-        main.setBackground(Color.WHITE);
-        main.add(scrollTableNhomQuyen, BorderLayout.CENTER);
-        contentCenter.add(main, BorderLayout.CENTER);
+        pnlMain = new PanelBorderRadius();
+        pnlMain.setLayout(new BorderLayout());
+        pnlMain.setBackground(Color.WHITE);
+        pnlMain.add(scrollTableNhomQuyen, BorderLayout.CENTER);
+        contentCenter.add(pnlMain, BorderLayout.CENTER);
     }
 
     public void thucHienTimKiem() {

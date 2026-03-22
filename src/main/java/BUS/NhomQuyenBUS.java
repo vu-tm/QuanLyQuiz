@@ -77,4 +77,14 @@ public class NhomQuyenBUS {
         }
         return result;
     }
+
+    public boolean checkPermisson(int manhomquyen, String chucnang, String hanhdong) {
+        ArrayList<ChiTietQuyenDTO> ctquyen = chitietquyenDAO.selectAll(manhomquyen);
+        for (ChiTietQuyenDTO ct : ctquyen) {
+            if (ct.getMachucnang().equals(chucnang) && ct.getHanhdong().equals(hanhdong)) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

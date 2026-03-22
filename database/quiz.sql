@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Mar 21, 2026 at 02:57 PM
+-- Generation Time: Mar 22, 2026 at 07:43 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.0.30
 
@@ -181,7 +181,11 @@ INSERT INTO `chitietquyen` (`manhomquyen`, `machucnang`, `hanhdong`) VALUES
 (1, 11, 'create'),
 (1, 11, 'delete'),
 (1, 11, 'update'),
-(1, 11, 'view');
+(1, 11, 'view'),
+(2, 3, 'create'),
+(2, 3, 'delete'),
+(2, 3, 'update'),
+(2, 3, 'view');
 
 -- --------------------------------------------------------
 

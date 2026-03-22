@@ -1,41 +1,53 @@
 package GUI.Component;
 
+import DAO.ChiTietQuyenDAO;
+import DTO.ChiTietQuyenDTO;
+import DTO.NguoiDungDTO;
+import GUI.Login;
 import GUI.Main;
 import GUI.Panel.*;
 import GUI.ThongKe.ThongKe;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 
 public class MenuTaskbar extends JPanel {
 
     String[][] getSt = {
-        {"Trang chủ", "home.svg"},
-        {"Môn học", "subject.svg"},
-        {"Câu hỏi", "question.svg"},
-        {"Độ khó", "dokho.svg"},
-        {"Đề thi", "dethi.svg"},
-        {"Kỳ thi", "kythi.svg"},
-        {"Lớp học", "class.svg"},
-        {"Người dùng", "nguoidung.svg"},
-        {"Nhóm quyền", "nhomquyen.svg"},
-        {"Bài thi", "baithi.svg"},
-        {"Phân công", "phancong.svg"},
-        {"Thống kê", "thongke.svg"},
-        {"Đăng xuất", "logout.svg"}
+        {"Trang chủ", "home.svg", "trangchu"},
+        {"Môn học", "subject.svg", "4"},
+        {"Câu hỏi", "question.svg", "1"},
+        {"Độ khó", "dokho.svg", "10"},
+        {"Đề thi", "dethi.svg", "2"},
+        {"Kỳ thi", "kythi.svg", "3"},
+        {"Lớp học", "class.svg", "5"},
+        {"Người dùng", "nguoidung.svg", "6"},
+        {"Nhóm quyền", "nhomquyen.svg", "7"},
+        {"Bài thi", "baithi.svg", "11"},
+        {"Phân công", "phancong.svg", "8"},
+        {"Thống kê", "thongke.svg", "9"},
+        {"Làm bài", "lambai.svg", "0"},
+        {"Đăng xuất", "logout.svg", "dangxuat"}
     };
 
     Main main;
+    NguoiDungDTO nguoiDung;
+
+    ArrayList<ChiTietQuyenDTO> listQuyen;
     public itemTaskbar[] listitem;
     JScrollPane scrollPane;
     JPanel pnlCenter, pnlTop, pnlBottom, bar1, bar2, bar3, bar4;
     Color DefaultColor = new Color(255, 255, 255);
     Color LineColor = new Color(204, 214, 219);
 
-    public MenuTaskbar(Main main) {
+    public MenuTaskbar(Main main, NguoiDungDTO nguoiDung) {
         this.main = main;
+        this.nguoiDung = nguoiDung;
+        this.listQuyen = ChiTietQuyenDAO.getInstance()
+                .selectAll(nguoiDung.getManhomquyen());
         initComponent();
     }
 
@@ -96,8 +108,10 @@ public class MenuTaskbar extends JPanel {
                 pnlBottom.add(listitem[i]);
             } else {
                 pnlCenter.add(listitem[i]);
+                if (i != 0 && !checkRole(getSt[i][2])) {
+                    listitem[i].setVisible(false);
+                }
             }
-
             final int index = i;
             listitem[i].addMouseListener(new MouseAdapter() {
                 @Override
@@ -109,41 +123,45 @@ public class MenuTaskbar extends JPanel {
                             main.setPanel(new TrangChu());
                             break;
                         case 1:
-                            main.setPanel(new MonHoc());
+                            main.setPanel(new MonHoc(main));
                             break;
                         case 2:
                             main.setPanel(new CauHoi());
                             break;
                         case 3:
-                            main.setPanel(new DoKho());
+                            main.setPanel(new DoKho(main));
                             break;
                         case 4:
-                            main.setPanel(new DeThi());
+                            main.setPanel(new DeThi(main));
                             break;
                         case 5:
-                            main.setPanel(new KyThi());
+                            main.setPanel(new KyThi(main));
                             break;
                         case 6:
                             main.setPanel(new LopHoc());
                             break;
                         case 7:
-                            main.setPanel(new NguoiDung());
+                            main.setPanel(new NguoiDung(main));
                             break;
                         case 8:
-                            main.setPanel(new NhomQuyen());
+                            main.setPanel(new NhomQuyen(main));
                             break;
                         case 9:
                             main.setPanel(new BaiThi());
                             break;
                         case 10:
-                            main.setPanel(new PhanCong());
+                            main.setPanel(new PhanCong(main));
                             break;
                         case 11:
                             main.setPanel(new ThongKe());
                             break;
                         case 12:
+                            main.setPanel(new LamBai());
+                            break;
+                        case 13:
                             if (JOptionPane.showConfirmDialog(null, "Đăng xuất?", "Xác nhận", 0) == 0) {
-                                System.exit(0);
+                                main.dispose();
+                                new Login().setVisible(true);
                             }
                             break;
                     }
@@ -168,5 +186,15 @@ public class MenuTaskbar extends JPanel {
         }
         this.revalidate();
         this.repaint();
+    }
+
+    public boolean checkRole(String maCN) {
+        for (ChiTietQuyenDTO q : listQuyen) {
+            if (q.getHanhdong().equalsIgnoreCase("view")
+                    && maCN.equals(q.getMachucnang())) {
+                return true;
+            }
+        }
+        return false;
     }
 }

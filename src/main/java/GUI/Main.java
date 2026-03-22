@@ -1,5 +1,5 @@
 package GUI;
-
+import DTO.NguoiDungDTO;
 import GUI.Component.MenuTaskbar;
 import GUI.Panel.TrangChu;
 import java.awt.*;
@@ -12,9 +12,11 @@ import com.formdev.flatlaf.fonts.roboto.FlatRobotoFont;
 public class Main extends JFrame {
     public JPanel MainContent;
     private MenuTaskbar menuTaskbar;
+    private NguoiDungDTO nguoiDung;
     Color MainColor = new Color(250, 250, 250);
 
-    public Main() {
+    public Main(NguoiDungDTO nguoiDung) {
+        this.nguoiDung = nguoiDung;
         setupLaf();
         initComponent();
     }
@@ -25,7 +27,6 @@ public class Main extends JFrame {
         FlatLaf.setPreferredLightFontFamily(FlatRobotoFont.FAMILY_LIGHT);
         FlatLaf.setPreferredSemiboldFontFamily(FlatRobotoFont.FAMILY_SEMIBOLD);
         FlatIntelliJLaf.setup();
-
         UIManager.put("Table.showVerticalLines", false);
         UIManager.put("Table.showHorizontalLines", true);
         UIManager.put("ScrollBar.thumbArc", 999);
@@ -45,7 +46,7 @@ public class Main extends JFrame {
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         // MENU
-        menuTaskbar = new MenuTaskbar(this);
+        menuTaskbar = new MenuTaskbar(this, nguoiDung);
         menuTaskbar.setPreferredSize(new Dimension(250, 1400));
         this.add(menuTaskbar, BorderLayout.WEST);
 
@@ -66,9 +67,13 @@ public class Main extends JFrame {
         MainContent.revalidate();
     }
 
+    public NguoiDungDTO getNguoiDung() {
+        return nguoiDung;
+    }
+
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
-            new Main().setVisible(true);
+            new Login().setVisible(true); 
         });
     }
 }

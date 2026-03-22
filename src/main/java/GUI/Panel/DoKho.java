@@ -25,7 +25,8 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 public class DoKho extends JPanel implements ActionListener, ItemListener {
 
-    PanelBorderRadius main, functionBar;
+    PanelBorderRadius pnlMain, functionBar;
+    private GUI.Main mainFrame;
     JPanel pnlBorder1, pnlBorder2, pnlBorder3, pnlBorder4, contentCenter;
     JTable table;
     JScrollPane scrollTable;
@@ -38,7 +39,8 @@ public class DoKho extends JPanel implements ActionListener, ItemListener {
 
     Color BackgroundColor = new Color(240, 247, 250);
 
-    public DoKho() {
+    public DoKho(GUI.Main mainFrame) {
+        this.mainFrame = mainFrame;
         initComponent();
         loadDataTable(listHienTai);
     }
@@ -104,7 +106,7 @@ public class DoKho extends JPanel implements ActionListener, ItemListener {
         functionBar.setBackground(Color.WHITE);
 
         String[] action = {"create", "update", "delete", "detail", "import", "export"};
-        mainFunction = new MainFunction(action);
+        mainFunction = new MainFunction(mainFrame.getNguoiDung().getManhomquyen(), "10", action);
         for (String ac : action) {
             mainFunction.btn.get(ac).addActionListener(this);
         }
@@ -129,11 +131,11 @@ public class DoKho extends JPanel implements ActionListener, ItemListener {
 
         contentCenter.add(functionBar, BorderLayout.NORTH);
 
-        main = new PanelBorderRadius();
-        main.setLayout(new BorderLayout());
-        main.setBackground(Color.WHITE);
-        main.add(scrollTable, BorderLayout.CENTER);
-        contentCenter.add(main, BorderLayout.CENTER);
+        pnlMain = new PanelBorderRadius();
+        pnlMain.setLayout(new BorderLayout());
+        pnlMain.setBackground(Color.WHITE);
+        pnlMain.add(scrollTable, BorderLayout.CENTER);
+        contentCenter.add(pnlMain, BorderLayout.CENTER);
     }
 
     public void thucHienTimKiem() {

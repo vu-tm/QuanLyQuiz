@@ -59,22 +59,15 @@ public class MenuTaskbar extends JPanel {
         // TOP AREA
         pnlTop = new JPanel(new BorderLayout());
         pnlTop.setPreferredSize(new Dimension(250, 80));
-        pnlTop.setBackground(DefaultColor);
+        pnlTop.setBackground(new Color(48, 103, 204));
         this.add(pnlTop, BorderLayout.NORTH);
-
-        JLabel lblLogo = new JLabel("QUẢN LÝ QUIZ", SwingConstants.CENTER);
+        JLabel lblLogo = new JLabel("<html><font color='white'>Quiz</font><font color='#D3D3D3'>App</font></html>", SwingConstants.CENTER);
         lblLogo.setFont(new Font("Roboto", Font.BOLD, 18));
-        lblLogo.setForeground(new Color(1, 87, 155));
         pnlTop.add(lblLogo, BorderLayout.CENTER);
-
         bar1 = new JPanel();
         bar1.setBackground(LineColor);
         bar1.setPreferredSize(new Dimension(1, 0));
         pnlTop.add(bar1, BorderLayout.EAST);
-        bar2 = new JPanel();
-        bar2.setBackground(LineColor);
-        bar2.setPreferredSize(new Dimension(0, 1));
-        pnlTop.add(bar2, BorderLayout.SOUTH);
 
         // CENTER AREA
         pnlCenter = new JPanel();

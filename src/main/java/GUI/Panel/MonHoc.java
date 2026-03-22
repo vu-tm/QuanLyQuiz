@@ -41,6 +41,8 @@ public class MonHoc extends JPanel implements ActionListener, ItemListener {
 
     public MonHoc(GUI.Main mainFrame) {
         this.mainFrame = mainFrame;
+        initComponent();
+        loadDataTable(listHienTai);
     }
 
     private void initComponent() {

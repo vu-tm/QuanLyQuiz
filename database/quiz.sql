@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Mar 22, 2026 at 07:43 AM
+-- Generation Time: Mar 22, 2026 at 10:42 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.0.30
 
@@ -182,10 +182,18 @@ INSERT INTO `chitietquyen` (`manhomquyen`, `machucnang`, `hanhdong`) VALUES
 (1, 11, 'delete'),
 (1, 11, 'update'),
 (1, 11, 'view'),
-(2, 3, 'create'),
-(2, 3, 'delete'),
-(2, 3, 'update'),
-(2, 3, 'view');
+(2, 2, 'create'),
+(2, 2, 'delete'),
+(2, 2, 'update'),
+(2, 2, 'view'),
+(2, 5, 'create'),
+(2, 5, 'delete'),
+(2, 5, 'update'),
+(2, 5, 'view'),
+(3, 0, 'create'),
+(3, 0, 'delete'),
+(3, 0, 'update'),
+(3, 0, 'view');
 
 -- --------------------------------------------------------
 
@@ -204,6 +212,7 @@ CREATE TABLE `danhmucchucnang` (
 --
 
 INSERT INTO `danhmucchucnang` (`machucnang`, `tenchucnang`, `trangthai`) VALUES
+(0, 'Làm bài', 1),
 (1, 'Quản lý câu hỏi', 1),
 (2, 'Quản lý đề thi', 1),
 (3, 'Quản lý kỳ thi', 1),

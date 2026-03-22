@@ -43,6 +43,8 @@ public class NguoiDung extends JPanel implements ActionListener, ItemListener {
 
     public NguoiDung(GUI.Main mainFrame) {
         this.mainFrame = mainFrame;
+        initComponent();
+        loadDataTable(listHienTai);
     }
 
     private void initComponent() {

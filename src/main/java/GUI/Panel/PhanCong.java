@@ -39,6 +39,8 @@ public class PhanCong extends JPanel implements ActionListener, ItemListener {
 
     public PhanCong(GUI.Main mainFrame) {
         this.mainFrame = mainFrame;
+        initComponent();
+        loadDataTable(listHienTai);
     }
 
     private void initComponent() {
@@ -55,11 +57,17 @@ public class PhanCong extends JPanel implements ActionListener, ItemListener {
             }
         };
 
-        String[] header = {"Giảng viên", "Họ tên", "Mã môn", "Tên môn học"};
+        String[] header = {"Mã giảng viên", "Họ tên", "Mã môn", "Tên môn học"};
         tblModel.setColumnIdentifiers(header);
         table.setModel(tblModel);
         table.setFocusable(false);
-        table.setRowHeight(30);
+        table.setRowHeight(40);
+
+        table.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 13));
+        table.getTableHeader().setPreferredSize(new Dimension(0, 40));
+        DefaultTableCellRenderer headerRenderer = (DefaultTableCellRenderer) table.getTableHeader().getDefaultRenderer();
+        headerRenderer.setHorizontalAlignment(JLabel.CENTER);
+
         scrollTable.setViewportView(table);
 
         DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
@@ -67,6 +75,10 @@ public class PhanCong extends JPanel implements ActionListener, ItemListener {
         for (int i = 0; i < table.getColumnCount(); i++) {
             table.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);
         }
+
+        table.setAutoCreateRowSorter(true);
+        TableSorter.configureTableColumnSorter(table, 0, TableSorter.INTEGER_COMPARATOR); // Mã GV là số
+        TableSorter.configureTableColumnSorter(table, 2, TableSorter.INTEGER_COMPARATOR); // Mã môn là số
 
         pnlBorder1 = new JPanel();
         pnlBorder1.setPreferredSize(new Dimension(0, 10));
@@ -153,15 +165,17 @@ public class PhanCong extends JPanel implements ActionListener, ItemListener {
                 return;
             }
 
-            PhanCongDTO selected = listHienTai.get(index);
+            int modelRow = table.convertRowIndexToModel(index);
+            PhanCongDTO selected = listHienTai.get(modelRow);
 
             if (source == mainFunction.btn.get("update")) {
                 new PhanCongDialog(this, owner, "Chỉnh sửa phân công", true, "update", selected);
             } else if (source == mainFunction.btn.get("detail")) {
                 new PhanCongDialog(this, owner, "Chi tiết phân công", true, "view", selected);
             } else if (source == mainFunction.btn.get("delete")) {
-                if (JOptionPane.showConfirmDialog(this, "Xóa phân công này?", "Xác nhận", 0) == 0) {
+                if (JOptionPane.showConfirmDialog(this, "Xóa phân công này?", "Xác nhận", JOptionPane.YES_NO_OPTION) == 0) {
                     if (bus.delete(selected.getMamonhoc(), selected.getManguoidung())) {
+                        JOptionPane.showMessageDialog(this, "Xóa thành công!");
                         listHienTai = bus.getAll();
                         loadDataTable(listHienTai);
                     }
@@ -183,25 +197,34 @@ public class PhanCong extends JPanel implements ActionListener, ItemListener {
         if (jf.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
             try (FileInputStream fis = new FileInputStream(jf.getSelectedFile()); XSSFWorkbook wb = new XSSFWorkbook(fis)) {
                 XSSFSheet sheet = wb.getSheetAt(0);
+                int success = 0;
                 for (int i = 1; i <= sheet.getLastRowNum(); i++) {
                     XSSFRow row = sheet.getRow(i);
                     if (row == null) {
                         continue;
                     }
-                    int mand = (int) row.getCell(0).getNumericCellValue();
-                    int mamh = (int) row.getCell(1).getNumericCellValue();
-                    bus.add(new PhanCongDTO(mamh, mand));
+                    try {
+                        int mand = (int) row.getCell(0).getNumericCellValue();
+                        int mamh = (int) row.getCell(1).getNumericCellValue();
+                        if (bus.add(new PhanCongDTO(mamh, mand))) {
+                            success++;
+                        }
+                    } catch (Exception e) {
+                    }
                 }
+                JOptionPane.showMessageDialog(this, "Nhập thành công " + success + " dòng.");
                 listHienTai = bus.getAll();
                 loadDataTable(listHienTai);
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, "Lỗi file!");
+                JOptionPane.showMessageDialog(this, "Lỗi đọc file!");
             }
         }
     }
 
     @Override
     public void itemStateChanged(ItemEvent e) {
-        thucHienTimKiem();
+        if (e.getStateChange() == ItemEvent.SELECTED) {
+            thucHienTimKiem();
+        }
     }
 }

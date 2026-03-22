@@ -1,5 +1,6 @@
 package GUI.Component;
 
+import BUS.NguoiDungBUS;
 import DAO.ChiTietQuyenDAO;
 import DTO.ChiTietQuyenDTO;
 import DTO.NguoiDungDTO;
@@ -61,8 +62,11 @@ public class MenuTaskbar extends JPanel {
         pnlTop.setPreferredSize(new Dimension(250, 80));
         pnlTop.setBackground(new Color(48, 103, 204));
         this.add(pnlTop, BorderLayout.NORTH);
-        JLabel lblLogo = new JLabel("<html><font color='white'>Quiz</font><font color='#D3D3D3'>App</font></html>", SwingConstants.CENTER);
+        NguoiDungBUS ndBUS = new NguoiDungBUS();
+        String tenNhomQuyen = ndBUS.getTenNhomQuyen(nguoiDung.getManhomquyen());
+        JLabel lblLogo = new JLabel(tenNhomQuyen.toUpperCase(), SwingConstants.CENTER);
         lblLogo.setFont(new Font("Roboto", Font.BOLD, 18));
+        lblLogo.setForeground(Color.WHITE);
         pnlTop.add(lblLogo, BorderLayout.CENTER);
         bar1 = new JPanel();
         bar1.setBackground(LineColor);

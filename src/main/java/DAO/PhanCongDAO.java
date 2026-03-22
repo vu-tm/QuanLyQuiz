@@ -6,6 +6,7 @@ import java.sql.*;
 import java.util.ArrayList;
 
 public class PhanCongDAO {
+
     public static PhanCongDAO getInstance() {
         return new PhanCongDAO();
     }
@@ -67,5 +68,21 @@ public class PhanCongDAO {
             ex.printStackTrace();
         }
         return result;
+    }
+
+    public ArrayList<Integer> selectMonHocByGiangVien(int manguoidung) {
+        ArrayList<Integer> ketQua = new ArrayList<>();
+        String sql = "SELECT mamonhoc FROM phancong WHERE manguoidung=?";
+        try (Connection con = JDBCUtil.getConnection(); PreparedStatement pst = con.prepareStatement(sql)) {
+            pst.setInt(1, manguoidung);
+            try (ResultSet rs = pst.executeQuery()) {
+                while (rs.next()) {
+                    ketQua.add(rs.getInt("mamonhoc"));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return ketQua;
     }
 }

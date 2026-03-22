@@ -59,7 +59,7 @@ public class DoKho extends JPanel implements ActionListener, ItemListener {
             }
         };
 
-        String[] header = {"Mã độ khó", "Tên độ khó", "Trạng thái"};
+        String[] header = {"Mã độ khó", "Tên độ khó"};
         tblModel.setColumnIdentifiers(header);
         table.setModel(tblModel);
         table.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 13));
@@ -200,8 +200,7 @@ public class DoKho extends JPanel implements ActionListener, ItemListener {
         for (DoKhoDTO dk : danhSach) {
             tblModel.addRow(new Object[]{
                 dk.getMadokho(),
-                dk.getTendokho(),
-                dk.getTrangthai() == 1 ? "Hoạt động" : "Ngưng hoạt động"
+                dk.getTendokho()
             });
         }
     }

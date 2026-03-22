@@ -10,13 +10,13 @@ package DTO;
  */
 public class ChiTietLopDTO {
     private int malop;
-    private String manguoidung;
+    private int manguoidung;
     private int hienthi;
 
     public ChiTietLopDTO() {
     }
 
-    public ChiTietLopDTO(int malop, String manguoidung, int hienthi) {
+    public ChiTietLopDTO(int malop, int manguoidung, int hienthi) {
         this.malop = malop;
         this.manguoidung = manguoidung;
         this.hienthi = hienthi;
@@ -31,11 +31,11 @@ public class ChiTietLopDTO {
         this.malop = malop;
     }
 
-    public String getManguoidung() {
+    public int getManguoidung() {
         return manguoidung;
     }
 
-    public void setManguoidung(String manguoidung) {
+    public void setManguoidung(int manguoidung) {
         this.manguoidung = manguoidung;
     }
 

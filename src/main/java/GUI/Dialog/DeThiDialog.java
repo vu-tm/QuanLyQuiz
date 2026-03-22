@@ -511,12 +511,14 @@ public class DeThiDialog extends JDialog {
             dt.setNguoitao("admin");
             dt.setTrangthai(true);
 
-            int madeVuaTao = deThiBUS.add(dt);
-            if (madeVuaTao > 0) {
+            if (deThiBUS.add(dt)) {
+                ArrayList<DeThiDTO> all = deThiBUS.getAll();
+                int madeVuaTao = all.get(all.size() - 1).getMade();
+
                 deThiBUS.saveChiTiet(madeVuaTao, listMaCauHoi);
                 giaoDeThiDAO.deleteByMaDe(madeVuaTao);
                 for (int malop : listMaLop) {
-                    giaoDeThiDAO.insert(new DTO.GiaoDeThiDTO(madeVuaTao, malop));
+                    giaoDeThiDAO.insert(new GiaoDeThiDTO(madeVuaTao, malop));
                 }
                 JOptionPane.showMessageDialog(this, "Thêm đề thi thành công!");
                 parent.loadDataTable(deThiBUS.getAll());

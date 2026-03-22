@@ -22,12 +22,12 @@ public class DeThiBUS {
         return this.listDeThi;
     }
 
-    public int add(DeThiDTO dt) {
-        int made = dethiDAO.insert(dt);
-        if (made > 0) {
+    public boolean add(DeThiDTO dt) {
+        boolean check = dethiDAO.insert(dt) > 0;
+        if (check) {
             getAll();
         }
-        return made;
+        return check;
     }
 
     public boolean update(DeThiDTO dt) {

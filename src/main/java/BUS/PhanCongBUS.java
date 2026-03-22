@@ -71,4 +71,8 @@ public class PhanCongBUS {
         }
         return result;
     }
+
+    public ArrayList<Integer> getMonHocByGiangVien(int manguoidung) {
+        return pcDAO.selectMonHocByGiangVien(manguoidung);
+    }
 }

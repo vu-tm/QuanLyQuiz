@@ -7,6 +7,7 @@ import DTO.LopDTO;
 import java.util.ArrayList;
 
 public class LopBUS {
+
     private final LopDAO lopDAO = LopDAO.getInstance();
     private final ChiTietLopDAO chitietlopDAO = ChiTietLopDAO.getInstance();
     private ArrayList<LopDTO> listLop;
@@ -21,22 +22,39 @@ public class LopBUS {
     }
 
     public LopDTO getById(int malop) {
-        return lopDAO.selectById(malop);
+        for (LopDTO lop : listLop) {
+            if (lop.getMalop() == malop) {
+                return lop;
+            }
+        }
+        return null;
     }
 
     public boolean add(LopDTO lop) {
-        return lopDAO.insert(lop) > 0;
+        boolean check = lopDAO.insert(lop) > 0;
+        if (check) {
+            getAll();
+        }
+        return check;
     }
 
     public boolean update(LopDTO lop) {
-        return lopDAO.update(lop) > 0;
+        boolean check = lopDAO.update(lop) > 0;
+        if (check) {
+            getAll();
+        }
+        return check;
     }
 
     public boolean delete(int malop) {
-        return lopDAO.delete(malop) > 0;
+        boolean check = lopDAO.delete(malop) > 0;
+        if (check) {
+            getAll();
+        }
+        return check;
     }
 
-    public ArrayList<LopDTO> getByGiangVien(String magiangvien) {
+    public ArrayList<LopDTO> getByGiangVien(int magiangvien) {
         return lopDAO.selectByGiangVien(magiangvien);
     }
 
@@ -44,61 +62,59 @@ public class LopBUS {
         return lopDAO.selectByMonHoc(mamonhoc);
     }
 
-    public ArrayList<LopDTO> search(String text, String type) {
-        ArrayList<LopDTO> result = new ArrayList<>();
-        text = text.toLowerCase();
-        for (LopDTO lop : this.listLop) {
-            String maStr     = Integer.toString(lop.getMalop()).toLowerCase();
-            String tenStr    = lop.getTenlop().toLowerCase();
-            String namhocStr = Integer.toString(lop.getNamhoc()).toLowerCase();
-            String hockyStr  = Integer.toString(lop.getHocky()).toLowerCase();
-            boolean match    = false;
+    public ArrayList<LopDTO> search(ArrayList<LopDTO> sourceList, String text, String type) {
+    ArrayList<LopDTO> result = new ArrayList<>();
+    text = text.toLowerCase();
+        for (LopDTO lop : sourceList) {
+            boolean match = false;
             switch (type) {
                 case "Tất cả":
-                    match = maStr.contains(text) || tenStr.contains(text) || namhocStr.contains(text) || hockyStr.contains(text);
+                    match = Integer.toString(lop.getMalop()).contains(text)
+                            || lop.getTenlop().toLowerCase().contains(text)
+                            || Integer.toString(lop.getNamhoc()).contains(text)
+                            || Integer.toString(lop.getHocky()).contains(text);
                     break;
                 case "Mã lớp":
-                    match = maStr.contains(text);
+                    match = Integer.toString(lop.getMalop()).contains(text);
                     break;
                 case "Tên lớp":
-                    match = tenStr.contains(text);
+                    match = lop.getTenlop().toLowerCase().contains(text);
                     break;
                 case "Năm học":
-                    match = namhocStr.contains(text);
+                    match = Integer.toString(lop.getNamhoc()).contains(text);
                     break;
                 case "Học kỳ":
-                    match = hockyStr.contains(text);
+                    match = Integer.toString(lop.getHocky()).contains(text);
                     break;
             }
-            if (match) result.add(lop);
+            if (match) {
+                result.add(lop);
+            }
         }
         return result;
     }
 
+    // CHI TIẾT LỚP
     public ArrayList<ChiTietLopDTO> getChiTietByMaLop(int malop) {
         return chitietlopDAO.selectByMaLop(malop);
     }
 
-    public ArrayList<ChiTietLopDTO> getChiTietByMaNguoiDung(String manguoidung) {
-        return chitietlopDAO.selectByMaNguoiDung(manguoidung);
-    }
-
     public boolean addChiTiet(ChiTietLopDTO ct) {
         if (chitietlopDAO.checkExists(ct.getMalop(), ct.getManguoidung())) {
-            return false;
+            return chitietlopDAO.restore(ct.getMalop(), ct.getManguoidung()) > 0;
         }
         return chitietlopDAO.insert(ct) > 0;
     }
 
-    public boolean restoreChiTiet(int malop, String manguoidung) {
+    public boolean restoreChiTiet(int malop, int manguoidung) {
         return chitietlopDAO.restore(malop, manguoidung) > 0;
     }
 
-    public boolean deleteChiTiet(int malop, String manguoidung) {
+    public boolean deleteChiTiet(int malop, int manguoidung) {
         return chitietlopDAO.delete(malop, manguoidung) > 0;
     }
 
-    public boolean checkExistsChiTiet(int malop, String manguoidung) {
+    public boolean checkExistsChiTiet(int malop, int manguoidung) {
         return chitietlopDAO.checkExists(malop, manguoidung);
     }
 

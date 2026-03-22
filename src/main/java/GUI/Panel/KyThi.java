@@ -62,7 +62,7 @@ public class KyThi extends JPanel implements ActionListener, ItemListener {
             }
         };
 
-        String[] header = new String[]{"Mã kỳ thi", "Tên kỳ thi", "Thời gian bắt đầu", "Thời gian kết thúc", "Trạng thái"};
+        String[] header = new String[]{"Mã kỳ thi", "Tên kỳ thi", "Thời gian bắt đầu", "Thời gian kết thúc"};
         tblModel.setColumnIdentifiers(header);
         tableKyThi.setModel(tblModel);
         tableKyThi.setFocusable(false);
@@ -244,8 +244,7 @@ public class KyThi extends JPanel implements ActionListener, ItemListener {
                 kyThi.getMakythi(),
                 kyThi.getTenkythi(),
                 Formater.FormatTime(kyThi.getThoigianbatdau()),
-                Formater.FormatTime(kyThi.getThoigianketthuc()),
-                kyThi.getTrangthai() == 1 ? "Hoạt động" : "Tạm dừng"
+                Formater.FormatTime(kyThi.getThoigianketthuc())
             });
         }
     }

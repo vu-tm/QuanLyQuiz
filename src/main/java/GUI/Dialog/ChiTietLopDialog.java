@@ -57,18 +57,17 @@ public class ChiTietLopDialog extends JDialog implements ActionListener {
         // ══════════════════════════════════════════════════════════════════════
         // TOP: 6 ô InputForm dạng grid 2 hàng x 3 cột (giống ChiTietDeThiDialog)
         // ══════════════════════════════════════════════════════════════════════
-        pnmain_top = new JPanel(new GridLayout(2, 3, 10, 10));
+        pnmain_top = new JPanel(new GridLayout(2, 2, 10, 10));
         pnmain_top.setBorder(new EmptyBorder(15, 15, 10, 15));
         pnmain_top.setBackground(Color.WHITE);
 
-        txtTenlop    = new InputForm("Tên lớp");
-        txtNamhoc    = new InputForm("Năm học");
-        txtHocky     = new InputForm("Học kỳ");
+        txtTenlop = new InputForm("Tên lớp");
+        txtNamhoc = new InputForm("Năm học");
+        txtHocky = new InputForm("Học kỳ");
         txtGiangvien = new InputForm("Giảng viên");
-        txtMonhoc    = new InputForm("Môn học");
-        txtSiso      = new InputForm("Sĩ số");
+        txtMonhoc = new InputForm("Môn học");
 
-        InputForm[] inputs = {txtTenlop, txtNamhoc, txtHocky, txtGiangvien, txtMonhoc, txtSiso};
+        InputForm[] inputs = {txtTenlop, txtNamhoc, txtHocky, txtGiangvien, txtMonhoc};
         for (InputForm inp : inputs) {
             inp.setEditable(false);
             pnmain_top.add(inp);
@@ -136,13 +135,10 @@ public class ChiTietLopDialog extends JDialog implements ActionListener {
         txtHocky.setText("Học kỳ " + lop.getHocky());
 
         String tenGV = nguoidungBUS.getHotenById(lop.getGiangvien());
-        txtGiangvien.setText(tenGV != null ? tenGV : lop.getGiangvien());
+        txtGiangvien.setText(tenGV != null ? tenGV : String.valueOf(lop.getGiangvien()));
 
         MonHocDTO mh = monhocBUS.getById(lop.getMamonhoc());
         txtMonhoc.setText(mh != null ? mh.getTenmonhoc() : String.valueOf(lop.getMamonhoc()));
-
-        int sisoHienTai = lopBUS.countSiSoByMaLop(lop.getMalop());
-        txtSiso.setText(sisoHienTai + " / " + lop.getSiso());
     }
 
     private void loadDataTable() {

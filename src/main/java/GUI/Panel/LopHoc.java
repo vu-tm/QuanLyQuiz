@@ -1,420 +1,305 @@
 package GUI.Panel;
 
 import BUS.LopBUS;
+import BUS.NguoiDungBUS;
+import BUS.MonHocBUS;
 import DTO.LopDTO;
+import GUI.Component.IntegratedSearch;
+import GUI.Component.MainFunction;
+import GUI.Component.PanelBorderRadius;
+import GUI.Component.TableSorter;
+import GUI.Dialog.ChiTietLopDialog;
+import GUI.Dialog.LopDialog;
 import java.awt.*;
+import java.awt.event.*;
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
+import org.apache.poi.xssf.usermodel.XSSFRow;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
-public class LopHoc extends JPanel {
+public class LopHoc extends JPanel implements ActionListener, ItemListener {
+
+    private PanelBorderRadius pnlMain, functionBar;
+    private GUI.Main mainFrame;
+    private JPanel pnlBorder1, pnlBorder2, pnlBorder3, pnlBorder4, contentCenter;
+    private JTable tableLop;
+    private JScrollPane scrollTable;
+    private MainFunction mainFunction;
+    private IntegratedSearch search;
+    private DefaultTableModel tblModel;
 
     private LopBUS lopBUS = new LopBUS();
-    private ArrayList<LopDTO> listLop;
+    private NguoiDungBUS nguoiDungBUS = new NguoiDungBUS();
+    private MonHocBUS monHocBUS = new MonHocBUS();
 
-    private JTable tblLop;
-    private DefaultTableModel modelLop;
-    private JTextField txtTimKiem;
-    private JComboBox<String> cbTimKiem;
-    private JButton btnThem, btnSua, btnXoa, btnChiTiet, btnLamMoi;
+    private ArrayList<LopDTO> listHienTai;
 
-    Color MainColor = new Color(250, 250, 250);
-    Color FontColorHeader = new Color(96, 125, 139);
+    private Color BackgroundColor = new Color(240, 247, 250);
 
-    public LopHoc() {
+    public LopHoc(GUI.Main mainFrame) {
+        this.mainFrame = mainFrame;
         initComponent();
-        loadDataTable();
+        listHienTai = getListTheoRole();
+        loadDataTable(listHienTai);
     }
 
     private void initComponent() {
+        this.setBackground(BackgroundColor);
         this.setLayout(new BorderLayout(0, 0));
-        this.setBackground(Color.WHITE);
-
-        // HEADER
-        JPanel pnlHeader = new JPanel(new BorderLayout());
-        pnlHeader.setPreferredSize(new Dimension(0, 70));
-        pnlHeader.setBackground(Color.WHITE);
-        pnlHeader.setBorder(new EmptyBorder(10, 20, 10, 20));
-        this.add(pnlHeader, BorderLayout.NORTH);
-
-        JLabel lblTitle = new JLabel("QUẢN LÝ LỚP HỌC");
-        lblTitle.setFont(new Font("Roboto", Font.BOLD, 24));
-        lblTitle.setForeground(new Color(26, 26, 26));
-        pnlHeader.add(lblTitle, BorderLayout.WEST);
-
-        // TOOLBAR
-        JPanel pnlToolbar = new JPanel(new BorderLayout());
-        pnlToolbar.setPreferredSize(new Dimension(0, 80));
-        pnlToolbar.setBackground(Color.WHITE);
-        pnlToolbar.setBorder(new EmptyBorder(10, 20, 10, 20));
-        this.add(pnlToolbar, BorderLayout.CENTER);
-
-        // Top toolbar - Tìm kiếm
-        JPanel pnlTop = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 10));
-        pnlTop.setBackground(Color.WHITE);
-        pnlToolbar.add(pnlTop, BorderLayout.NORTH);
-
-        JLabel lblTimKiem = new JLabel("Tìm kiếm:");
-        lblTimKiem.setFont(new Font("Roboto", Font.PLAIN, 14));
-        pnlTop.add(lblTimKiem);
-
-        txtTimKiem = new JTextField();
-        txtTimKiem.setPreferredSize(new Dimension(250, 35));
-        txtTimKiem.setFont(new Font("Roboto", Font.PLAIN, 14));
-        pnlTop.add(txtTimKiem);
-
-        cbTimKiem = new JComboBox<>(new String[]{"Tất cả", "Mã lớp", "Tên lớp", "Năm học", "Học kỳ"});
-        cbTimKiem.setPreferredSize(new Dimension(120, 35));
-        cbTimKiem.setFont(new Font("Roboto", Font.PLAIN, 14));
-        pnlTop.add(cbTimKiem);
-
-        JButton btnTimKiem = new JButton("Tìm kiếm");
-        btnTimKiem.setPreferredSize(new Dimension(100, 35));
-        btnTimKiem.setFont(new Font("Roboto", Font.PLAIN, 14));
-        btnTimKiem.setBackground(new Color(30, 136, 229));
-        btnTimKiem.setForeground(Color.WHITE);
-        btnTimKiem.setFocusPainted(false);
-        btnTimKiem.addActionListener(e -> timKiem());
-        pnlTop.add(btnTimKiem);
-
-        // Bottom toolbar - Các nút chức năng
-        JPanel pnlBottom = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 10));
-        pnlBottom.setBackground(Color.WHITE);
-        pnlToolbar.add(pnlBottom, BorderLayout.CENTER);
-
-        btnThem = createButton("Thêm", new Color(76, 175, 80));
-        btnThem.addActionListener(e -> themLop());
-        pnlBottom.add(btnThem);
-
-        btnSua = createButton("Sửa", new Color(255, 152, 0));
-        btnSua.addActionListener(e -> suaLop());
-        pnlBottom.add(btnSua);
-
-        btnXoa = createButton("Xóa", new Color(244, 67, 54));
-        btnXoa.addActionListener(e -> xoaLop());
-        pnlBottom.add(btnXoa);
-
-        btnChiTiet = createButton("Chi tiết", new Color(33, 150, 243));
-        btnChiTiet.addActionListener(e -> xemChiTiet());
-        pnlBottom.add(btnChiTiet);
-
-        btnLamMoi = createButton("Làm mới", new Color(96, 125, 139));
-        btnLamMoi.addActionListener(e -> lamMoi());
-        pnlBottom.add(btnLamMoi);
+        this.setOpaque(true);
 
         // TABLE
-        JPanel pnlTable = new JPanel(new BorderLayout());
-        pnlTable.setBackground(Color.WHITE);
-        pnlTable.setBorder(new EmptyBorder(0, 20, 20, 20));
-
-        String[] header = {"Mã lớp", "Tên lớp", "Sĩ số", "Năm học", "Học kỳ", "Giảng viên", "Môn học", "Trạng thái"};
-        modelLop = new DefaultTableModel(header, 0) {
+        tableLop = new JTable();
+        scrollTable = new JScrollPane();
+        tblModel = new DefaultTableModel() {
             @Override
             public boolean isCellEditable(int row, int column) {
                 return false;
             }
         };
 
-        tblLop = new JTable(modelLop);
-        tblLop.setFont(new Font("Roboto", Font.PLAIN, 13));
-        tblLop.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        tblLop.setAutoCreateRowSorter(true);
+        String[] header = {"Mã lớp", "Tên lớp", "Môn học", "Giảng viên", "Sĩ số", "Năm học", "Học kỳ"};
+        tblModel.setColumnIdentifiers(header);
+        tableLop.setModel(tblModel);
+        tableLop.setFocusable(false);
+        tableLop.setRowHeight(30);
+        tableLop.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 13));
+        tableLop.getTableHeader().setPreferredSize(new Dimension(0, 40));
 
+        // Căn giữa nội dung bảng
         DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
         centerRenderer.setHorizontalAlignment(JLabel.CENTER);
-        for (int i = 0; i < tblLop.getColumnCount(); i++) {
-            tblLop.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);
+        for (int i = 0; i < tableLop.getColumnCount(); i++) {
+            tableLop.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);
         }
 
-        JScrollPane scrollPane = new JScrollPane(tblLop);
-        scrollPane.setBorder(BorderFactory.createLineBorder(new Color(224, 224, 224)));
-        pnlTable.add(scrollPane, BorderLayout.CENTER);
+        tableLop.setAutoCreateRowSorter(true);
+        TableSorter.configureTableColumnSorter(tableLop, 0, TableSorter.INTEGER_COMPARATOR);
+        scrollTable.setViewportView(tableLop);
 
-        pnlToolbar.add(pnlTable, BorderLayout.SOUTH);
-    }
+        // PADDING BORDERS
+        pnlBorder1 = new JPanel();
+        pnlBorder1.setPreferredSize(new Dimension(0, 10));
+        pnlBorder1.setBackground(BackgroundColor);
+        pnlBorder2 = new JPanel();
+        pnlBorder2.setPreferredSize(new Dimension(0, 10));
+        pnlBorder2.setBackground(BackgroundColor);
+        pnlBorder3 = new JPanel();
+        pnlBorder3.setPreferredSize(new Dimension(10, 0));
+        pnlBorder3.setBackground(BackgroundColor);
+        pnlBorder4 = new JPanel();
+        pnlBorder4.setPreferredSize(new Dimension(10, 0));
+        pnlBorder4.setBackground(BackgroundColor);
 
-    private JButton createButton(String text, Color bgColor) {
-        JButton btn = new JButton(text);
-        btn.setPreferredSize(new Dimension(100, 35));
-        btn.setFont(new Font("Roboto", Font.PLAIN, 14));
-        btn.setBackground(bgColor);
-        btn.setForeground(Color.WHITE);
-        btn.setFocusPainted(false);
-        btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        return btn;
-    }
+        this.add(pnlBorder1, BorderLayout.NORTH);
+        this.add(pnlBorder2, BorderLayout.SOUTH);
+        this.add(pnlBorder3, BorderLayout.EAST);
+        this.add(pnlBorder4, BorderLayout.WEST);
 
-    private void loadDataTable() {
-        modelLop.setRowCount(0);
-        listLop = lopBUS.getAll();
-        for (LopDTO lop : listLop) {
-            modelLop.addRow(new Object[]{
-                lop.getMalop(),
-                lop.getTenlop(),
-                lop.getSiso(),
-                lop.getNamhoc(),
-                lop.getHocky(),
-                lop.getGiangvien(), // Tạm thời hiển thị mã, sau sẽ lấy tên
-                lop.getMamonhoc(), // Tạm thời hiển thị mã, sau sẽ lấy tên môn
-                lop.getTrangthai() == 1 ? "Hoạt động" : "Ngừng"
-            });
+        // CONTENT CENTER
+        contentCenter = new JPanel(new BorderLayout(10, 10));
+        contentCenter.setBackground(BackgroundColor);
+        this.add(contentCenter, BorderLayout.CENTER);
+
+        // FUNCTION BAR (Sửa để giống KyThi/NguoiDung - có phân quyền)
+        functionBar = new PanelBorderRadius();
+        functionBar.setPreferredSize(new Dimension(0, 100));
+        functionBar.setLayout(new GridLayout(1, 2, 50, 0));
+        functionBar.setBorder(new EmptyBorder(10, 10, 10, 10));
+        functionBar.setBackground(Color.WHITE);
+
+        String[] action = {"create", "update", "delete", "detail", "import", "export"};
+        // Giả sử mã chức năng Quản lý lớp là "5" (Bạn có thể đổi theo DB của mình)
+        mainFunction = new MainFunction(mainFrame.getNguoiDung().getManhomquyen(), "5", action);
+        for (String ac : action) {
+            mainFunction.btn.get(ac).addActionListener(this);
         }
-    }
+        functionBar.add(mainFunction);
 
-    private void timKiem() {
-        String text = txtTimKiem.getText().trim();
-        String type = cbTimKiem.getSelectedItem().toString();
-
-        if (text.isEmpty()) {
-            loadDataTable();
-            return;
-        }
-
-        ArrayList<LopDTO> result = lopBUS.search(text, type);
-        modelLop.setRowCount(0);
-        for (LopDTO lop : result) {
-            modelLop.addRow(new Object[]{
-                lop.getMalop(),
-                lop.getTenlop(),
-                lop.getSiso(),
-                lop.getNamhoc(),
-                lop.getHocky(),
-                lop.getGiangvien(),
-                lop.getMamonhoc(),
-                lop.getTrangthai() == 1 ? "Hoạt động" : "Ngừng"
-            });
-        }
-    }
-
-    private void themLop() {
-        LopDialog dialog = new LopDialog(null, "Thêm lớp học", true);
-        dialog.setVisible(true);
-        if (dialog.isSuccess()) {
-            LopDTO lop = dialog.getLop();
-            if (lopBUS.add(lop)) {
-                JOptionPane.showMessageDialog(this, "Thêm lớp thành công!");
-                loadDataTable();
-            } else {
-                JOptionPane.showMessageDialog(this, "Thêm lớp thất bại!");
+        // SEARCH BAR
+        search = new IntegratedSearch(new String[]{"Tất cả", "Mã lớp", "Tên lớp", "Năm học"});
+        search.txtSearchForm.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyReleased(KeyEvent e) {
+                thucHienTimKiem();
             }
-        }
-    }
+        });
+        search.cbxChoose.addItemListener(this);
+        search.btnReset.addActionListener(e -> {
+            search.txtSearchForm.setText("");
+            search.cbxChoose.setSelectedIndex(0);
+            listHienTai = getListTheoRole();
+            loadDataTable(listHienTai);
+        });
+        functionBar.add(search);
+        contentCenter.add(functionBar, BorderLayout.NORTH);
 
-    private void suaLop() {
-        int row = tblLop.getSelectedRow();
-        if (row < 0) {
-            JOptionPane.showMessageDialog(this, "Vui lòng chọn lớp cần sửa!");
-            return;
-        }
-
-        int malop = (int) tblLop.getValueAt(row, 0);
-        LopDTO lop = lopBUS.getById(malop);
-
-        LopDialog dialog = new LopDialog(null, "Sửa lớp học", true);
-        dialog.setLop(lop);
-        dialog.setVisible(true);
-
-        if (dialog.isSuccess()) {
-            LopDTO lopMoi = dialog.getLop();
-            if (lopBUS.update(lopMoi)) {
-                JOptionPane.showMessageDialog(this, "Sửa lớp thành công!");
-                loadDataTable();
-            } else {
-                JOptionPane.showMessageDialog(this, "Sửa lớp thất bại!");
-            }
-        }
-    }
-
-    private void xoaLop() {
-        int row = tblLop.getSelectedRow();
-        if (row < 0) {
-            JOptionPane.showMessageDialog(this, "Vui lòng chọn lớp cần xóa!");
-            return;
-        }
-
-        int confirm = JOptionPane.showConfirmDialog(this, "Bạn có chắc chắn muốn xóa lớp này?", "Xác nhận", JOptionPane.YES_NO_OPTION);
-        if (confirm == JOptionPane.YES_OPTION) {
-            int malop = (int) tblLop.getValueAt(row, 0);
-            if (lopBUS.delete(malop)) {
-                JOptionPane.showMessageDialog(this, "Xóa lớp thành công!");
-                loadDataTable();
-            } else {
-                JOptionPane.showMessageDialog(this, "Xóa lớp thất bại!");
-            }
-        }
-    }
-
-    private void xemChiTiet() {
-        int row = tblLop.getSelectedRow();
-        if (row < 0) {
-            JOptionPane.showMessageDialog(this, "Vui lòng chọn lớp cần xem!");
-            return;
-        }
-
-        int malop = (int) tblLop.getValueAt(row, 0);
-        JOptionPane.showMessageDialog(this, "Chức năng xem chi tiết sinh viên sẽ được hoàn thiện sau!\nMã lớp: " + malop);
-    }
-
-    private void lamMoi() {
-        txtTimKiem.setText("");
-        cbTimKiem.setSelectedIndex(0);
-        loadDataTable();
-    }
-}
-
-// Dialog thêm/sửa lớp
-class LopDialog extends JDialog {
-
-    private LopDTO lop;
-    private boolean success = false;
-
-    private JTextField txtTenLop, txtSiSo, txtNamHoc, txtHocKy;
-    private JComboBox<String> cbGiangVien, cbMonHoc;
-    private JButton btnLuu, btnHuy;
-
-    public LopDialog(Frame parent, String title, boolean modal) {
-        super(parent, title, modal);
-        initComponent();
-    }
-
-    private void initComponent() {
-        this.setSize(450, 400);
-        this.setLocationRelativeTo(null);
-        this.setLayout(new BorderLayout());
-
-        JPanel pnlMain = new JPanel();
-        pnlMain.setLayout(new GridBagLayout());
-        pnlMain.setBorder(new EmptyBorder(20, 20, 20, 20));
+        // MAIN TABLE PANEL
+        pnlMain = new PanelBorderRadius();
+        pnlMain.setLayout(new BorderLayout());
         pnlMain.setBackground(Color.WHITE);
-
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.insets = new Insets(5, 5, 5, 5);
-
-        // Tên lớp
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        pnlMain.add(new JLabel("Tên lớp:"), gbc);
-        gbc.gridx = 1;
-        txtTenLop = new JTextField(20);
-        pnlMain.add(txtTenLop, gbc);
-
-        // Sĩ số
-        gbc.gridx = 0;
-        gbc.gridy = 1;
-        pnlMain.add(new JLabel("Sĩ số:"), gbc);
-        gbc.gridx = 1;
-        txtSiSo = new JTextField(20);
-        pnlMain.add(txtSiSo, gbc);
-
-        // Năm học
-        gbc.gridx = 0;
-        gbc.gridy = 2;
-        pnlMain.add(new JLabel("Năm học:"), gbc);
-        gbc.gridx = 1;
-        txtNamHoc = new JTextField(20);
-        pnlMain.add(txtNamHoc, gbc);
-
-        // Học kỳ
-        gbc.gridx = 0;
-        gbc.gridy = 3;
-        pnlMain.add(new JLabel("Học kỳ:"), gbc);
-        gbc.gridx = 1;
-        txtHocKy = new JTextField(20);
-        pnlMain.add(txtHocKy, gbc);
-
-        // Giảng viên
-        gbc.gridx = 0;
-        gbc.gridy = 4;
-        pnlMain.add(new JLabel("Giảng viên:"), gbc);
-        gbc.gridx = 1;
-        cbGiangVien = new JComboBox<>(new String[]{"GV001 - Nguyễn Văn A", "GV002 - Trần Thị B"});
-        pnlMain.add(cbGiangVien, gbc);
-
-        // Môn học
-        gbc.gridx = 0;
-        gbc.gridy = 5;
-        pnlMain.add(new JLabel("Môn học:"), gbc);
-        gbc.gridx = 1;
-        cbMonHoc = new JComboBox<>(new String[]{"1 - Lập trình Java", "2 - Cơ sở dữ liệu"});
-        pnlMain.add(cbMonHoc, gbc);
-
-        this.add(pnlMain, BorderLayout.CENTER);
-
-        // Button panel
-        JPanel pnlButton = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        pnlButton.setBackground(Color.WHITE);
-
-        btnLuu = new JButton("Lưu");
-        btnLuu.setPreferredSize(new Dimension(80, 35));
-        btnLuu.setBackground(new Color(76, 175, 80));
-        btnLuu.setForeground(Color.WHITE);
-        btnLuu.addActionListener(e -> luuLop());
-        pnlButton.add(btnLuu);
-
-        btnHuy = new JButton("Hủy");
-        btnHuy.setPreferredSize(new Dimension(80, 35));
-        btnHuy.setBackground(new Color(244, 67, 54));
-        btnHuy.setForeground(Color.WHITE);
-        btnHuy.addActionListener(e -> dispose());
-        pnlButton.add(btnHuy);
-
-        this.add(pnlButton, BorderLayout.SOUTH);
+        pnlMain.add(scrollTable, BorderLayout.CENTER);
+        contentCenter.add(pnlMain, BorderLayout.CENTER);
     }
 
-    private void luuLop() {
-        String tenlop = txtTenLop.getText().trim();
-        String sisoStr = txtSiSo.getText().trim();
-        String namhocStr = txtNamHoc.getText().trim();
-        String hockyStr = txtHocKy.getText().trim();
-
-        if (tenlop.isEmpty() || sisoStr.isEmpty() || namhocStr.isEmpty() || hockyStr.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Vui lòng nhập đầy đủ thông tin!");
-            return;
-        }
-
-        try {
-            int siso = Integer.parseInt(sisoStr);
-            int namhoc = Integer.parseInt(namhocStr);
-            int hocky = Integer.parseInt(hockyStr);
-
-            String giangvien = cbGiangVien.getSelectedItem().toString().split(" - ")[0];
-            int mamonhoc = Integer.parseInt(cbMonHoc.getSelectedItem().toString().split(" - ")[0]);
-
-            if (lop == null) {
-                lop = new LopDTO();
+    public void loadDataTable(ArrayList<LopDTO> danhSach) {
+        tblModel.setRowCount(0);
+        for (LopDTO lop : danhSach) {
+            String tenGV = "Không xác định";
+            if (nguoiDungBUS.getById(lop.getGiangvien()) != null) {
+                tenGV = nguoiDungBUS.getById(lop.getGiangvien()).getHoten();
             }
 
-            lop.setTenlop(tenlop);
-            lop.setSiso(siso);
-            lop.setNamhoc(namhoc);
-            lop.setHocky(hocky);
-            lop.setGiangvien(giangvien);
-            lop.setMamonhoc(mamonhoc);
-            lop.setTrangthai(1);
+            String tenMH = "Không xác định";
+            if (monHocBUS.getById(lop.getMamonhoc()) != null) {
+                tenMH = monHocBUS.getById(lop.getMamonhoc()).getTenmonhoc();
+            }
 
-            success = true;
-            dispose();
-        } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(this, "Sĩ số, năm học, học kỳ phải là số!");
+            tblModel.addRow(new Object[]{
+                lop.getMalop(),
+                lop.getTenlop(),
+                tenMH,
+                tenGV,
+                lopBUS.countSiSoByMaLop(lop.getMalop()),
+                lop.getNamhoc(),
+                lop.getHocky()
+            });
         }
     }
 
-    public void setLop(LopDTO lop) {
-        this.lop = lop;
-        txtTenLop.setText(lop.getTenlop());
-        txtSiSo.setText(String.valueOf(lop.getSiso()));
-        txtNamHoc.setText(String.valueOf(lop.getNamhoc()));
-        txtHocKy.setText(String.valueOf(lop.getHocky()));
+    public void thucHienTimKiem() {
+        String kieu = (String) search.cbxChoose.getSelectedItem();
+        String text = search.txtSearchForm.getText();
+        ArrayList<LopDTO> sourceList = getListTheoRole();
+        listHienTai = lopBUS.search(sourceList, text, kieu);
+        loadDataTable(listHienTai);
     }
 
-    public LopDTO getLop() {
-        return lop;
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        JFrame owner = (JFrame) SwingUtilities.getWindowAncestor(this);
+        Object source = e.getSource();
+
+        if (source == mainFunction.btn.get("create")) {
+            new LopDialog(this, owner, "Thêm lớp học mới", true, "create", null, mainFrame.getNguoiDung());
+
+        } else if (source == mainFunction.btn.get("update")) {
+            int index = tableLop.getSelectedRow();
+            if (index == -1) {
+                JOptionPane.showMessageDialog(this, "Vui lòng chọn lớp học cần sửa!");
+            } else {
+                int modelRow = tableLop.convertRowIndexToModel(index);
+                int malop = (int) tblModel.getValueAt(modelRow, 0);
+                LopDTO selected = lopBUS.getById(malop);
+                new LopDialog(this, owner, "Chỉnh sửa lớp học", true, "update", selected, mainFrame.getNguoiDung());
+            }
+
+        } else if (source == mainFunction.btn.get("detail")) {
+            int index = tableLop.getSelectedRow();
+            if (index == -1) {
+                JOptionPane.showMessageDialog(this, "Vui lòng chọn lớp học để xem chi tiết!");
+            } else {
+                int modelRow = tableLop.convertRowIndexToModel(index);
+                int malop = (int) tblModel.getValueAt(modelRow, 0);
+                LopDTO selected = lopBUS.getById(malop);
+                new ChiTietLopDialog(owner, "Chi tiết lớp học", true, selected);
+            }
+
+        } else if (source == mainFunction.btn.get("delete")) {
+            int index = tableLop.getSelectedRow();
+            if (index == -1) {
+                JOptionPane.showMessageDialog(this, "Vui lòng chọn lớp học cần xóa!");
+            } else {
+                int confirm = JOptionPane.showConfirmDialog(this, "Bạn có chắc chắn muốn xóa lớp này?", "Xác nhận", JOptionPane.YES_NO_OPTION);
+                if (confirm == JOptionPane.YES_OPTION) {
+                    int modelRow = tableLop.convertRowIndexToModel(index);
+                    int malop = (int) tblModel.getValueAt(modelRow, 0);
+                    if (lopBUS.delete(malop)) {
+                        JOptionPane.showMessageDialog(this, "Xóa thành công!");
+                        listHienTai = getListTheoRole();
+                        loadDataTable(listHienTai);
+                    }
+                }
+            }
+        } else if (source == mainFunction.btn.get("import")) {
+            importExcel();
+        } else if (source == mainFunction.btn.get("export")) {
+            try {
+                helper.JTableExporter.exportJTableToExcel(tableLop);
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+        }
     }
 
-    public boolean isSuccess() {
-        return success;
+    public void importExcel() {
+        JFileChooser jf = new JFileChooser();
+        int result = jf.showOpenDialog(this);
+        if (result == JFileChooser.APPROVE_OPTION) {
+            try (FileInputStream excelFIS = new FileInputStream(jf.getSelectedFile()); BufferedInputStream excelBIS = new BufferedInputStream(excelFIS); XSSFWorkbook excelJTableImport = new XSSFWorkbook(excelBIS)) {
+
+                XSSFSheet excelSheet = excelJTableImport.getSheetAt(0);
+                int countSuccess = 0, countError = 0;
+
+                for (int row = 1; row <= excelSheet.getLastRowNum(); row++) {
+                    XSSFRow excelRow = excelSheet.getRow(row);
+                    if (excelRow == null) {
+                        continue;
+                    }
+
+                    try {
+                        String tenlop = excelRow.getCell(0).getStringCellValue();
+                        int siso = (int) excelRow.getCell(1).getNumericCellValue();
+                        int namhoc = (int) excelRow.getCell(2).getNumericCellValue();
+                        int hocky = (int) excelRow.getCell(3).getNumericCellValue();
+                        // Giảng viên trong Excel nên để dạng ID (int)
+                        int giangvien = (int) excelRow.getCell(4).getNumericCellValue();
+                        int mamonhoc = (int) excelRow.getCell(5).getNumericCellValue();
+
+                        LopDTO lop = new LopDTO(0, tenlop, siso, namhoc, hocky, 1, giangvien, mamonhoc);
+                        if (lopBUS.add(lop)) {
+                            countSuccess++;
+                        } else {
+                            countError++;
+                        }
+                    } catch (Exception ex) {
+                        countError++;
+                    }
+                }
+                JOptionPane.showMessageDialog(this, "Thành công: " + countSuccess + ", Thất bại: " + countError);
+                listHienTai = getListTheoRole();
+                loadDataTable(listHienTai);
+            } catch (IOException ex) {
+                JOptionPane.showMessageDialog(this, "Lỗi đọc file!");
+            }
+        }
+    }
+
+    private ArrayList<LopDTO> getListTheoRole() {
+        int manhomquyen = mainFrame.getNguoiDung().getManhomquyen();
+        if (manhomquyen == 2) {
+            return lopBUS.getByGiangVien(mainFrame.getNguoiDung().getId());
+        }
+        return lopBUS.getAll();
+    }
+
+    public void refreshData() {
+        listHienTai = getListTheoRole();
+        loadDataTable(listHienTai);
+    }
+
+    @Override
+    public void itemStateChanged(ItemEvent e) {
+        if (e.getStateChange() == ItemEvent.SELECTED) {
+            thucHienTimKiem();
+        }
     }
 }

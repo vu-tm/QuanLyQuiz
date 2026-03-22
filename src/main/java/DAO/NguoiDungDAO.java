@@ -13,10 +13,21 @@ public class NguoiDungDAO {
 
     public ArrayList<NguoiDungDTO> selectAll() {
         ArrayList<NguoiDungDTO> result = new ArrayList<>();
-        String sql = "SELECT * FROM nguoidung WHERE trangthai = '0' OR trangthai = '1'";
-        try (Connection con = JDBCUtil.getConnection(); PreparedStatement pst = con.prepareStatement(sql); ResultSet rs = pst.executeQuery()) {
+        String sql = "SELECT * FROM nguoidung WHERE trangthai = 0 OR trangthai = 1";
+        try (Connection con = JDBCUtil.getConnection(); 
+             PreparedStatement pst = con.prepareStatement(sql); 
+             ResultSet rs = pst.executeQuery()) {
             while (rs.next()) {
-                result.add(mapRow(rs));
+                NguoiDungDTO u = new NguoiDungDTO();
+                u.setId(rs.getInt("id"));
+                u.setUsername(rs.getString("username"));
+                u.setHoten(rs.getString("hoten"));
+                u.setGioitinh(rs.getBoolean("gioitinh"));
+                u.setNgaysinh(rs.getDate("ngaysinh"));
+                u.setMatkhau(rs.getString("matkhau"));
+                u.setTrangthai(rs.getInt("trangthai"));
+                u.setManhomquyen(rs.getInt("manhomquyen"));
+                result.add(u);
             }
         } catch (SQLException ex) {
             ex.printStackTrace();
@@ -26,11 +37,21 @@ public class NguoiDungDAO {
 
     public NguoiDungDTO selectById(int id) {
         String sql = "SELECT * FROM nguoidung WHERE id = ?";
-        try (Connection con = JDBCUtil.getConnection(); PreparedStatement pst = con.prepareStatement(sql)) {
+        try (Connection con = JDBCUtil.getConnection(); 
+             PreparedStatement pst = con.prepareStatement(sql)) {
             pst.setInt(1, id);
             try (ResultSet rs = pst.executeQuery()) {
                 if (rs.next()) {
-                    return mapRow(rs);
+                    NguoiDungDTO u = new NguoiDungDTO();
+                    u.setId(rs.getInt("id"));
+                    u.setUsername(rs.getString("username"));
+                    u.setHoten(rs.getString("hoten"));
+                    u.setGioitinh(rs.getBoolean("gioitinh"));
+                    u.setNgaysinh(rs.getDate("ngaysinh"));
+                    u.setMatkhau(rs.getString("matkhau"));
+                    u.setTrangthai(rs.getInt("trangthai"));
+                    u.setManhomquyen(rs.getInt("manhomquyen"));
+                    return u;
                 }
             }
         } catch (SQLException ex) {
@@ -41,7 +62,8 @@ public class NguoiDungDAO {
 
     public int insert(NguoiDungDTO t) {
         String sql = "INSERT INTO nguoidung (id, username, hoten, gioitinh, ngaysinh, matkhau, trangthai, manhomquyen) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-        try (Connection con = JDBCUtil.getConnection(); PreparedStatement pst = con.prepareStatement(sql)) {
+        try (Connection con = JDBCUtil.getConnection(); 
+             PreparedStatement pst = con.prepareStatement(sql)) {
             pst.setInt(1, t.getId());
             pst.setString(2, t.getUsername());
             pst.setString(3, t.getHoten());
@@ -59,7 +81,8 @@ public class NguoiDungDAO {
 
     public int update(NguoiDungDTO t) {
         String sql = "UPDATE nguoidung SET username=?, hoten=?, gioitinh=?, ngaysinh=?, matkhau=?, manhomquyen=?, trangthai=? WHERE id=?";
-        try (Connection con = JDBCUtil.getConnection(); PreparedStatement pst = con.prepareStatement(sql)) {
+        try (Connection con = JDBCUtil.getConnection(); 
+             PreparedStatement pst = con.prepareStatement(sql)) {
             pst.setString(1, t.getUsername());
             pst.setString(2, t.getHoten());
             pst.setBoolean(3, t.isGioitinh());
@@ -77,7 +100,8 @@ public class NguoiDungDAO {
 
     public int delete(int id) {
         String sql = "UPDATE nguoidung SET trangthai = -1 WHERE id = ?";
-        try (Connection con = JDBCUtil.getConnection(); PreparedStatement pst = con.prepareStatement(sql)) {
+        try (Connection con = JDBCUtil.getConnection(); 
+             PreparedStatement pst = con.prepareStatement(sql)) {
             pst.setInt(1, id);
             return pst.executeUpdate();
         } catch (SQLException ex) {
@@ -88,7 +112,8 @@ public class NguoiDungDAO {
 
     public boolean checkExistUsername(String username) {
         String sql = "SELECT COUNT(*) FROM nguoidung WHERE username = ?";
-        try (Connection con = JDBCUtil.getConnection(); PreparedStatement pst = con.prepareStatement(sql)) {
+        try (Connection con = JDBCUtil.getConnection(); 
+             PreparedStatement pst = con.prepareStatement(sql)) {
             pst.setString(1, username);
             try (ResultSet rs = pst.executeQuery()) {
                 if (rs.next()) {
@@ -103,7 +128,9 @@ public class NguoiDungDAO {
 
     public int getNextId() {
         String sql = "SELECT MAX(id) FROM nguoidung";
-        try (Connection con = JDBCUtil.getConnection(); PreparedStatement pst = con.prepareStatement(sql); ResultSet rs = pst.executeQuery()) {
+        try (Connection con = JDBCUtil.getConnection(); 
+             PreparedStatement pst = con.prepareStatement(sql); 
+             ResultSet rs = pst.executeQuery()) {
             if (rs.next()) {
                 return rs.getInt(1) + 1;
             }
@@ -111,18 +138,5 @@ public class NguoiDungDAO {
             ex.printStackTrace();
         }
         return 1;
-    }
-
-    private NguoiDungDTO mapRow(ResultSet rs) throws SQLException {
-        NguoiDungDTO u = new NguoiDungDTO();
-        u.setId(rs.getInt("id"));
-        u.setUsername(rs.getString("username"));
-        u.setHoten(rs.getString("hoten"));
-        u.setGioitinh(rs.getBoolean("gioitinh"));
-        u.setNgaysinh(rs.getDate("ngaysinh"));
-        u.setMatkhau(rs.getString("matkhau"));
-        u.setTrangthai(rs.getInt("trangthai"));
-        u.setManhomquyen(rs.getInt("manhomquyen"));
-        return u;
     }
 }

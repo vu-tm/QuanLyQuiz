@@ -15,13 +15,13 @@ public class LopDTO {
     private int namhoc;
     private int hocky;
     private int trangthai;
-    private String giangvien;
+    private int giangvien;
     private int mamonhoc;
 
     public LopDTO() {
     }
 
-    public LopDTO(int malop, String tenlop, int siso, int namhoc, int hocky, int trangthai, String giangvien, int mamonhoc) {
+    public LopDTO(int malop, String tenlop, int siso, int namhoc, int hocky, int trangthai, int giangvien, int mamonhoc) {
         this.malop = malop;
         this.tenlop = tenlop;
         this.siso = siso;
@@ -81,11 +81,11 @@ public class LopDTO {
         this.trangthai = trangthai;
     }
 
-    public String getGiangvien() {
+    public int getGiangvien() {
         return giangvien;
     }
 
-    public void setGiangvien(String giangvien) {
+    public void setGiangvien(int giangvien) {
         this.giangvien = giangvien;
     }
 

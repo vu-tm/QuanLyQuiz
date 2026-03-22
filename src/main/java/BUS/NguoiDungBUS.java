@@ -112,4 +112,19 @@ public class NguoiDungBUS {
     public String getTrangThaiText(int trangthai) {
         return trangthai == 1 ? "Hoạt động" : "Đã khóa";
     }
+
+    public ArrayList<NguoiDungDTO> getByNhomQuyen(int manhomquyen) {
+        ArrayList<NguoiDungDTO> result = new ArrayList<>();
+        for (NguoiDungDTO u : listNguoiDung) {
+            if (u.getManhomquyen() == manhomquyen && u.getTrangthai() == 1) {
+                result.add(u);
+            }
+        }
+        return result;
+    }
+
+    public String getHotenById(int id) {
+        NguoiDungDTO u = getById(id);
+        return u != null ? u.getHoten() : null;
+    }
 }

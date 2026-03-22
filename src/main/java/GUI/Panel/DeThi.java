@@ -65,7 +65,7 @@ public class DeThi extends JPanel implements ActionListener, ItemListener {
             }
         };
 
-        String[] header = {"Mã đề", "Tên đề thi", "Kỳ thi", "Môn học", "Thời gian", "Tổng câu", "Người tạo", "Trạng thái"};
+        String[] header = {"Mã đề", "Tên đề thi", "Kỳ thi", "Môn học", "Thời gian", "Tổng câu", "Người tạo"};
         tblModel.setColumnIdentifiers(header);
         table.setModel(tblModel);
         table.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 13));
@@ -87,7 +87,6 @@ public class DeThi extends JPanel implements ActionListener, ItemListener {
         table.getColumnModel().getColumn(4).setPreferredWidth(100); // Thời gian
         table.getColumnModel().getColumn(5).setPreferredWidth(70);  // Tổng câu
         table.getColumnModel().getColumn(6).setPreferredWidth(120); // Người tạo
-        table.getColumnModel().getColumn(7).setPreferredWidth(100); // Trạng thái
 
         table.setAutoCreateRowSorter(true);
         TableSorter.configureTableColumnSorter(table, 0, TableSorter.INTEGER_COMPARATOR);
@@ -203,7 +202,7 @@ public class DeThi extends JPanel implements ActionListener, ItemListener {
                         dt.setThoigiantao(new Timestamp(System.currentTimeMillis()));
                         dt.setTongsocau(0);
 
-                        if (bus.add(dt) > 0) {
+                        if (bus.add(dt)) {
                             countSuccess++;
                         } else {
                             countError++;
@@ -230,8 +229,7 @@ public class DeThi extends JPanel implements ActionListener, ItemListener {
                 monHocBUS.getTenById(dt.getMonthi()),
                 dt.getThoigianthi() + " phút",
                 dt.getTongsocau(),
-                dt.getNguoitao(),
-                dt.isTrangthai() ? "Hoạt động" : "Khóa"
+                dt.getNguoitao()
             });
         }
     }

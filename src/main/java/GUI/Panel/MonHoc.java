@@ -59,7 +59,7 @@ public class MonHoc extends JPanel implements ActionListener, ItemListener {
             }
         };
 
-        String[] header = {"Mã môn học", "Tên môn học", "Số tín chỉ", "Trạng thái"};
+        String[] header = {"Mã môn học", "Tên môn học", "Số tín chỉ"};
         tblModel.setColumnIdentifiers(header);
         table.setModel(tblModel);
         table.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 13));
@@ -206,8 +206,7 @@ public class MonHoc extends JPanel implements ActionListener, ItemListener {
             tblModel.addRow(new Object[]{
                 mh.getMamonhoc(),
                 mh.getTenmonhoc(),
-                mh.getSotinchi(),
-                mh.getTrangthai() == 1 ? "Hoạt động" : "Ngưng hoạt động"
+                mh.getSotinchi()
             });
         }
     }

@@ -1,198 +1,400 @@
 package GUI.Panel;
 
 import BUS.CauHoiBUS;
+import BUS.DoKhoBUS;
+import BUS.LoaiCauHoiBUS;
+import BUS.MonHocBUS;
 import DTO.CauHoiDTO;
+import GUI.Component.IntegratedSearch;
+import GUI.Component.MainFunction;
+import GUI.Component.PanelBorderRadius;
+import GUI.Component.TableSorter;
+import GUI.Dialog.AddCauHoiDialog;
+import GUI.Dialog.ViewCauHoiDialog;
+import helper.Validation;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Locale;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
-import java.util.List;
+import org.apache.poi.xssf.usermodel.XSSFRow;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
-public class CauHoi extends JPanel {
-    private CauHoiBUS bus;
+public class CauHoi extends JPanel implements ActionListener, ItemListener {
+
+    private final CauHoiBUS bus;
+    private final MonHocBUS monHocBUS;
+    private final DoKhoBUS doKhoBUS;
+    private final LoaiCauHoiBUS loaiCauHoiBUS;
+    private GUI.Main mainFrame;
     private DefaultTableModel model;
     private JTable table;
+    private JScrollPane scrollTable;
+    private MainFunction mainFunction;
+    private IntegratedSearch search;
+    private PanelBorderRadius functionBar, main;
+    private JPanel pnlBorder1, pnlBorder2, pnlBorder3, pnlBorder4, contentCenter;
+    private final Color backgroundColor = new Color(240, 247, 250);
+    private ArrayList<CauHoiDTO> listHienTai;
 
-    private JTextField txtId, txtNoiDung, txtMaDoKho, txtMaLoai, txtMaMon, txtNguoiTao, txtTrangThai, txtSearch;
-
-    public CauHoi() {
-        bus = new CauHoiBUS();
-        initUI();
-        loadData();
+    public CauHoi(GUI.Main mainFrame) {
+        this.mainFrame = mainFrame;
+        this.bus = new CauHoiBUS();
+        this.monHocBUS = new MonHocBUS();
+        this.doKhoBUS = new DoKhoBUS();
+        this.loaiCauHoiBUS = new LoaiCauHoiBUS();
+        this.listHienTai = new ArrayList<>(bus.load());
+        initComponent();
+        loadDataTable(listHienTai);
     }
 
-    private void initUI() {
-        this.setLayout(new BorderLayout(8,8));
-        this.setBackground(Color.WHITE);
-        this.setBorder(new EmptyBorder(12,12,12,12));
+    private void initComponent() {
+        this.setBackground(backgroundColor);
+        this.setLayout(new BorderLayout(0, 0));
+        this.setOpaque(true);
 
-        JLabel title = new JLabel("QUẢN LÝ CÂU HỎI", SwingConstants.CENTER);
-        title.setFont(new Font("Roboto", Font.BOLD, 24));
-        this.add(title, BorderLayout.NORTH);
-
-        // Split pane: top = form+buttons, bottom = search+table
-        JSplitPane split = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
-        split.setResizeWeight(0.4); // top 40%, bottom 60%
-        split.setOneTouchExpandable(true);
-
-        // Top: form and buttons
-        JPanel topPanel = new JPanel(new BorderLayout(8,8));
-        JPanel form = new JPanel(new GridLayout(0,2,10,10));
-        txtId = new JTextField(); txtId.setEditable(false);
-        txtNoiDung = new JTextField();
-        txtMaDoKho = new JTextField();
-        txtMaLoai = new JTextField();
-        txtMaMon = new JTextField();
-        txtNguoiTao = new JTextField();
-        txtTrangThai = new JTextField();
-
-        // helper to create a label+field pair where label is narrow
-        java.util.function.BiFunction<String,JComponent,JPanel> pair = (labelText, field) -> {
-            JPanel p = new JPanel(new BorderLayout(6,6));
-            JLabel lbl = new JLabel(labelText);
-            lbl.setPreferredSize(new Dimension(120,24));
-            p.add(lbl, BorderLayout.WEST);
-            p.add(field, BorderLayout.CENTER);
-            return p;
+        table = new JTable();
+        scrollTable = new JScrollPane();
+        model = new DefaultTableModel() {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
         };
 
-        form.add(pair.apply("Mã câu hỏi", txtId));
-        form.add(pair.apply("Nội dung", txtNoiDung));
-        form.add(pair.apply("Mã độ khó", txtMaDoKho));
-        form.add(pair.apply("Mã loại", txtMaLoai));
-        form.add(pair.apply("Mã môn", txtMaMon));
-        form.add(pair.apply("Người tạo", txtNguoiTao));
-        form.add(pair.apply("Trạng thái", txtTrangThai));
+        String[] header = {"Mã câu hỏi", "Nội dung", "Tên độ khó", "Tên loại", "Tên môn học", "Người tạo", "Trạng thái"};
+        model.setColumnIdentifiers(header);
+        table.setModel(model);
+        table.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 13));
+        table.getTableHeader().setPreferredSize(new Dimension(0, 40));
+        ((DefaultTableCellRenderer) table.getTableHeader().getDefaultRenderer()).setHorizontalAlignment(JLabel.CENTER);
+        table.setFocusable(false);
+        table.setRowHeight(30);
+        scrollTable.setViewportView(table);
 
-        topPanel.add(form, BorderLayout.CENTER);
+        DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
+        centerRenderer.setHorizontalAlignment(JLabel.CENTER);
+        for (int i = 0; i < table.getColumnCount(); i++) {
+            table.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);
+        }
 
-        JPanel buttons = new JPanel(new GridLayout(1,4,8,8));
-        JButton btnAdd = new JButton("Thêm");
-        JButton btnUpdate = new JButton("Sửa");
-        JButton btnDelete = new JButton("Xóa");
-        JButton btnRefresh = new JButton("Làm mới");
-        buttons.add(btnAdd); buttons.add(btnUpdate); buttons.add(btnDelete); buttons.add(btnRefresh);
-        topPanel.add(buttons, BorderLayout.SOUTH);
-
-        // Bottom: search + table
-        JPanel bottomPanel = new JPanel(new BorderLayout(6,6));
-        JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.LEFT,6,6));
-        txtSearch = new JTextField(30);
-        JButton btnSearch = new JButton("Tìm");
-        searchPanel.add(new JLabel("Tìm kiếm:"));
-        searchPanel.add(txtSearch);
-        searchPanel.add(btnSearch);
-        bottomPanel.add(searchPanel, BorderLayout.NORTH);
-
-        model = new DefaultTableModel(new Object[]{"Mã","Nội dung","Mã độ khó","Mã loại","Mã môn","Người tạo","Trạng thái"},0){
-            public boolean isCellEditable(int row,int col){return false;}
-        };
-        table = new JTable(model);
-        JScrollPane sp = new JScrollPane(table);
-        bottomPanel.add(sp, BorderLayout.CENTER);
-
-        split.setTopComponent(topPanel);
-        split.setBottomComponent(bottomPanel);
-
-        this.add(split, BorderLayout.CENTER);
-
-        // Actions
-        btnAdd.addActionListener(e -> onAdd());
-        btnUpdate.addActionListener(e -> onUpdate());
-        btnDelete.addActionListener(e -> onDelete());
-        btnRefresh.addActionListener(e -> loadData());
-        btnSearch.addActionListener(e -> onSearch());
-
-        table.addMouseListener(new MouseAdapter(){
-            public void mouseClicked(MouseEvent e){
-                int r = table.getSelectedRow();
-                if(r>=0) fillFormFromSelectedRow(r);
+        table.setAutoCreateRowSorter(true);
+        TableSorter.configureTableColumnSorter(table, 0, TableSorter.INTEGER_COMPARATOR);
+        table.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (SwingUtilities.isLeftMouseButton(e) && e.getClickCount() == 2) {
+                    SwingUtilities.invokeLater(() -> onViewDetail());
+                }
             }
         });
-    }
 
-    private void fillFormFromSelectedRow(int r){
-        txtId.setText(String.valueOf(model.getValueAt(r,0)));
-        txtNoiDung.setText(String.valueOf(model.getValueAt(r,1)));
-        txtMaDoKho.setText(String.valueOf(model.getValueAt(r,2)));
-        txtMaLoai.setText(String.valueOf(model.getValueAt(r,3)));
-        txtMaMon.setText(String.valueOf(model.getValueAt(r,4)));
-        txtNguoiTao.setText(String.valueOf(model.getValueAt(r,5)));
-        txtTrangThai.setText(String.valueOf(model.getValueAt(r,6)));
-    }
+        pnlBorder1 = new JPanel();
+        pnlBorder1.setPreferredSize(new Dimension(0, 10));
+        pnlBorder1.setBackground(backgroundColor);
+        pnlBorder2 = new JPanel();
+        pnlBorder2.setPreferredSize(new Dimension(0, 10));
+        pnlBorder2.setBackground(backgroundColor);
+        pnlBorder3 = new JPanel();
+        pnlBorder3.setPreferredSize(new Dimension(10, 0));
+        pnlBorder3.setBackground(backgroundColor);
+        pnlBorder4 = new JPanel();
+        pnlBorder4.setPreferredSize(new Dimension(10, 0));
+        pnlBorder4.setBackground(backgroundColor);
 
-    private void loadData(){
-        model.setRowCount(0);
-        List<CauHoiDTO> list = bus.load();
-        for(CauHoiDTO ch: list){
-            model.addRow(new Object[]{ch.getMacauhoi(), ch.getNoidung(), ch.getMadokho(), ch.getMaloai(), ch.getMamonhoc(), ch.getNguoitao(), ch.getTrangthai()});
+        this.add(pnlBorder1, BorderLayout.NORTH);
+        this.add(pnlBorder2, BorderLayout.SOUTH);
+        this.add(pnlBorder3, BorderLayout.EAST);
+        this.add(pnlBorder4, BorderLayout.WEST);
+
+        contentCenter = new JPanel(new BorderLayout(10, 10));
+        contentCenter.setBackground(backgroundColor);
+        this.add(contentCenter, BorderLayout.CENTER);
+
+        functionBar = new PanelBorderRadius();
+        functionBar.setPreferredSize(new Dimension(0, 100));
+        functionBar.setLayout(new GridLayout(1, 2, 50, 0));
+        functionBar.setBorder(new EmptyBorder(10, 10, 10, 10));
+        functionBar.setBackground(Color.WHITE);
+
+        String[] action = {"create", "update", "delete", "import", "export"};
+        mainFunction = new MainFunction(mainFrame.getNguoiDung().getManhomquyen(), "1", action);
+        for (String ac : action) {
+            mainFunction.btn.get(ac).addActionListener(this);
         }
-    }
 
-    private void onAdd(){
-        try{
-            String noidung = txtNoiDung.getText().trim();
-            int madokho = Integer.parseInt(txtMaDoKho.getText().trim());
-            int maloai = Integer.parseInt(txtMaLoai.getText().trim());
-            int mamon = Integer.parseInt(txtMaMon.getText().trim());
-            String nguoitao = txtNguoiTao.getText().trim();
-            int trangthai = Integer.parseInt(txtTrangThai.getText().trim());
-            CauHoiDTO ch = new CauHoiDTO(0,noidung,madokho,maloai,mamon,nguoitao,trangthai);
-            if(bus.add(ch)){
-                JOptionPane.showMessageDialog(this, "Thêm thành công");
-                loadData();
-            } else JOptionPane.showMessageDialog(this, "Thêm thất bại", "Lỗi", JOptionPane.ERROR_MESSAGE);
-        }catch(Exception ex){
-            JOptionPane.showMessageDialog(this, "Dữ liệu không hợp lệ: " + ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
-        }
-    }
+        functionBar.add(mainFunction);
 
-    private void onUpdate(){
-        try{
-            int id = Integer.parseInt(txtId.getText().trim());
-            String noidung = txtNoiDung.getText().trim();
-            int madokho = Integer.parseInt(txtMaDoKho.getText().trim());
-            int maloai = Integer.parseInt(txtMaLoai.getText().trim());
-            int mamon = Integer.parseInt(txtMaMon.getText().trim());
-            String nguoitao = txtNguoiTao.getText().trim();
-            int trangthai = Integer.parseInt(txtTrangThai.getText().trim());
-            CauHoiDTO ch = new CauHoiDTO(id,noidung,madokho,maloai,mamon,nguoitao,trangthai);
-            if(bus.edit(ch)){
-                JOptionPane.showMessageDialog(this, "Cập nhật thành công");
-                loadData();
-            } else JOptionPane.showMessageDialog(this, "Cập nhật thất bại", "Lỗi", JOptionPane.ERROR_MESSAGE);
-        }catch(NumberFormatException ex){
-            JOptionPane.showMessageDialog(this, "Chưa chọn mục để sửa hoặc dữ liệu không hợp lệ", "Lỗi", JOptionPane.ERROR_MESSAGE);
-        }
-    }
-
-    private void onDelete(){
-        try{
-            int id = Integer.parseInt(txtId.getText().trim());
-            int confirm = JOptionPane.showConfirmDialog(this, "Xác nhận xóa mục này?", "Xóa", JOptionPane.YES_NO_OPTION);
-            if(confirm==JOptionPane.YES_OPTION){
-                if(bus.remove(id)){
-                    JOptionPane.showMessageDialog(this, "Xóa thành công");
-                    loadData();
-                } else JOptionPane.showMessageDialog(this, "Xóa thất bại", "Lỗi", JOptionPane.ERROR_MESSAGE);
+        search = new IntegratedSearch(new String[]{"Tất cả", "Mã câu hỏi", "Nội dung", "Tên môn học", "Người tạo"});
+        search.txtSearchForm.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyReleased(KeyEvent e) {
+                thucHienTimKiem();
             }
-        }catch(NumberFormatException ex){
-            JOptionPane.showMessageDialog(this, "Chưa chọn mục để xóa", "Lỗi", JOptionPane.ERROR_MESSAGE);
-        }
+        });
+        search.cbxChoose.addItemListener(this);
+        search.btnReset.addActionListener(e -> {
+            search.txtSearchForm.setText("");
+            search.cbxChoose.setSelectedIndex(0);
+            listHienTai = new ArrayList<>(bus.load());
+            loadDataTable(listHienTai);
+        });
+        functionBar.add(search);
+
+        contentCenter.add(functionBar, BorderLayout.NORTH);
+
+        main = new PanelBorderRadius();
+        main.setLayout(new BorderLayout());
+        main.setBackground(Color.WHITE);
+        main.add(scrollTable, BorderLayout.CENTER);
+        contentCenter.add(main, BorderLayout.CENTER);
     }
 
-    private void onSearch(){
-        String k = txtSearch.getText().trim();
-        model.setRowCount(0);
-        if(k.isEmpty()){
-            loadData();
+    public void thucHienTimKiem() {
+        String kieu = String.valueOf(search.cbxChoose.getSelectedItem());
+        String text = search.txtSearchForm.getText().trim().toLowerCase(Locale.ROOT);
+
+        if (Validation.isEmpty(text)) {
+            listHienTai = new ArrayList<>(bus.load());
+            loadDataTable(listHienTai);
             return;
         }
-        List<CauHoiDTO> list = bus.search(k);
-        for(CauHoiDTO ch: list){
-            model.addRow(new Object[]{ch.getMacauhoi(), ch.getNoidung(), ch.getMadokho(), ch.getMaloai(), ch.getMamonhoc(), ch.getNguoitao(), ch.getTrangthai()});
+
+        ArrayList<CauHoiDTO> filtered = new ArrayList<>();
+        for (CauHoiDTO ch : bus.load()) {
+            String ma = String.valueOf(ch.getMacauhoi()).toLowerCase(Locale.ROOT);
+            String noiDung = String.valueOf(ch.getNoidung()).toLowerCase(Locale.ROOT);
+            String tenMon = monHocBUS.getTenById(ch.getMamonhoc()).toLowerCase(Locale.ROOT);
+            String nguoiTao = String.valueOf(ch.getNguoitao()).toLowerCase(Locale.ROOT);
+
+            boolean match;
+            switch (kieu) {
+                case "Mã câu hỏi":
+                    match = ma.contains(text);
+                    break;
+                case "Nội dung":
+                    match = noiDung.contains(text);
+                    break;
+                case "Tên môn học":
+                    match = tenMon.contains(text);
+                    break;
+                case "Người tạo":
+                    match = nguoiTao.contains(text);
+                    break;
+                default:
+                    match = ma.contains(text) || noiDung.contains(text) || tenMon.contains(text) || nguoiTao.contains(text);
+                    break;
+            }
+
+            if (match) {
+                filtered.add(ch);
+            }
+        }
+
+        listHienTai = filtered;
+        loadDataTable(listHienTai);
+    }
+
+    public void loadData() {
+        listHienTai = new ArrayList<>(bus.load());
+        loadDataTable(listHienTai);
+    }
+
+    public void loadDataTable(ArrayList<CauHoiDTO> danhSach) {
+        model.setRowCount(0);
+        for (CauHoiDTO ch : danhSach) {
+            String tenDoKho = doKhoBUS.getTenDoKho(ch.getMadokho());
+            String tenLoai = loaiCauHoiBUS.getTenById(ch.getMaloai());
+            String tenMonHoc = monHocBUS.getTenById(ch.getMamonhoc());
+
+            model.addRow(new Object[]{
+                ch.getMacauhoi(),
+                ch.getNoidung(),
+                tenDoKho,
+                tenLoai,
+                tenMonHoc,
+                ch.getNguoitao(),
+                ch.getTrangthai() == 1 ? "Hoạt động" : "Ngưng hoạt động"
+            });
+        }
+    }
+
+    private CauHoiDTO getSelectedDTO() {
+        int index = table.getSelectedRow();
+        if (index < 0) {
+            return null;
+        }
+        int macauhoi = Integer.parseInt(String.valueOf(table.getValueAt(index, 0)));
+        for (CauHoiDTO ch : bus.load()) {
+            if (ch.getMacauhoi() == macauhoi) {
+                return ch;
+            }
+        }
+        return null;
+    }
+
+    private void onAdd() {
+        JFrame owner = (JFrame) SwingUtilities.getWindowAncestor(this);
+        new AddCauHoiDialog(this, owner, "Thêm câu hỏi mới", null);
+    }
+
+    private void onViewDetail() {
+        CauHoiDTO selected = getSelectedDTO();
+        if (selected == null) {
+            return;
+        }
+        JFrame owner = (JFrame) SwingUtilities.getWindowAncestor(this);
+        new ViewCauHoiDialog(owner, selected);
+    }
+
+    private void onUpdate() {
+        CauHoiDTO selected = getSelectedDTO();
+        if (selected == null) {
+            JOptionPane.showMessageDialog(this, "Vui lòng chọn câu hỏi để sửa!");
+            return;
+        }
+        JFrame owner = (JFrame) SwingUtilities.getWindowAncestor(this);
+        new AddCauHoiDialog(this, owner, "Chỉnh sửa câu hỏi", selected);
+    }
+
+    private void onDelete() {
+        CauHoiDTO selected = getSelectedDTO();
+        if (selected == null) {
+            JOptionPane.showMessageDialog(this, "Vui lòng chọn câu hỏi để xóa!");
+            return;
+        }
+
+        int confirm = JOptionPane.showConfirmDialog(
+                this,
+                "Xóa câu hỏi mã " + selected.getMacauhoi() + "?",
+                "Xác nhận",
+                JOptionPane.YES_NO_OPTION
+        );
+        if (confirm == JOptionPane.YES_OPTION) {
+            if (bus.remove(selected.getMacauhoi())) {
+                loadData();
+                JOptionPane.showMessageDialog(this, "Xóa thành công!");
+            } else {
+                JOptionPane.showMessageDialog(this, "Xóa thất bại!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }
+
+    private void importExcel() {
+        File excelFile;
+        FileInputStream excelFIS = null;
+        BufferedInputStream excelBIS = null;
+        XSSFWorkbook excelJTableImport = null;
+        JFileChooser jf = new JFileChooser();
+        int result = jf.showOpenDialog(this);
+        int countSuccess = 0, countError = 0;
+
+        if (result == JFileChooser.APPROVE_OPTION) {
+            try {
+                excelFile = jf.getSelectedFile();
+                excelFIS = new FileInputStream(excelFile);
+                excelBIS = new BufferedInputStream(excelFIS);
+                excelJTableImport = new XSSFWorkbook(excelBIS);
+                XSSFSheet excelSheet = excelJTableImport.getSheetAt(0);
+
+                for (int row = 1; row <= excelSheet.getLastRowNum(); row++) {
+                    XSSFRow excelRow = excelSheet.getRow(row);
+                    if (excelRow == null) {
+                        continue;
+                    }
+                    try {
+                        String noidung = excelRow.getCell(0).getStringCellValue().trim();
+                        int madokho = (int) excelRow.getCell(1).getNumericCellValue();
+                        int maloai = (int) excelRow.getCell(2).getNumericCellValue();
+                        int mamonhoc = (int) excelRow.getCell(3).getNumericCellValue();
+                        String nguoitao = excelRow.getCell(4).getStringCellValue().trim();
+                        int trangthai = 1;
+
+                        if (excelRow.getCell(5) != null) {
+                            trangthai = (int) excelRow.getCell(5).getNumericCellValue();
+                        }
+
+                        if (Validation.isEmpty(noidung) || Validation.isEmpty(nguoitao)) {
+                            countError++;
+                            continue;
+                        }
+
+                        CauHoiDTO ch = new CauHoiDTO();
+                        ch.setNoidung(noidung);
+                        ch.setMadokho(madokho);
+                        ch.setMaloai(maloai);
+                        ch.setMamonhoc(mamonhoc);
+                        ch.setNguoitao(nguoitao);
+                        ch.setTrangthai(trangthai);
+
+                        if (bus.add(ch)) {
+                            countSuccess++;
+                        } else {
+                            countError++;
+                        }
+                    } catch (Exception e) {
+                        countError++;
+                    }
+                }
+                JOptionPane.showMessageDialog(this, "Nhập thành công " + countSuccess + " dòng. Lỗi " + countError + " dòng.");
+                loadData();
+            } catch (IOException ex) {
+                JOptionPane.showMessageDialog(this, "Lỗi đọc file Excel!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+            } finally {
+                try {
+                    if (excelJTableImport != null) {
+                        excelJTableImport.close();
+                    }
+                    if (excelBIS != null) {
+                        excelBIS.close();
+                    }
+                    if (excelFIS != null) {
+                        excelFIS.close();
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    private void exportExcel() {
+        try {
+            helper.JTableExporter.exportJTableToExcel(table);
+        } catch (IOException ex) {
+            JOptionPane.showMessageDialog(this, "Xuất file Excel thất bại!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        Object source = e.getSource();
+        if (source == mainFunction.btn.get("create")) {
+            onAdd();
+        } else if (source == mainFunction.btn.get("update")) {
+            onUpdate();
+        } else if (source == mainFunction.btn.get("delete")) {
+            onDelete();
+        } else if (source == mainFunction.btn.get("import")) {
+            importExcel();
+        } else if (source == mainFunction.btn.get("export")) {
+            exportExcel();
+        }
+    }
+
+    @Override
+    public void itemStateChanged(ItemEvent e) {
+        if (e.getStateChange() == ItemEvent.SELECTED) {
+            thucHienTimKiem();
         }
     }
 }

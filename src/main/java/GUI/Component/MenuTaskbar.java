@@ -20,17 +20,18 @@ public class MenuTaskbar extends JPanel {
     String[][] getSt = {
         {"Trang chủ", "home.svg", "trangchu"},
         {"Môn học", "subject.svg", "4"},
-        {"Câu hỏi", "question.svg", "1"},
+        {"Lớp học", "class.svg", "5"},
+        {"Phân công", "phancong.svg", "8"},
+        {"Loại câu hỏi", "loaicauhoi.svg", "12"},
         {"Độ khó", "dokho.svg", "10"},
+        {"Câu hỏi", "question.svg", "1"},
         {"Đề thi", "dethi.svg", "2"},
         {"Kỳ thi", "kythi.svg", "3"},
-        {"Lớp học", "class.svg", "5"},
+        {"Bài thi", "baithi.svg", "11"},
+        {"Làm bài", "lambai.svg", "0"},
         {"Người dùng", "nguoidung.svg", "6"},
         {"Nhóm quyền", "nhomquyen.svg", "7"},
-        {"Bài thi", "baithi.svg", "11"},
-        {"Phân công", "phancong.svg", "8"},
         {"Thống kê", "thongke.svg", "9"},
-        {"Làm bài", "lambai.svg", "0"},
         {"Đăng xuất", "logout.svg", "dangxuat"}
     };
 
@@ -47,8 +48,7 @@ public class MenuTaskbar extends JPanel {
     public MenuTaskbar(Main main, NguoiDungDTO nguoiDung) {
         this.main = main;
         this.nguoiDung = nguoiDung;
-        this.listQuyen = ChiTietQuyenDAO.getInstance()
-                .selectAll(nguoiDung.getManhomquyen());
+        this.listQuyen = ChiTietQuyenDAO.getInstance().selectAll(nguoiDung.getManhomquyen());
         initComponent();
     }
 
@@ -75,9 +75,8 @@ public class MenuTaskbar extends JPanel {
 
         // CENTER AREA
         pnlCenter = new JPanel();
-        pnlCenter.setPreferredSize(new Dimension(230, 600));
         pnlCenter.setBackground(DefaultColor);
-        pnlCenter.setLayout(new FlowLayout(0, 0, 5));
+        pnlCenter.setLayout(new BoxLayout(pnlCenter, BoxLayout.Y_AXIS));
 
         bar3 = new JPanel();
         bar3.setBackground(LineColor);
@@ -86,6 +85,7 @@ public class MenuTaskbar extends JPanel {
 
         scrollPane = new JScrollPane(pnlCenter, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         scrollPane.setBorder(new EmptyBorder(5, 10, 0, 10));
+        scrollPane.getVerticalScrollBar().setUnitIncrement(16);
         this.add(scrollPane, BorderLayout.CENTER);
 
         // BOTTOM AREA
@@ -105,6 +105,7 @@ public class MenuTaskbar extends JPanel {
                 pnlBottom.add(listitem[i]);
             } else {
                 pnlCenter.add(listitem[i]);
+                listitem[i].setMaximumSize(new Dimension(Integer.MAX_VALUE, 45));
                 if (i != 0 && !checkRole(getSt[i][2])) {
                     listitem[i].setVisible(false);
                 }
@@ -123,39 +124,42 @@ public class MenuTaskbar extends JPanel {
                             main.setPanel(new MonHoc(main));
                             break;
                         case 2:
-                            main.setPanel(new CauHoi());
-                            break;
-                        case 3:
-                            main.setPanel(new DoKho(main));
-                            break;
-                        case 4:
-                            main.setPanel(new DeThi(main));
-                            break;
-                        case 5:
-                            main.setPanel(new KyThi(main));
-                            break;
-                        case 6:
                             main.setPanel(new LopHoc(main));
                             break;
+                        case 3:
+                            main.setPanel(new PhanCong(main));
+                            break;
+                        case 4:
+                            main.setPanel(new LoaiCauHoi(main));
+                            break;
+                        case 5:
+                            main.setPanel(new DoKho(main));
+                            break;
+                        case 6:
+                            main.setPanel(new CauHoi(main));
+                            break;
                         case 7:
-                            main.setPanel(new NguoiDung(main));
+                            main.setPanel(new DeThi(main));
                             break;
                         case 8:
-                            main.setPanel(new NhomQuyen(main));
+                            main.setPanel(new KyThi(main));
                             break;
                         case 9:
                             main.setPanel(new BaiThi());
                             break;
                         case 10:
-                            main.setPanel(new PhanCong(main));
-                            break;
-                        case 11:
-                            main.setPanel(new ThongKe());
-                            break;
-                        case 12:
                             main.setPanel(new LamBai());
                             break;
+                        case 11:
+                            main.setPanel(new NguoiDung(main));
+                            break;
+                        case 12:
+                            main.setPanel(new NhomQuyen(main));
+                            break;
                         case 13:
+                            main.setPanel(new ThongKe());
+                            break;
+                        case 14:
                             if (JOptionPane.showConfirmDialog(null, "Đăng xuất?", "Xác nhận", 0) == 0) {
                                 main.dispose();
                                 new Login().setVisible(true);

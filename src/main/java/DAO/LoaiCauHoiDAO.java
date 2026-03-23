@@ -11,33 +11,6 @@ public class LoaiCauHoiDAO {
         return new LoaiCauHoiDAO();
     }
 
-    public int insert(LoaiCauHoiDTO t) {
-        int result = 0;
-        try (Connection con = JDBCUtil.getConnection()) {
-            String sql = "INSERT INTO loaicauhoi (tenloai, trangthai) VALUES (?, 1)";
-            PreparedStatement pst = con.prepareStatement(sql);
-            pst.setString(1, t.getTenloai());
-            result = pst.executeUpdate();
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-        }
-        return result;
-    }
-
-    public int update(LoaiCauHoiDTO t) {
-        int result = 0;
-        try (Connection con = JDBCUtil.getConnection()) {
-            String sql = "UPDATE loaicauhoi SET tenloai = ? WHERE maloai = ?";
-            PreparedStatement pst = con.prepareStatement(sql);
-            pst.setString(1, t.getTenloai());
-            pst.setInt(2, t.getMaloai());
-            result = pst.executeUpdate();
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-        }
-        return result;
-    }
-
     public int delete(int id) {
         int result = 0;
         try (Connection con = JDBCUtil.getConnection()) {

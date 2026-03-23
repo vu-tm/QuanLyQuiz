@@ -508,7 +508,7 @@ public class DeThiDialog extends JDialog {
             dt.setThoigianthi(thoiGian);
             dt.setTongsocau(listMaCauHoi.size());
             dt.setThoigiantao(new Timestamp(System.currentTimeMillis()));
-            dt.setNguoitao("admin");
+            dt.setNguoitao(currentDTO.getNguoitao());
             dt.setTrangthai(true);
 
             if (deThiBUS.add(dt)) {

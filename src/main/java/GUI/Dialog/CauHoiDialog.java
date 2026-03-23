@@ -19,7 +19,7 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.TitledBorder;
 
-public class AddCauHoiDialog extends JDialog {
+public class CauHoiDialog extends JDialog {
 
     private CauHoiBUS busCauHoi = new CauHoiBUS();
     private LoaiCauHoiBUS busLoaiCauHoi = new LoaiCauHoiBUS();
@@ -46,7 +46,7 @@ public class AddCauHoiDialog extends JDialog {
     private static final int DUNG_SAI = 2;
     private int currentQuestionType = TRAC_NGHIEM;
     
-    public AddCauHoiDialog(CauHoi parent, JFrame owner, String title, CauHoiDTO dto) {
+    public CauHoiDialog(CauHoi parent, JFrame owner, String title, CauHoiDTO dto) {
         super(owner, title, true);
         this.parent = parent;
         this.currentDTO = dto;

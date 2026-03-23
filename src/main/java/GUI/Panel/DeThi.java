@@ -186,7 +186,7 @@ public class DeThi extends JPanel implements ActionListener, ItemListener {
                         int makythi = (int) excelRow.getCell(1).getNumericCellValue();
                         int mamonhoc = (int) excelRow.getCell(2).getNumericCellValue();
                         int thoigianthi = (int) excelRow.getCell(3).getNumericCellValue();
-                        String nguoitao = excelRow.getCell(4).getStringCellValue();
+                        String nguoitao = mainFrame.getNguoiDung().getHoten();
 
                         if (Validation.isEmpty(tende) || Validation.isEmpty(nguoitao)) {
                             countError++;
@@ -240,7 +240,9 @@ public class DeThi extends JPanel implements ActionListener, ItemListener {
         Object source = e.getSource();
 
         if (source == mainFunction.btn.get("create")) {
-            new DeThiDialog(this, owner, "Thêm đề thi mới", true, "create", null);
+            DeThiDTO newDe = new DeThiDTO();
+            newDe.setNguoitao(mainFrame.getNguoiDung().getHoten());
+            new DeThiDialog(this, owner, "Thêm đề thi mới", true, "create", newDe);
         } else if (source == mainFunction.btn.get("update") || source == mainFunction.btn.get("detail") || source == mainFunction.btn.get("delete")) {
             int index = table.getSelectedRow();
             if (index == -1) {

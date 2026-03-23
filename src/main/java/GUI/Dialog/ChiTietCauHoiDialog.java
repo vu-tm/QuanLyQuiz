@@ -17,7 +17,7 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.TitledBorder;
 
-public class ViewCauHoiDialog extends JDialog {
+public class ChiTietCauHoiDialog extends JDialog {
 
     private final LoaiCauHoiBUS busLoaiCauHoi = new LoaiCauHoiBUS();
     private final DoKhoBUS busDoKho = new DoKhoBUS();
@@ -40,7 +40,7 @@ public class ViewCauHoiDialog extends JDialog {
     private static final int DUNG_SAI = 2;
     private int currentQuestionType = TRAC_NGHIEM;
 
-    public ViewCauHoiDialog(JFrame owner, CauHoiDTO dto) {
+    public ChiTietCauHoiDialog(JFrame owner, CauHoiDTO dto) {
         super(owner, "Chi tiết câu hỏi", true);
         this.currentDTO = dto;
         init();

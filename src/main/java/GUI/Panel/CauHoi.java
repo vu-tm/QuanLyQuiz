@@ -9,8 +9,8 @@ import GUI.Component.IntegratedSearch;
 import GUI.Component.MainFunction;
 import GUI.Component.PanelBorderRadius;
 import GUI.Component.TableSorter;
-import GUI.Dialog.AddCauHoiDialog;
-import GUI.Dialog.ViewCauHoiDialog;
+import GUI.Dialog.CauHoiDialog;
+import GUI.Dialog.ChiTietCauHoiDialog;
 import helper.Validation;
 
 import java.awt.*;
@@ -244,7 +244,7 @@ public class CauHoi extends JPanel implements ActionListener, ItemListener {
 
     private void onAdd() {
         JFrame owner = (JFrame) SwingUtilities.getWindowAncestor(this);
-        new AddCauHoiDialog(this, owner, "Thêm câu hỏi mới", null);
+        new CauHoiDialog(this, owner, "Thêm câu hỏi mới", null);
     }
 
     private void onViewDetail() {
@@ -253,7 +253,7 @@ public class CauHoi extends JPanel implements ActionListener, ItemListener {
             return;
         }
         JFrame owner = (JFrame) SwingUtilities.getWindowAncestor(this);
-        new ViewCauHoiDialog(owner, selected);
+        new ChiTietCauHoiDialog(owner, selected);
     }
 
     private void onUpdate() {
@@ -263,7 +263,7 @@ public class CauHoi extends JPanel implements ActionListener, ItemListener {
             return;
         }
         JFrame owner = (JFrame) SwingUtilities.getWindowAncestor(this);
-        new AddCauHoiDialog(this, owner, "Chỉnh sửa câu hỏi", selected);
+        new CauHoiDialog(this, owner, "Chỉnh sửa câu hỏi", selected);
     }
 
     private void onDelete() {

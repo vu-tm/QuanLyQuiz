@@ -60,7 +60,7 @@ public class ThongKeBUS {
     }
 
     public static int getTongSoCauHoi() {
-        return new CauHoiDAO().getAll().size();
+        return CauHoiDAO.getInstance().selectAll().size();
     }
 
     public static int getTongSoHocSinh() {
@@ -84,7 +84,7 @@ public class ThongKeBUS {
     public static ArrayList<ThongKeCauHoiDTO> getThongKeCauHoi() {
         ArrayList<ThongKeCauHoiDTO> result = new ArrayList<>();
 
-        List<CauHoiDTO> listCH = new CauHoiDAO().getAll();
+        ArrayList<CauHoiDTO> listCH = CauHoiDAO.getInstance().selectAll();
         ArrayList<DapAnDTO> listDA = new DapAnDAO().selectAll();
         ArrayList<Object[]> listCTBT = loadAllChiTietBaiThi();
 

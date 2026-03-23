@@ -1,13 +1,14 @@
 package GUI.Dialog;
 
 import BUS.CauHoiBUS;
+import BUS.DapAnBUS;
 import BUS.DoKhoBUS;
 import BUS.LoaiCauHoiBUS;
 import BUS.MonHocBUS;
-import DAO.DapAnDAO;
 import DTO.CauHoiDTO;
 import DTO.DapAnDTO;
 import DTO.DoKhoDTO;
+import DTO.LoaiCauHoiDTO;
 import DTO.MonHocDTO;
 import GUI.Component.ButtonCustom;
 import GUI.Panel.CauHoi;
@@ -17,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
 
 public class CauHoiDialog extends JDialog {
@@ -25,480 +27,302 @@ public class CauHoiDialog extends JDialog {
     private LoaiCauHoiBUS busLoaiCauHoi = new LoaiCauHoiBUS();
     private DoKhoBUS busDoKho = new DoKhoBUS();
     private MonHocBUS busMonHoc = new MonHocBUS();
-    private DapAnDAO dapAnDAO = DapAnDAO.getInstance();
-    
+    private DapAnBUS busDapAn = new DapAnBUS();
+
+    private GUI.Main mainFrame;
     private CauHoi parent;
     private CauHoiDTO currentDTO;
-    
-    // UI Components
-    private JComboBox<String> cmbLoaiCauHoi;
+
+    private JComboBox<LoaiCauHoiDTO> cmbLoaiCauHoi;
     private JComboBox<DoKhoDTO> cmbDoKho;
     private JComboBox<MonHocDTO> cmbMonHoc;
-    private JCheckBox chkTrangThai;
     private JTextArea txtaCauHoi;
     private JPanel pnlAnswers;
-    private List<JCheckBox> chkAnswers = new ArrayList<>();
+
+    private List<JRadioButton> rdAnswers = new ArrayList<>();
+    private ButtonGroup btnGroup;
     private List<JTextField> txtAnswers = new ArrayList<>();
     private ButtonCustom btnLuu, btnHuy;
-    
-    // Constants
-    private static final int TRAC_NGHIEM = 1;
-    private static final int DUNG_SAI = 2;
-    private int currentQuestionType = TRAC_NGHIEM;
-    
+
+    private static final String TYPE_TRAC_NGHIEM = "Trắc nghiệm";
+    private static final String TYPE_DUNG_SAI = "Đúng/Sai";
+    private static final String TYPE_DIEN_KHUYET = "Điền khuyết";
+
     public CauHoiDialog(CauHoi parent, JFrame owner, String title, CauHoiDTO dto) {
         super(owner, title, true);
+        this.mainFrame = (GUI.Main) owner;
         this.parent = parent;
-        this.currentDTO = dto;
+        this.currentDTO = (dto != null && dto.getMacauhoi() != 0) ? dto : null;
         init();
     }
-    
+
     private void init() {
-        this.setSize(700, 750);
+        this.setSize(750, 750);
         this.setLocationRelativeTo(null);
-        this.setLayout(new BorderLayout(10, 10));
-        this.getContentPane().setBackground(Color.WHITE);
-        this.setResizable(true);
-        
-        // Main panel with scroll
-        JPanel mainPanel = new JPanel();
-        mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
-        mainPanel.setBackground(Color.WHITE);
-        mainPanel.setBorder(new EmptyBorder(15, 15, 15, 15));
-        
-        // 1. Top panel: attributes (loại, độ khó, môn học)
-        JPanel pnlAttributes = createAttributesPanel();
-        mainPanel.add(pnlAttributes);
-        mainPanel.add(Box.createVerticalStrut(15));
-        
-        // 2. Question content area
-        JPanel pnlContent = createContentPanel();
-        mainPanel.add(pnlContent);
-        mainPanel.add(Box.createVerticalStrut(15));
-        
-        // 3. Answers area (dynamic)
+        this.setLayout(new BorderLayout());
+        this.getContentPane().setBackground(new Color(248, 249, 250));
+
+        JPanel contentPanel = new JPanel();
+        contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
+        contentPanel.setBorder(new EmptyBorder(25, 25, 20, 25));
+        contentPanel.setBackground(new Color(248, 249, 250));
+
+        contentPanel.add(createAttributesPanel());
+        contentPanel.add(Box.createVerticalStrut(20));
+
+        contentPanel.add(createContentPanel());
+        contentPanel.add(Box.createVerticalStrut(20));
+
         pnlAnswers = new JPanel();
         pnlAnswers.setLayout(new BoxLayout(pnlAnswers, BoxLayout.Y_AXIS));
         pnlAnswers.setBackground(Color.WHITE);
-        pnlAnswers.setBorder(new TitledBorder("Đáp án"));
-        mainPanel.add(pnlAnswers);
-        
-        // Scroll pane for main content
-        JScrollPane scrollPane = new JScrollPane(mainPanel);
-        scrollPane.setBackground(Color.WHITE);
-        scrollPane.getViewport().setBackground(Color.WHITE);
+        pnlAnswers.setBorder(BorderFactory.createTitledBorder(
+                new LineBorder(new Color(200, 200, 200), 1), " THIẾT LẬP ĐÁP ÁN ĐÚNG ",
+                TitledBorder.LEFT, TitledBorder.TOP,
+                new Font("Segoe UI", Font.BOLD, 13), new Color(13, 110, 253)));
+        contentPanel.add(pnlAnswers);
+
+        JScrollPane scrollPane = new JScrollPane(contentPanel);
+        scrollPane.setBorder(null);
+        scrollPane.getVerticalScrollBar().setUnitIncrement(16);
         this.add(scrollPane, BorderLayout.CENTER);
-        
-        // Buttons panel
-        JPanel pnlButtons = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 15));
-        pnlButtons.setBackground(Color.WHITE);
-        pnlButtons.setBorder(new EmptyBorder(0, 0, 10, 0));
-        
-        btnLuu = new ButtonCustom(currentDTO == null ? "Thêm mới" : "Cập nhật", "success", 14);
-        btnHuy = new ButtonCustom("Huỷ bỏ", "danger", 14);
-        
-        btnLuu.addActionListener(e -> luuCauHoi());
+
+        JPanel pnlFooter = new JPanel(new FlowLayout(FlowLayout.RIGHT, 15, 15));
+        pnlFooter.setBackground(Color.WHITE);
+        pnlFooter.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, new Color(220, 220, 220)));
+
+        btnHuy = new ButtonCustom("Đóng", "danger", 14);
+        btnLuu = new ButtonCustom(currentDTO == null ? "Thêm câu hỏi" : "Lưu thay đổi", "success", 14);
+
         btnHuy.addActionListener(e -> dispose());
-        
-        pnlButtons.add(btnLuu);
-        pnlButtons.add(btnHuy);
-        
-        this.add(pnlButtons, BorderLayout.SOUTH);
-        
-        // Load dữ liệu nếu là edit
+        btnLuu.addActionListener(e -> luuCauHoi());
+
+        pnlFooter.add(btnLuu);
+        pnlFooter.add(btnHuy);
+        this.add(pnlFooter, BorderLayout.SOUTH);
+
+        loadComboBoxData();
         if (currentDTO != null) {
-            loadData();
+            loadDataForEdit();
         } else {
-            updateAnswerPanel(TRAC_NGHIEM);
+            if (cmbLoaiCauHoi.getItemCount() > 0) {
+                updateAnswerUIByTen(cmbLoaiCauHoi.getItemAt(0).getTenloai());
+            }
         }
-        
+
         this.setVisible(true);
     }
-    
+
     private JPanel createAttributesPanel() {
-        JPanel panel = new JPanel();
-        panel.setLayout(new GridLayout(2, 2, 10, 10));
-        panel.setBackground(Color.WHITE);
-        panel.setBorder(new TitledBorder("Thuộc tính"));
-        
-        // Loại câu hỏi
-        JPanel pnlLoai = new JPanel(new BorderLayout(5, 5));
-        pnlLoai.setBackground(Color.WHITE);
-        JLabel lblLoai = new JLabel("Loại câu hỏi:");
-        lblLoai.setPreferredSize(new Dimension(100, 24));
-        cmbLoaiCauHoi = new JComboBox<>(new String[]{"Trắc nghiệm", "Đúng/Sai"});
-        cmbLoaiCauHoi.addActionListener(e -> onLoaiCauHoiChanged());
-        pnlLoai.add(lblLoai, BorderLayout.WEST);
-        pnlLoai.add(cmbLoaiCauHoi, BorderLayout.CENTER);
-        
-        // Độ khó
-        JPanel pnlDoKho = new JPanel(new BorderLayout(5, 5));
-        pnlDoKho.setBackground(Color.WHITE);
-        JLabel lblDoKho = new JLabel("Độ khó:");
-        lblDoKho.setPreferredSize(new Dimension(100, 24));
+        JPanel panel = new JPanel(new GridLayout(1, 3, 15, 0));
+        panel.setOpaque(false);
+
+        cmbLoaiCauHoi = new JComboBox<>();
         cmbDoKho = new JComboBox<>();
-        pnlDoKho.add(lblDoKho, BorderLayout.WEST);
-        pnlDoKho.add(cmbDoKho, BorderLayout.CENTER);
-
-                // Custom renderer for DoKhoDTO
-                cmbDoKho.setRenderer((list, value, index, isSelected, cellHasFocus) -> {
-                    JLabel label = new JLabel();
-                    if (value != null) {
-                        label.setText(value.getTendokho());
-                    }
-                    label.setOpaque(true);
-                    if (isSelected) {
-                        label.setBackground(list.getSelectionBackground());
-                        label.setForeground(list.getSelectionForeground());
-                    }
-                    return label;
-                });
-        
-        // Môn học
-        JPanel pnlMon = new JPanel(new BorderLayout(5, 5));
-        pnlMon.setBackground(Color.WHITE);
-        JLabel lblMon = new JLabel("Môn học:");
-        lblMon.setPreferredSize(new Dimension(100, 24));
         cmbMonHoc = new JComboBox<>();
-        pnlMon.add(lblMon, BorderLayout.WEST);
-        pnlMon.add(cmbMonHoc, BorderLayout.CENTER);
-        
-                // Custom renderer for MonHocDTO
-                cmbMonHoc.setRenderer((list, value, index, isSelected, cellHasFocus) -> {
-                    JLabel label = new JLabel();
-                    if (value != null) {
-                        label.setText(value.getTenmonhoc());
-                    }
-                    label.setOpaque(true);
-                    if (isSelected) {
-                        label.setBackground(list.getSelectionBackground());
-                        label.setForeground(list.getSelectionForeground());
-                    }
-                    return label;
-                });
 
-                JPanel pnlTrangThai = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
-                pnlTrangThai.setBackground(Color.WHITE);
-                chkTrangThai = new JCheckBox("Hoạt động");
-                chkTrangThai.setSelected(true);
-                chkTrangThai.setBackground(Color.WHITE);
-                pnlTrangThai.add(chkTrangThai);
+        cmbLoaiCauHoi.setRenderer(new DefaultListCellRenderer() {
+            public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                if (value instanceof LoaiCauHoiDTO) setText(((LoaiCauHoiDTO) value).getTenloai());
+                return this;
+            }
+        });
         
-        panel.add(pnlLoai);
-        panel.add(pnlDoKho);
-        panel.add(pnlMon);
-        panel.add(pnlTrangThai);
+        cmbLoaiCauHoi.addActionListener(e -> {
+            LoaiCauHoiDTO selected = (LoaiCauHoiDTO) cmbLoaiCauHoi.getSelectedItem();
+            if (selected != null) updateAnswerUIByTen(selected.getTenloai());
+        });
+
+        cmbDoKho.setRenderer(new DefaultListCellRenderer() {
+            public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                if (value instanceof DoKhoDTO) setText(((DoKhoDTO) value).getTendokho());
+                return this;
+            }
+        });
         
-        // Load dữ liệu combobox
-        loadComboBoxData();
-        
+        cmbMonHoc.setRenderer(new DefaultListCellRenderer() {
+            public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                if (value instanceof MonHocDTO) setText(((MonHocDTO) value).getTenmonhoc());
+                return this;
+            }
+        });
+
+        panel.add(createComboWrapper("Loại câu hỏi", cmbLoaiCauHoi));
+        panel.add(createComboWrapper("Độ khó", cmbDoKho));
+        panel.add(createComboWrapper("Môn học", cmbMonHoc));
+
         return panel;
     }
-    
-    private void loadComboBoxData() {
-        // Load độ khó
-        List<DoKhoDTO> doKhoList = busDoKho.getAll();
-        for (DoKhoDTO dk : doKhoList) {
-            cmbDoKho.addItem(dk);
-        }
-        
-        // Load môn học
-        List<MonHocDTO> monHocList = busMonHoc.getAll();
-        for (MonHocDTO mh : monHocList) {
-            cmbMonHoc.addItem(mh);
-        }
+
+    private void updateAnswerUIByTen(String tenLoai) {
+        if (tenLoai.contains("Trắc")) updateAnswerUI(TYPE_TRAC_NGHIEM);
+        else if (tenLoai.contains("Đúng")) updateAnswerUI(TYPE_DUNG_SAI);
+        else updateAnswerUI(TYPE_DIEN_KHUYET);
     }
-    
+
+    private JPanel createComboWrapper(String label, JComboBox<?> combo) {
+        JPanel p = new JPanel(new BorderLayout(0, 5));
+        p.setOpaque(false);
+        JLabel lbl = new JLabel(label);
+        lbl.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        p.add(lbl, BorderLayout.NORTH);
+        combo.setPreferredSize(new Dimension(0, 35));
+        p.add(combo, BorderLayout.CENTER);
+        return p;
+    }
+
     private JPanel createContentPanel() {
-        JPanel panel = new JPanel(new BorderLayout(5, 5));
-        panel.setBackground(Color.WHITE);
-        panel.setBorder(new TitledBorder("Câu hỏi"));
-        
-        JLabel lblCauHoi = new JLabel("Nội dung:");
-        txtaCauHoi = new JTextArea(6, 40);
+        JPanel p = new JPanel(new BorderLayout(0, 5));
+        p.setOpaque(false);
+        JLabel lbl = new JLabel("Nội dung câu hỏi:");
+        lbl.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        txtaCauHoi = new JTextArea(5, 0);
+        txtaCauHoi.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         txtaCauHoi.setLineWrap(true);
         txtaCauHoi.setWrapStyleWord(true);
-        txtaCauHoi.setFont(new Font("Arial", Font.PLAIN, 12));
-        
-        JScrollPane scrollPane = new JScrollPane(txtaCauHoi);
-        
-        JPanel pnlLabel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
-        pnlLabel.setBackground(Color.WHITE);
-        pnlLabel.add(lblCauHoi);
-        
-        panel.add(pnlLabel, BorderLayout.NORTH);
-        panel.add(scrollPane, BorderLayout.CENTER);
-        
-        return panel;
+        txtaCauHoi.setBorder(new EmptyBorder(8, 8, 8, 8));
+        JScrollPane sp = new JScrollPane(txtaCauHoi);
+        sp.setBorder(new LineBorder(new Color(200, 200, 200)));
+        p.add(lbl, BorderLayout.NORTH);
+        p.add(sp, BorderLayout.CENTER);
+        return p;
     }
-    
-    private void onLoaiCauHoiChanged() {
-        int selected = cmbLoaiCauHoi.getSelectedIndex();
-        currentQuestionType = (selected == 0) ? TRAC_NGHIEM : DUNG_SAI;
-        updateAnswerPanel(currentQuestionType);
-    }
-    
-    private void updateAnswerPanel(int type) {
+
+    private void updateAnswerUI(String type) {
         pnlAnswers.removeAll();
-        chkAnswers.clear();
+        rdAnswers.clear();
         txtAnswers.clear();
-        
-        int numAnswers = (type == TRAC_NGHIEM) ? 4 : 2;
-        String[] answerLabels = (type == TRAC_NGHIEM) 
-            ? new String[]{"Đáp án A", "Đáp án B", "Đáp án C", "Đáp án D"}
-            : new String[]{"Đúng", "Sai"};
-        
-        // Header row (cột Trả lời rộng hơn cột Đ/án đúng)
-        JPanel pnlHeader = new JPanel(new GridBagLayout());
-        pnlHeader.setBackground(Color.WHITE);
-        pnlHeader.setBorder(new EmptyBorder(0, 10, 10, 10));
-        
-        JLabel lblCorrect = new JLabel("✓ Đ/án đúng");
-        lblCorrect.setFont(new Font("Arial", Font.BOLD, 11));
-        JLabel lblContent = new JLabel("Trả lời");
-        lblContent.setFont(new Font("Arial", Font.BOLD, 11));
-
-        GridBagConstraints gbcHeader = new GridBagConstraints();
-        gbcHeader.gridy = 0;
-        gbcHeader.insets = new Insets(0, 0, 0, 10);
-        gbcHeader.anchor = GridBagConstraints.WEST;
-
-        gbcHeader.gridx = 0;
-        gbcHeader.weightx = 0.22;
-        gbcHeader.fill = GridBagConstraints.HORIZONTAL;
-        pnlHeader.add(lblCorrect, gbcHeader);
-
-        gbcHeader.gridx = 1;
-        gbcHeader.weightx = 0.78;
-        gbcHeader.insets = new Insets(0, 0, 0, 0);
-        pnlHeader.add(lblContent, gbcHeader);
-        
-        pnlAnswers.add(pnlHeader);
-        pnlAnswers.add(Box.createVerticalStrut(5));
-        
-        // Answer rows
-        for (int i = 0; i < numAnswers; i++) {
-            JPanel pnlRow = new JPanel(new GridBagLayout());
-            pnlRow.setBackground(Color.WHITE);
-            pnlRow.setBorder(new EmptyBorder(0, 10, 5, 10));
-            
-            JCheckBox chk = new JCheckBox();
-            chk.setBackground(Color.WHITE);
-            JTextField txt = new JTextField(answerLabels[i]);
-            txt.setFont(new Font("Arial", Font.PLAIN, 12));
-
-            if (type == DUNG_SAI) {
-                txt.setEditable(false);
-            }
-            
-            chkAnswers.add(chk);
-            txtAnswers.add(txt);
-
-            GridBagConstraints gbcRow = new GridBagConstraints();
-            gbcRow.gridy = 0;
-            gbcRow.anchor = GridBagConstraints.WEST;
-
-            gbcRow.gridx = 0;
-            gbcRow.weightx = 0.22;
-            gbcRow.insets = new Insets(0, 0, 0, 10);
-            gbcRow.fill = GridBagConstraints.HORIZONTAL;
-            pnlRow.add(chk, gbcRow);
-
-            gbcRow.gridx = 1;
-            gbcRow.weightx = 0.78;
-            gbcRow.insets = new Insets(0, 0, 0, 0);
-            pnlRow.add(txt, gbcRow);
-            
-            pnlAnswers.add(pnlRow);
-        }
-        
+        btnGroup = new ButtonGroup();
+        pnlAnswers.setLayout(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(10, 15, 10, 15);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.gridy = 0;
+        if (type.equals(TYPE_TRAC_NGHIEM)) renderMultipleChoice(gbc);
+        else if (type.equals(TYPE_DUNG_SAI)) renderTrueFalse(gbc);
+        else if (type.equals(TYPE_DIEN_KHUYET)) renderFillInBlank(gbc);
         pnlAnswers.revalidate();
         pnlAnswers.repaint();
     }
-    
-    private void loadData() {
-        if (currentDTO == null) return;
-        
-        // Load text area
+
+    private void renderMultipleChoice(GridBagConstraints gbc) {
+        String[] labels = {"A", "B", "C", "D"};
+        for (int i = 0; i < 4; i++) {
+            gbc.gridx = 0; gbc.weightx = 0;
+            JRadioButton rd = new JRadioButton("Đúng");
+            rd.setOpaque(false);
+            btnGroup.add(rd);
+            rdAnswers.add(rd);
+            pnlAnswers.add(rd, gbc);
+            gbc.gridx = 1; gbc.weightx = 1.0;
+            JTextField txt = new JTextField();
+            txt.setPreferredSize(new Dimension(0, 35));
+            txt.setBorder(BorderFactory.createTitledBorder("Nội dung đáp án " + labels[i]));
+            txtAnswers.add(txt);
+            pnlAnswers.add(txt, gbc);
+            gbc.gridy++;
+        }
+        if (!rdAnswers.isEmpty()) rdAnswers.get(0).setSelected(true);
+    }
+
+    private void renderTrueFalse(GridBagConstraints gbc) {
+        String[] options = {"Đúng", "Sai"};
+        for (int i = 0; i < 2; i++) {
+            gbc.gridx = 0; gbc.weightx = 0;
+            JRadioButton rd = new JRadioButton("Đáp án đúng");
+            rd.setOpaque(false);
+            btnGroup.add(rd);
+            rdAnswers.add(rd);
+            pnlAnswers.add(rd, gbc);
+            gbc.gridx = 1; gbc.weightx = 1.0;
+            JTextField txt = new JTextField(options[i]);
+            txt.setEditable(false);
+            txt.setPreferredSize(new Dimension(0, 35));
+            txt.setBackground(new Color(245, 245, 245));
+            txtAnswers.add(txt);
+            pnlAnswers.add(txt, gbc);
+            gbc.gridy++;
+        }
+        rdAnswers.get(0).setSelected(true);
+    }
+
+    private void renderFillInBlank(GridBagConstraints gbc) {
+        gbc.gridx = 0; gbc.weightx = 1.0;
+        JLabel lbl = new JLabel("Nhập câu trả lời chính xác cần điền:");
+        lbl.setFont(new Font("Segoe UI", Font.ITALIC, 12));
+        pnlAnswers.add(lbl, gbc);
+        gbc.gridy++;
+        JTextField txt = new JTextField();
+        txt.setPreferredSize(new Dimension(0, 40));
+        txt.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        txtAnswers.add(txt);
+        pnlAnswers.add(txt, gbc);
+        JRadioButton rdHidden = new JRadioButton();
+        rdHidden.setSelected(true);
+        rdAnswers.add(rdHidden);
+    }
+
+    private void loadComboBoxData() {
+        busLoaiCauHoi.getAll().forEach(cmbLoaiCauHoi::addItem);
+        busDoKho.getAll().forEach(cmbDoKho::addItem);
+        busMonHoc.getAll().forEach(cmbMonHoc::addItem);
+    }
+
+    private void loadDataForEdit() {
         txtaCauHoi.setText(currentDTO.getNoidung());
-        chkTrangThai.setSelected(currentDTO.getTrangthai() == 1);
-        
-        // Load combobox selections
-        for (int i = 0; i < cmbDoKho.getItemCount(); i++) {
-            if (cmbDoKho.getItemAt(i).getMadokho() == currentDTO.getMadokho()) {
-                cmbDoKho.setSelectedIndex(i);
-                break;
-            }
-        }
-        
-        for (int i = 0; i < cmbMonHoc.getItemCount(); i++) {
-            if (cmbMonHoc.getItemAt(i).getMamonhoc() == currentDTO.getMamonhoc()) {
-                cmbMonHoc.setSelectedIndex(i);
-                break;
-            }
-        }
-        
-        // Determine question type từ loại câu hỏi
-        currentQuestionType = isDungSaiLoai(currentDTO.getMaloai()) ? DUNG_SAI : TRAC_NGHIEM;
-        cmbLoaiCauHoi.setSelectedIndex(currentQuestionType - 1);
-        updateAnswerPanel(currentQuestionType);
-        
-        // Load answers
-        List<DapAnDTO> answers = getAnswersForEdit(currentDTO.getMacauhoi());
-        for (int i = 0; i < answers.size() && i < txtAnswers.size(); i++) {
-            DapAnDTO ans = answers.get(i);
-            txtAnswers.get(i).setText(ans.getNoidungtl());
-            chkAnswers.get(i).setSelected(ans.isLadapan());
+        for (int i = 0; i < cmbDoKho.getItemCount(); i++)
+            if (cmbDoKho.getItemAt(i).getMadokho() == currentDTO.getMadokho()) cmbDoKho.setSelectedIndex(i);
+        for (int i = 0; i < cmbMonHoc.getItemCount(); i++)
+            if (cmbMonHoc.getItemAt(i).getMamonhoc() == currentDTO.getMamonhoc()) cmbMonHoc.setSelectedIndex(i);
+        for (int i = 0; i < cmbLoaiCauHoi.getItemCount(); i++)
+            if (cmbLoaiCauHoi.getItemAt(i).getMaloai() == currentDTO.getMaloai()) cmbLoaiCauHoi.setSelectedIndex(i);
+
+        updateAnswerUIByTen(((LoaiCauHoiDTO) cmbLoaiCauHoi.getSelectedItem()).getTenloai());
+        ArrayList<DapAnDTO> listDA = busDapAn.getByCauHoi(currentDTO.getMacauhoi());
+        for (int i = 0; i < listDA.size() && i < txtAnswers.size(); i++) {
+            txtAnswers.get(i).setText(listDA.get(i).getNoidungtl());
+            if (listDA.get(i).isLadapan()) rdAnswers.get(i).setSelected(true);
         }
     }
 
-    private List<DapAnDTO> getAnswersForEdit(int macauhoi) {
-        List<DapAnDTO> result = new ArrayList<>();
-        for (DapAnDTO item : dapAnDAO.selectAll()) {
-            if (item.getMacauhoi() == macauhoi) {
-                result.add(item);
-            }
-        }
-        return result;
-    }
-
-    private boolean isDungSaiLoai(int maLoai) {
-        try {
-            for (var loai : busLoaiCauHoi.getAll()) {
-                if (loai.getMaloai() == maLoai && loai.getTenloai() != null
-                        && loai.getTenloai().toLowerCase().contains("đúng")) {
-                    return true;
-                }
-            }
-        } catch (Exception ignored) {
-        }
-        return maLoai == 2;
-    }
-    
     private void luuCauHoi() {
-        if (!validateInput()) {
-            return;
-        }
-        
-        try {
-            String noidung = txtaCauHoi.getText().trim();
-            DoKhoDTO selectedDoKho = (DoKhoDTO) cmbDoKho.getSelectedItem();
-            MonHocDTO selectedMon = (MonHocDTO) cmbMonHoc.getSelectedItem();
-            int maloai = resolveMaloaiBySelection();
-            
-            CauHoiDTO ch = new CauHoiDTO();
-            ch.setNoidung(noidung);
-            ch.setMadokho(selectedDoKho.getMadokho());
-            ch.setMaloai(maloai);
-            ch.setMamonhoc(selectedMon.getMamonhoc());
-            ch.setNguoitao(currentDTO != null ? currentDTO.getNguoitao() : "admin");
-            ch.setTrangthai(chkTrangThai.isSelected() ? 1 : 0);
-            
-            if (currentDTO != null) {
-                ch.setMacauhoi(currentDTO.getMacauhoi());
-                if (busCauHoi.edit(ch)) {
-                    // Update answers
-                    updateAnswersInDB(ch.getMacauhoi());
-                    JOptionPane.showMessageDialog(this, "Cập nhật câu hỏi thành công!");
-                    parent.loadData();
-                    dispose();
-                } else {
-                    JOptionPane.showMessageDialog(this, "Cập nhật thất bại!", "Lỗi", JOptionPane.ERROR_MESSAGE);
-                }
-            } else {
-                if (busCauHoi.add(ch)) {
-                    int newQuestionId = findLatestQuestionId();
-                    if (newQuestionId > 0) {
-                        updateAnswersInDB(newQuestionId);
-                    }
-                    JOptionPane.showMessageDialog(this, "Thêm câu hỏi thành công!");
-                    parent.loadData();
-                    dispose();
-                } else {
-                    JOptionPane.showMessageDialog(this, "Thêm thất bại!", "Lỗi", JOptionPane.ERROR_MESSAGE);
-                }
-            }
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "Lỗi: " + ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
-            ex.printStackTrace();
-        }
-    }
-    
-    private void updateAnswersInDB(int macauhoi) {
-        // Xóa đáp án cũ
-        List<DapAnDTO> oldAnswers = dapAnDAO.selectByCauHoi(macauhoi);
-        for (DapAnDTO ans : oldAnswers) {
-            dapAnDAO.delete(ans.getMadapan());
-        }
-        
-        // Thêm đáp án mới
-        for (int i = 0; i < txtAnswers.size(); i++) {
-            String content = txtAnswers.get(i).getText().trim();
-            if (!content.isEmpty()) {
-                boolean isCorrect = chkAnswers.get(i).isSelected();
-                DapAnDTO ans = new DapAnDTO(0, macauhoi, content, isCorrect);
-                dapAnDAO.insert(ans);
-            }
-        }
-    }
-
-    private int findLatestQuestionId() {
-        List<CauHoiDTO> list = busCauHoi.load();
-        int maxId = -1;
-        for (CauHoiDTO item : list) {
-            if (item.getMacauhoi() > maxId) {
-                maxId = item.getMacauhoi();
-            }
-        }
-        return maxId;
-    }
-
-    private int resolveMaloaiBySelection() {
-        boolean isTracNghiem = currentQuestionType == TRAC_NGHIEM;
-        String keyword = isTracNghiem ? "trắc" : "đúng";
-        try {
-            for (var loai : busLoaiCauHoi.getAll()) {
-                if (loai.getTenloai() != null && loai.getTenloai().toLowerCase().contains(keyword)) {
-                    return loai.getMaloai();
-                }
-            }
-        } catch (Exception ignored) {
-        }
-        return isTracNghiem ? 1 : 2;
-    }
-    
-    private boolean validateInput() {
         if (Validation.isEmpty(txtaCauHoi.getText())) {
             JOptionPane.showMessageDialog(this, "Nội dung câu hỏi không được để trống!");
-            return false;
+            return;
         }
-        
-        boolean hasAnswer = false;
-        for (JTextField txt : txtAnswers) {
-            if (!Validation.isEmpty(txt.getText())) {
-                hasAnswer = true;
-                break;
+        try {
+            CauHoiDTO ch = (currentDTO != null) ? currentDTO : new CauHoiDTO();
+            ch.setNoidung(txtaCauHoi.getText().trim());
+            ch.setMadokho(((DoKhoDTO) cmbDoKho.getSelectedItem()).getMadokho());
+            ch.setMamonhoc(((MonHocDTO) cmbMonHoc.getSelectedItem()).getMamonhoc());
+            ch.setMaloai(((LoaiCauHoiDTO) cmbLoaiCauHoi.getSelectedItem()).getMaloai());
+            ch.setTrangthai(1);
+            if (currentDTO == null) ch.setNguoitao(mainFrame.getNguoiDung().getId());
+            boolean success = (currentDTO == null) ? busCauHoi.add(ch) : busCauHoi.update(ch);
+            if (success) {
+                int maCH = (currentDTO == null) ? findMaxId() : ch.getMacauhoi();
+                saveAnswers(maCH);
+                JOptionPane.showMessageDialog(this, "Đã lưu thông tin câu hỏi!");
+                parent.loadDataTable(busCauHoi.getAll());
+                dispose();
             }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Lỗi khi lưu dữ liệu!");
         }
-        
-        if (!hasAnswer) {
-            JOptionPane.showMessageDialog(this, "Phải nhập ít nhất một đáp án!");
-            return false;
+    }
+
+    private void saveAnswers(int maCH) {
+        busDapAn.deleteByMaCauHoi(maCH);
+        for (int i = 0; i < txtAnswers.size(); i++) {
+            String content = txtAnswers.get(i).getText().trim();
+            if (!content.isEmpty()) busDapAn.add(new DapAnDTO(0, maCH, content, rdAnswers.get(i).isSelected()));
         }
-        
-        boolean hasCorrectAnswer = false;
-        for (JCheckBox chk : chkAnswers) {
-            if (chk.isSelected()) {
-                hasCorrectAnswer = true;
-                break;
-            }
-        }
-        
-        if (!hasCorrectAnswer) {
-            JOptionPane.showMessageDialog(this, "Phải chọn ít nhất một đáp án đúng!");
-            return false;
-        }
-        
-        return true;
+    }
+
+    private int findMaxId() {
+        return busCauHoi.getAll().stream().mapToInt(CauHoiDTO::getMacauhoi).max().orElse(0);
     }
 }

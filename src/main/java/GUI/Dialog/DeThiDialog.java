@@ -44,6 +44,7 @@ public class DeThiDialog extends JDialog {
     private JPanel pnlInfo, pnlRight, pnlSelect, pnlQuestionList, pnlButtons;
     private JPanel pnlLopHoc, pnlLopHeader, pnlLopGrid;
     private JScrollPane scrollQuestion, scrollLop;
+    private GUI.Main mainFrame;
 
     private KyThiBUS kyThiBUS = new KyThiBUS();
     private DoKhoBUS doKhoBUS = new DoKhoBUS();
@@ -67,6 +68,7 @@ public class DeThiDialog extends JDialog {
 
     public DeThiDialog(DeThi parent, JFrame owner, String title, boolean modal, String type, DeThiDTO dt) {
         super(owner, title, modal);
+        this.mainFrame = (GUI.Main) owner;
         this.parent = parent;
         this.currentDTO = dt;
         this.currentType = type;
@@ -80,7 +82,7 @@ public class DeThiDialog extends JDialog {
             }
         }
 
-        allCauHoi = cauHoiBUS.load();
+        allCauHoi = cauHoiBUS.getAll();
         listMH = monHocBUS.getAll();
         init(type);
     }
@@ -508,7 +510,7 @@ public class DeThiDialog extends JDialog {
             dt.setThoigianthi(thoiGian);
             dt.setTongsocau(listMaCauHoi.size());
             dt.setThoigiantao(new Timestamp(System.currentTimeMillis()));
-            dt.setNguoitao(currentDTO.getNguoitao());
+            dt.setNguoitao(mainFrame.getNguoiDung().getId());
             dt.setTrangthai(true);
 
             if (deThiBUS.add(dt)) {

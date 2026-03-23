@@ -19,7 +19,7 @@ public class DeThiDAO {
             PreparedStatement pst = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
             pst.setInt(1, t.getMakythi());
             pst.setInt(2, t.getMonthi());
-            pst.setString(3, t.getNguoitao());
+            pst.setInt(3, t.getNguoitao());
             pst.setString(4, t.getTende());
             pst.setTimestamp(5, t.getThoigiantao());
             pst.setInt(6, t.getThoigianthi());
@@ -77,7 +77,7 @@ public class DeThiDAO {
                 dt.setMade(rs.getInt("made"));
                 dt.setMakythi(rs.getInt("makythi"));
                 dt.setMonthi(rs.getInt("monthi"));
-                dt.setNguoitao(rs.getString("nguoitao"));
+                dt.setNguoitao(rs.getInt("nguoitao"));
                 dt.setTende(rs.getString("tende"));
                 dt.setThoigiantao(rs.getTimestamp("thoigiantao"));
                 dt.setThoigianthi(rs.getInt("thoigianthi"));
@@ -105,7 +105,7 @@ public class DeThiDAO {
                 ch.setMadokho(rs.getInt("madokho"));
                 ch.setMaloai(rs.getInt("maloai"));
                 ch.setMamonhoc(rs.getInt("mamonhoc"));
-                ch.setNguoitao(rs.getString("nguoitao"));
+                ch.setNguoitao(rs.getInt("nguoitao"));
                 ch.setTrangthai(rs.getInt("trangthai"));
                 result.add(ch);
             }

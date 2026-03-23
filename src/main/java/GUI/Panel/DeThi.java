@@ -3,6 +3,7 @@ package GUI.Panel;
 import BUS.DeThiBUS;
 import BUS.KyThiBUS;
 import BUS.MonHocBUS;
+import BUS.NguoiDungBUS;
 import DTO.DeThiDTO;
 import GUI.Component.IntegratedSearch;
 import GUI.Component.MainFunction;
@@ -38,6 +39,7 @@ public class DeThi extends JPanel implements ActionListener, ItemListener {
     IntegratedSearch search;
     DefaultTableModel tblModel;
 
+    private NguoiDungBUS ndBUS = new NguoiDungBUS();
     DeThiBUS bus = new DeThiBUS();
     KyThiBUS kyThiBUS = new KyThiBUS();
     MonHocBUS monHocBUS = new MonHocBUS();
@@ -160,51 +162,76 @@ public class DeThi extends JPanel implements ActionListener, ItemListener {
     }
 
     public void importExcel() {
-        File excelFile;
-        FileInputStream excelFIS = null;
-        BufferedInputStream excelBIS = null;
-        XSSFWorkbook excelJTableImport = null;
         JFileChooser jf = new JFileChooser();
         int result = jf.showOpenDialog(null);
-        int countSuccess = 0, countError = 0;
-
         if (result == JFileChooser.APPROVE_OPTION) {
             try {
-                excelFile = jf.getSelectedFile();
-                excelFIS = new FileInputStream(excelFile);
-                excelBIS = new BufferedInputStream(excelFIS);
-                excelJTableImport = new XSSFWorkbook(excelBIS);
+                File excelFile = jf.getSelectedFile();
+                FileInputStream excelFIS = new FileInputStream(excelFile);
+                BufferedInputStream excelBIS = new BufferedInputStream(excelFIS);
+                XSSFWorkbook excelJTableImport = new XSSFWorkbook(excelBIS);
                 XSSFSheet excelSheet = excelJTableImport.getSheetAt(0);
+
+                org.apache.poi.ss.usermodel.DataFormatter formatter = new org.apache.poi.ss.usermodel.DataFormatter();
+
+                int countSuccess = 0;
+                int countError = 0;
 
                 for (int row = 1; row <= excelSheet.getLastRowNum(); row++) {
                     XSSFRow excelRow = excelSheet.getRow(row);
                     if (excelRow == null) {
                         continue;
                     }
-                    try {
-                        String tende = excelRow.getCell(0).getStringCellValue();
-                        int makythi = (int) excelRow.getCell(1).getNumericCellValue();
-                        int mamonhoc = (int) excelRow.getCell(2).getNumericCellValue();
-                        int thoigianthi = (int) excelRow.getCell(3).getNumericCellValue();
-                        String nguoitao = mainFrame.getNguoiDung().getHoten();
 
-                        if (Validation.isEmpty(tende) || Validation.isEmpty(nguoitao)) {
-                            countError++;
+                    try {
+                        String tende = formatter.formatCellValue(excelRow.getCell(0)).trim();
+                        String tenKyThi = formatter.formatCellValue(excelRow.getCell(1)).trim();
+                        String tenMonHoc = formatter.formatCellValue(excelRow.getCell(2)).trim();
+                        String thoiGianStr = formatter.formatCellValue(excelRow.getCell(3)).trim();
+
+                        if (tende.isEmpty()) {
                             continue;
                         }
 
-                        DeThiDTO dt = new DeThiDTO();
-                        dt.setTende(tende);
-                        dt.setMakythi(makythi);
-                        dt.setMonthi(mamonhoc);
-                        dt.setThoigianthi(thoigianthi);
-                        dt.setNguoitao(nguoitao);
-                        dt.setThoigiantao(new Timestamp(System.currentTimeMillis()));
-                        dt.setTongsocau(0);
+                        int makythi = -1;
+                        for (var kt : kyThiBUS.getAll()) {
+                            if (kt.getTenkythi().equalsIgnoreCase(tenKyThi)) {
+                                makythi = kt.getMakythi();
+                                break;
+                            }
+                        }
 
-                        if (bus.add(dt)) {
-                            countSuccess++;
+                        int mamonhoc = -1;
+                        for (var mh : monHocBUS.getAll()) {
+                            if (mh.getTenmonhoc().equalsIgnoreCase(tenMonHoc)) {
+                                mamonhoc = mh.getMamonhoc();
+                                break;
+                            }
+                        }
+
+                        // 4. Chuyển đổi thời gian thi
+                        int thoigianthi = Integer.parseInt(thoiGianStr);
+
+                        // 5. Kiểm tra nếu tìm thấy ID tương ứng mới tiến hành thêm
+                        if (makythi != -1 && mamonhoc != -1) {
+                            DeThiDTO dt = new DeThiDTO();
+                            dt.setTende(tende);
+                            dt.setMakythi(makythi);
+                            dt.setMonthi(mamonhoc);
+                            dt.setThoigianthi(thoigianthi);
+                            dt.setNguoitao(mainFrame.getNguoiDung().getId());
+
+                            dt.setThoigiantao(new java.sql.Timestamp(System.currentTimeMillis()));
+                            dt.setTongsocau(0);
+                            dt.setTrangthai(true);
+
+                            if (bus.add(dt)) {
+                                countSuccess++;
+                            } else {
+                                countError++;
+                            }
                         } else {
+                            // Lỗi do không tìm thấy tên Kỳ thi hoặc Môn học khớp trong database
                             countError++;
                         }
                     } catch (Exception ex) {
@@ -214,6 +241,7 @@ public class DeThi extends JPanel implements ActionListener, ItemListener {
                 JOptionPane.showMessageDialog(this, "Nhập thành công " + countSuccess + " dòng. Lỗi " + countError + " dòng.");
                 listHienTai = bus.getAll();
                 loadDataTable(listHienTai);
+                excelJTableImport.close();
             } catch (IOException ex) {
                 JOptionPane.showMessageDialog(this, "Lỗi đọc file Excel!");
             }
@@ -229,7 +257,7 @@ public class DeThi extends JPanel implements ActionListener, ItemListener {
                 monHocBUS.getTenById(dt.getMonthi()),
                 dt.getThoigianthi() + " phút",
                 dt.getTongsocau(),
-                dt.getNguoitao()
+                ndBUS.getHotenById(dt.getNguoitao())
             });
         }
     }
@@ -241,7 +269,7 @@ public class DeThi extends JPanel implements ActionListener, ItemListener {
 
         if (source == mainFunction.btn.get("create")) {
             DeThiDTO newDe = new DeThiDTO();
-            newDe.setNguoitao(mainFrame.getNguoiDung().getHoten());
+            newDe.setNguoitao(mainFrame.getNguoiDung().getId());
             new DeThiDialog(this, owner, "Thêm đề thi mới", true, "create", newDe);
         } else if (source == mainFunction.btn.get("update") || source == mainFunction.btn.get("detail") || source == mainFunction.btn.get("delete")) {
             int index = table.getSelectedRow();

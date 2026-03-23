@@ -71,7 +71,6 @@ public class LoaiCauHoi extends JPanel implements ActionListener, ItemListener {
         TableSorter.configureTableColumnSorter(tableLoai, 0, TableSorter.INTEGER_COMPARATOR);
         scrollTable.setViewportView(tableLoai);
 
-        // Layout borders (y chang KyThi)
         pnlBorder1 = new JPanel(); pnlBorder1.setPreferredSize(new Dimension(0, 10)); pnlBorder1.setBackground(BackgroundColor);
         pnlBorder2 = new JPanel(); pnlBorder2.setPreferredSize(new Dimension(0, 10)); pnlBorder2.setBackground(BackgroundColor);
         pnlBorder3 = new JPanel(); pnlBorder3.setPreferredSize(new Dimension(10, 0)); pnlBorder3.setBackground(BackgroundColor);
@@ -92,7 +91,6 @@ public class LoaiCauHoi extends JPanel implements ActionListener, ItemListener {
         functionBar.setBorder(new EmptyBorder(10, 10, 10, 10));
         functionBar.setBackground(Color.WHITE);
 
-        // Chỉ giữ detail, delete và export
         String[] action = {"detail", "delete", "export"};
         mainFunction = new MainFunction(mainFrame.getNguoiDung().getManhomquyen(), "12", action);
         for (String ac : action) {

@@ -19,10 +19,6 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 
 public class ChiTietLopDialog extends JDialog implements ActionListener {
-
-    // ── Mã nhóm quyền ────────────────────────────────────────────────────────
-    private static final int MA_QUYEN_SINH_VIEN = 3;
-
     private JPanel pnmain, pnmain_top, pnmain_bottom, pnmain_btn;
     private InputForm txtTenlop, txtNamhoc, txtHocky, txtGiangvien, txtMonhoc, txtSiso;
     private DefaultTableModel tblModel;
@@ -54,9 +50,6 @@ public class ChiTietLopDialog extends JDialog implements ActionListener {
         pnmain = new JPanel(new BorderLayout());
         pnmain.setBackground(Color.WHITE);
 
-        // ══════════════════════════════════════════════════════════════════════
-        // TOP: 6 ô InputForm dạng grid 2 hàng x 3 cột (giống ChiTietDeThiDialog)
-        // ══════════════════════════════════════════════════════════════════════
         pnmain_top = new JPanel(new GridLayout(2, 2, 10, 10));
         pnmain_top.setBorder(new EmptyBorder(15, 15, 10, 15));
         pnmain_top.setBackground(Color.WHITE);
@@ -74,9 +67,6 @@ public class ChiTietLopDialog extends JDialog implements ActionListener {
         }
         pnmain.add(pnmain_top, BorderLayout.NORTH);
 
-        // ══════════════════════════════════════════════════════════════════════
-        // CENTER: bảng danh sách sinh viên đang học
-        // ══════════════════════════════════════════════════════════════════════
         pnmain_bottom = new JPanel(new BorderLayout());
         pnmain_bottom.setBorder(new EmptyBorder(5, 15, 5, 15));
         pnmain_bottom.setBackground(Color.WHITE);
@@ -114,9 +104,6 @@ public class ChiTietLopDialog extends JDialog implements ActionListener {
         pnmain_bottom.add(scrollTable, BorderLayout.CENTER);
         pnmain.add(pnmain_bottom, BorderLayout.CENTER);
 
-        // ══════════════════════════════════════════════════════════════════════
-        // BOTTOM: nút bấm
-        // ══════════════════════════════════════════════════════════════════════
         pnmain_btn = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 10));
         pnmain_btn.setBorder(new EmptyBorder(5, 15, 15, 15));
         pnmain_btn.setBackground(Color.WHITE);

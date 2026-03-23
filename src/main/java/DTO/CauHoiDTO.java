@@ -14,13 +14,13 @@ public class CauHoiDTO {
     private int madokho;
     private int maloai;
     private int mamonhoc;
-    private String nguoitao;
+    private int nguoitao;
     private int trangthai;
 
     public CauHoiDTO() {
     }
 
-    public CauHoiDTO(int macauhoi, String noidung, int madokho, int maloai, int mamonhoc, String nguoitao, int trangthai) {
+    public CauHoiDTO(int macauhoi, String noidung, int madokho, int maloai, int mamonhoc, int nguoitao, int trangthai) {
         this.macauhoi = macauhoi;
         this.noidung = noidung;
         this.madokho = madokho;
@@ -71,11 +71,11 @@ public class CauHoiDTO {
         this.mamonhoc = mamonhoc;
     }
 
-    public String getNguoitao() {
+    public int getNguoitao() {
         return nguoitao;
     }
 
-    public void setNguoitao(String nguoitao) {
+    public void setNguoitao(int nguoitao) {
         this.nguoitao = nguoitao;
     }
 

@@ -109,7 +109,7 @@ public class LopHoc extends JPanel implements ActionListener, ItemListener {
         contentCenter.setBackground(BackgroundColor);
         this.add(contentCenter, BorderLayout.CENTER);
 
-        // FUNCTION BAR (Sửa để giống KyThi/NguoiDung - có phân quyền)
+        // FUNCTION BAR
         functionBar = new PanelBorderRadius();
         functionBar.setPreferredSize(new Dimension(0, 100));
         functionBar.setLayout(new GridLayout(1, 2, 50, 0));
@@ -117,7 +117,6 @@ public class LopHoc extends JPanel implements ActionListener, ItemListener {
         functionBar.setBackground(Color.WHITE);
 
         String[] action = {"create", "update", "delete", "detail", "import", "export"};
-        // Giả sử mã chức năng Quản lý lớp là "5" (Bạn có thể đổi theo DB của mình)
         mainFunction = new MainFunction(mainFrame.getNguoiDung().getManhomquyen(), "5", action);
         for (String ac : action) {
             mainFunction.btn.get(ac).addActionListener(this);
@@ -249,6 +248,9 @@ public class LopHoc extends JPanel implements ActionListener, ItemListener {
                 XSSFSheet excelSheet = excelJTableImport.getSheetAt(0);
                 int countSuccess = 0, countError = 0;
 
+                ArrayList<DTO.MonHocDTO> dsMonHoc = monHocBUS.getAll();
+                ArrayList<DTO.NguoiDungDTO> dsNguoiDung = nguoiDungBUS.getAll();
+
                 for (int row = 1; row <= excelSheet.getLastRowNum(); row++) {
                     XSSFRow excelRow = excelSheet.getRow(row);
                     if (excelRow == null) {
@@ -260,25 +262,47 @@ public class LopHoc extends JPanel implements ActionListener, ItemListener {
                         int siso = (int) excelRow.getCell(1).getNumericCellValue();
                         int namhoc = (int) excelRow.getCell(2).getNumericCellValue();
                         int hocky = (int) excelRow.getCell(3).getNumericCellValue();
-                        // Giảng viên trong Excel nên để dạng ID (int)
-                        int giangvien = (int) excelRow.getCell(4).getNumericCellValue();
-                        int mamonhoc = (int) excelRow.getCell(5).getNumericCellValue();
 
-                        LopDTO lop = new LopDTO(0, tenlop, siso, namhoc, hocky, 1, giangvien, mamonhoc);
+                        String tenGVExcel = excelRow.getCell(4).getStringCellValue().trim();
+                        int magiangvien = -1;
+                        for (DTO.NguoiDungDTO nd : dsNguoiDung) {
+                            if (nd.getHoten().equalsIgnoreCase(tenGVExcel)) {
+                                magiangvien = nd.getId();
+                                break;
+                            }
+                        }
+
+                        String tenMHExcel = excelRow.getCell(5).getStringCellValue().trim();
+                        int mamonhoc = -1;
+                        for (DTO.MonHocDTO mh : dsMonHoc) {
+                            if (mh.getTenmonhoc().equalsIgnoreCase(tenMHExcel)) {
+                                mamonhoc = mh.getMamonhoc();
+                                break;
+                            }
+                        }
+
+                        if (mamonhoc == -1 || magiangvien == -1) {
+                            System.out.println("Lỗi dòng " + row + ": Không tìm thấy GV hoặc Môn học");
+                            countError++;
+                            continue;
+                        }
+
+                        LopDTO lop = new LopDTO(0, tenlop, siso, namhoc, hocky, 1, magiangvien, mamonhoc);
+
                         if (lopBUS.add(lop)) {
                             countSuccess++;
                         } else {
                             countError++;
                         }
                     } catch (Exception ex) {
+                        ex.printStackTrace();
                         countError++;
                     }
                 }
-                JOptionPane.showMessageDialog(this, "Thành công: " + countSuccess + ", Thất bại: " + countError);
-                listHienTai = getListTheoRole();
-                loadDataTable(listHienTai);
+                JOptionPane.showMessageDialog(this, "Hoàn tất!\nThành công: " + countSuccess + "\nThất bại: " + countError);
+                refreshData();
             } catch (IOException ex) {
-                JOptionPane.showMessageDialog(this, "Lỗi đọc file!");
+                JOptionPane.showMessageDialog(this, "Lỗi đọc file Excel!");
             }
         }
     }

@@ -41,7 +41,6 @@ public class NhomQuyenDAO {
     public int delete(int id) {
         int result = 0;
         try (Connection con = JDBCUtil.getConnection()) {
-            // Giữ logic giống KyThiDAO: Xóa là cập nhật trạng thái về 0
             String sql = "UPDATE nhomquyen SET trangthai = 0 WHERE manhomquyen = ?";
             PreparedStatement pst = con.prepareStatement(sql);
             pst.setInt(1, id);

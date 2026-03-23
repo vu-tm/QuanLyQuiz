@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Mar 22, 2026 at 10:42 AM
+-- Generation Time: Mar 23, 2026 at 04:32 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.0.30
 
@@ -50,7 +50,7 @@ CREATE TABLE `cauhoi` (
   `madokho` int(11) NOT NULL,
   `maloai` int(11) NOT NULL,
   `mamonhoc` int(11) NOT NULL,
-  `nguoitao` varchar(50) DEFAULT NULL,
+  `nguoitao` int(11) DEFAULT NULL,
   `trangthai` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -59,15 +59,15 @@ CREATE TABLE `cauhoi` (
 --
 
 INSERT INTO `cauhoi` (`macauhoi`, `noidung`, `madokho`, `maloai`, `mamonhoc`, `nguoitao`, `trangthai`) VALUES
-(1, 'Trong Java, biến static được sử dụng để làm gì?', 2, 1, 1, 'admin', 1),
-(2, 'Java có hỗ trợ đa kế thừa thông qua Class không?', 1, 2, 1, 'admin', 1),
-(3, 'Kiểu dữ liệu nào có kích thước lớn nhất trong các kiểu số nguyên của Java?', 1, 1, 1, 'admin', 1),
-(4, 'Hiện tượng Deadlock là gì?', 3, 1, 2, 'admin', 1),
-(5, 'Thành phần nào điều khiển việc cấp phát tài nguyên của hệ thống?', 1, 1, 2, 'admin', 1),
-(6, 'Hệ điều hành là một phần mềm ứng dụng, đúng hay sai?', 1, 2, 2, 'admin', 1),
-(7, 'Thẻ HTML nào được dùng để tạo một danh sách không thứ tự?', 1, 1, 3, 'admin', 1),
-(8, 'Giao thức mặc định được sử dụng để truyền tải dữ liệu trên Web là gì?', 1, 1, 3, 'admin', 1),
-(9, 'CSS là viết tắt của từ nào?', 2, 1, 3, 'admin', 1);
+(1, 'Trong Java, biến static được sử dụng để làm gì?', 2, 1, 1, 1, 1),
+(2, 'Java có hỗ trợ đa kế thừa thông qua Class không?', 1, 2, 1, 1, 1),
+(3, 'Kiểu dữ liệu nào có kích thước lớn nhất trong các kiểu số nguyên của Java?', 1, 1, 1, 1, 1),
+(4, 'Hiện tượng Deadlock là gì?', 3, 1, 2, 1, 1),
+(5, 'Thành phần nào điều khiển việc cấp phát tài nguyên của hệ thống?', 1, 1, 2, 1, 1),
+(6, 'Hệ điều hành là một phần mềm ứng dụng, đúng hay sai?', 1, 2, 2, 1, 1),
+(7, 'Thẻ HTML nào được dùng để tạo một danh sách không thứ tự?', 1, 1, 3, 1, 1),
+(8, 'Giao thức mặc định được sử dụng để truyền tải dữ liệu trên Web là gì?', 1, 1, 3, 1, 1),
+(9, 'CSS là viết tắt của từ nào?', 2, 1, 3, 1, 1);
 
 -- --------------------------------------------------------
 
@@ -286,7 +286,7 @@ CREATE TABLE `dethi` (
   `made` int(11) NOT NULL,
   `makythi` int(11) NOT NULL,
   `monthi` int(11) DEFAULT NULL,
-  `nguoitao` varchar(50) DEFAULT NULL,
+  `nguoitao` int(11) DEFAULT NULL,
   `tende` varchar(255) DEFAULT NULL,
   `thoigiantao` datetime DEFAULT NULL,
   `thoigianthi` int(11) DEFAULT NULL,
@@ -299,9 +299,9 @@ CREATE TABLE `dethi` (
 --
 
 INSERT INTO `dethi` (`made`, `makythi`, `monthi`, `nguoitao`, `tende`, `thoigiantao`, `thoigianthi`, `tongsocau`, `trangthai`) VALUES
-(1, 1, 1, 'admin', 'Đề thi Java cơ bản', '2025-03-17 08:00:00', 60, 10, 1),
-(2, 1, 2, 'admin', 'Đề thi hệ điều hành giữa kỳ', '2025-03-17 09:00:00', 45, 10, 1),
-(3, 2, 3, 'admin', 'Đề thi Lập trình web 15 phút', '2025-03-17 10:00:00', 15, 3, 1);
+(1, 1, 1, 1, 'Đề thi Java cơ bản', '2025-03-17 08:00:00', 60, 10, 1),
+(2, 1, 2, 2, 'Đề thi hệ điều hành giữa kỳ', '2025-03-17 09:00:00', 45, 10, 1),
+(3, 2, 3, 1, 'Đề thi Lập trình web 15 phút', '2025-03-17 10:00:00', 15, 3, 1);
 
 -- --------------------------------------------------------
 
@@ -374,8 +374,9 @@ CREATE TABLE `loaicauhoi` (
 --
 
 INSERT INTO `loaicauhoi` (`maloai`, `tenloai`, `trangthai`) VALUES
-(1, 'Trắc nghiệm (4 lựa chọn)', 1),
-(2, 'Đúng/Sai', 1);
+(1, 'Trắc nghiệm', 1),
+(2, 'Đúng Sai', 1),
+(3, 'Điền khuyết', 1);
 
 -- --------------------------------------------------------
 
@@ -659,7 +660,7 @@ ALTER TABLE `kythi`
 -- AUTO_INCREMENT for table `loaicauhoi`
 --
 ALTER TABLE `loaicauhoi`
-  MODIFY `maloai` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `maloai` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `lop`

@@ -27,7 +27,7 @@ public class LoaiCauHoiDAO {
     public ArrayList<LoaiCauHoiDTO> selectAll() {
         ArrayList<LoaiCauHoiDTO> result = new ArrayList<>();
         try (Connection con = JDBCUtil.getConnection()) {
-            String sql = "SELECT * FROM loaicauhoi WHERE trangthai = 1 ORDER BY maloai DESC";
+            String sql = "SELECT * FROM loaicauhoi WHERE trangthai = 1 ORDER BY maloai ASC";
             PreparedStatement pst = con.prepareStatement(sql);
             ResultSet rs = pst.executeQuery();
             while (rs.next()) {

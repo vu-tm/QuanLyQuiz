@@ -14,7 +14,7 @@ public class DeThiDTO {
     private int made;
     private int makythi;
     private int monthi;
-    private String nguoitao;
+    private int nguoitao;
     private String tende;
     private Timestamp thoigiantao;
     private int thoigianthi;
@@ -24,7 +24,7 @@ public class DeThiDTO {
     public DeThiDTO() {
     }
 
-    public DeThiDTO(int made, int makythi, int monthi, String nguoitao, String tende, Timestamp thoigiantao, int thoigianthi, int tongsocau, boolean trangthai) {
+    public DeThiDTO(int made, int makythi, int monthi, int nguoitao, String tende, Timestamp thoigiantao, int thoigianthi, int tongsocau, boolean trangthai) {
         this.made = made;
         this.makythi = makythi;
         this.monthi = monthi;
@@ -61,11 +61,11 @@ public class DeThiDTO {
         this.monthi = monthi;
     }
 
-    public String getNguoitao() {
+    public int getNguoitao() {
         return nguoitao;
     }
 
-    public void setNguoitao(String nguoitao) {
+    public void setNguoitao(int nguoitao) {
         this.nguoitao = nguoitao;
     }
 

@@ -10,6 +10,7 @@ import java.util.ArrayList;
 public class DeThiBUS {
 
     private final DeThiDAO dethiDAO = DeThiDAO.getInstance();
+    private final NguoiDungBUS ndBUS = new NguoiDungBUS();
     private final ChiTietDeThiDAO ctdtDAO = ChiTietDeThiDAO.getInstance();
     private ArrayList<DeThiDTO> listDeThi;
 
@@ -52,9 +53,18 @@ public class DeThiBUS {
         for (int i = 0; i < this.listDeThi.size(); i++) {
             DeThiDTO dt = listDeThi.get(i);
             boolean match = false;
+
+            String tenNguoiTao = ndBUS.getHotenById(dt.getNguoitao());
+            if (tenNguoiTao == null) {
+                tenNguoiTao = "";
+            }
+            String tenNguoiTaoLower = tenNguoiTao.toLowerCase();
+
             switch (type) {
                 case "Tất cả":
-                    match = Integer.toString(dt.getMade()).contains(text) || dt.getTende().toLowerCase().contains(text) || dt.getNguoitao().toLowerCase().contains(text);
+                    match = Integer.toString(dt.getMade()).contains(text)
+                            || dt.getTende().toLowerCase().contains(text)
+                            || tenNguoiTaoLower.contains(text);
                     break;
                 case "Mã đề":
                     match = Integer.toString(dt.getMade()).contains(text);
@@ -63,7 +73,7 @@ public class DeThiBUS {
                     match = dt.getTende().toLowerCase().contains(text);
                     break;
                 case "Người tạo":
-                    match = dt.getNguoitao().toLowerCase().contains(text);
+                    match = tenNguoiTaoLower.contains(text);
                     break;
             }
             if (match) {

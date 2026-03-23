@@ -2,33 +2,84 @@ package BUS;
 
 import DAO.CauHoiDAO;
 import DTO.CauHoiDTO;
-
-import java.util.List;
+import java.util.ArrayList;
 
 public class CauHoiBUS {
-    private CauHoiDAO dao;
+
+    private final CauHoiDAO dao = CauHoiDAO.getInstance();
+    private final NguoiDungBUS ndBUS = new NguoiDungBUS();
+    private ArrayList<CauHoiDTO> listCauHoi;
 
     public CauHoiBUS() {
-        dao = new CauHoiDAO();
+        this.listCauHoi = dao.selectAll();
     }
 
-    public List<CauHoiDTO> load() {
-        return dao.getAll();
+    public ArrayList<CauHoiDTO> getAll() {
+        this.listCauHoi = dao.selectAll();
+        return this.listCauHoi;
     }
 
     public boolean add(CauHoiDTO ch) {
-        return dao.insert(ch);
+        boolean check = dao.insert(ch) > 0;
+        if (check) {
+            getAll();
+        }
+        return check;
     }
 
-    public boolean edit(CauHoiDTO ch) {
-        return dao.update(ch);
+    public boolean update(CauHoiDTO ch) {
+        boolean check = dao.update(ch) > 0;
+        if (check) {
+            getAll();
+        }
+        return check;
     }
 
-    public boolean remove(int macauhoi) {
-        return dao.delete(macauhoi);
+    public boolean delete(int macauhoi) {
+        boolean check = dao.delete(macauhoi) > 0;
+        if (check) {
+            getAll();
+        }
+        return check;
     }
 
-    public List<CauHoiDTO> search(String keyword) {
-        return dao.search(keyword);
+    public CauHoiDTO getById(int macauhoi) {
+        for (CauHoiDTO ch : listCauHoi) {
+            if (ch.getMacauhoi() == macauhoi) {
+                return ch;
+            }
+        }
+        return null;
+    }
+
+    public ArrayList<CauHoiDTO> search(String text, String type) {
+        ArrayList<CauHoiDTO> result = new ArrayList<>();
+        text = text.toLowerCase().trim();
+        for (CauHoiDTO ch : this.listCauHoi) {
+            boolean match = false;
+
+            String tenNguoiTao = ndBUS.getHotenById(ch.getNguoitao());
+            if (tenNguoiTao == null) {
+                tenNguoiTao = "";
+            }
+            String tenNguoiTaoLower = tenNguoiTao.toLowerCase();
+
+            switch (type) {
+                case "Tất cả" ->
+                    match = Integer.toString(ch.getMacauhoi()).contains(text)
+                            || ch.getNoidung().toLowerCase().contains(text)
+                            || tenNguoiTaoLower.contains(text);
+                case "Mã câu hỏi" ->
+                    match = Integer.toString(ch.getMacauhoi()).contains(text);
+                case "Nội dung" ->
+                    match = ch.getNoidung().toLowerCase().contains(text);
+                case "Người tạo" ->
+                    match = tenNguoiTaoLower.contains(text);
+            }
+            if (match) {
+                result.add(ch);
+            }
+        }
+        return result;
     }
 }

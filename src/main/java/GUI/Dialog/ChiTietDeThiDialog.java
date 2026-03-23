@@ -4,6 +4,7 @@ import BUS.DeThiBUS;
 import BUS.KyThiBUS;
 import BUS.MonHocBUS;
 import BUS.DoKhoBUS;
+import BUS.NguoiDungBUS;
 import DTO.DeThiDTO;
 import DTO.CauHoiDTO;
 import GUI.Component.ButtonCustom;
@@ -32,6 +33,7 @@ public final class ChiTietDeThiDialog extends JDialog implements ActionListener 
     private KyThiBUS kythiBus = new KyThiBUS();
     private MonHocBUS monhocBus = new MonHocBUS();
     private DoKhoBUS dokhoBus = new DoKhoBUS();
+    private NguoiDungBUS ndBUS = new NguoiDungBUS();
 
     private ButtonCustom btnPdf, btnHuyBo;
 
@@ -71,7 +73,6 @@ public final class ChiTietDeThiDialog extends JDialog implements ActionListener 
         }
         pnmain.add(pnmain_top, BorderLayout.NORTH);
 
-        // ── Center: bảng danh sách câu hỏi ──────────────────────────────────
         pnmain_bottom = new JPanel(new BorderLayout());
         pnmain_bottom.setBorder(new EmptyBorder(5, 10, 5, 10));
         pnmain_bottom.setBackground(Color.WHITE);
@@ -79,7 +80,7 @@ public final class ChiTietDeThiDialog extends JDialog implements ActionListener 
         tblModel = new DefaultTableModel() {
             @Override
             public boolean isCellEditable(int row, int column) {
-                return false; // Không cho sửa
+                return false;
             }
         };
         tblModel.setColumnIdentifiers(new String[]{"STT", "Mã CH", "Nội dung câu hỏi", "Độ khó"});
@@ -130,7 +131,7 @@ public final class ChiTietDeThiDialog extends JDialog implements ActionListener 
         txtTenDe.setText(dethi.getTende());
         txtKyThi.setText(kythiBus.getTenById(dethi.getMakythi()));
         txtMonHoc.setText(monhocBus.getTenById(dethi.getMonthi()));
-        txtNguoiTao.setText(dethi.getNguoitao());
+        txtNguoiTao.setText(ndBUS.getHotenById(dethi.getNguoitao()));
         txtThoiGianTao.setText(Formater.FormatTime(dethi.getThoigiantao()));
         txtThoiGianThi.setText(String.valueOf(dethi.getThoigianthi()));
     }

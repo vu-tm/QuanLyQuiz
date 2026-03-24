@@ -1,5 +1,6 @@
 package helper;
 
+import BUS.DapAnBUS;
 import BUS.DeThiBUS;
 import BUS.KyThiBUS;
 import BUS.MonHocBUS;
@@ -26,6 +27,7 @@ public class writePDF {
     private final DeThiBUS dethiBus = new DeThiBUS();
     private final KyThiBUS kythiBus = new KyThiBUS();
     private final MonHocBUS monhocBus = new MonHocBUS();
+    private final DapAnBUS dapanBus = new DapAnBUS();
 
     private final JFrame jf = new JFrame();
     private final FileDialog fd = new FileDialog(jf, "Xuất PDF đề thi", FileDialog.SAVE);
@@ -220,7 +222,7 @@ public class writePDF {
                 pCau.setSpacingBefore(8f);
                 document.add(pCau);
 
-                ArrayList<DapAnDTO> dsDapAn = DapAnDAO.getInstance().selectByCauHoi(ch.getMacauhoi());
+                ArrayList<DapAnDTO> dsDapAn = dapanBus.getDapAnDeHienThi(ch.getMacauhoi());
                 int numAns = Math.min(dsDapAn.size(), 4);
                 if (numAns == 0) {
                     continue;

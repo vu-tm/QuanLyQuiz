@@ -281,7 +281,7 @@ public class CauHoiDialog extends JDialog {
             if (cmbLoaiCauHoi.getItemAt(i).getMaloai() == currentDTO.getMaloai()) cmbLoaiCauHoi.setSelectedIndex(i);
 
         updateAnswerUIByTen(((LoaiCauHoiDTO) cmbLoaiCauHoi.getSelectedItem()).getTenloai());
-        ArrayList<DapAnDTO> listDA = busDapAn.getByCauHoi(currentDTO.getMacauhoi());
+        ArrayList<DapAnDTO> listDA = busDapAn.getDapAnDeHienThi(currentDTO.getMacauhoi());
         for (int i = 0; i < listDA.size() && i < txtAnswers.size(); i++) {
             txtAnswers.get(i).setText(listDA.get(i).getNoidungtl());
             if (listDA.get(i).isLadapan()) rdAnswers.get(i).setSelected(true);

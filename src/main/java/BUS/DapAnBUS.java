@@ -18,8 +18,12 @@ public class DapAnBUS {
         return this.listDapAn;
     }
 
-    public ArrayList<DapAnDTO> getByCauHoi(int macauhoi) {
-        return dapAnDAO.selectByCauHoi(macauhoi);
+    public ArrayList<DapAnDTO> getDapAnDeHienThi(int macauhoi) {
+        return dapAnDAO.selectByMaCauHoiHienThi(macauhoi);
+    }
+
+    public ArrayList<DapAnDTO> getDapAnDayDu(int macauhoi) {
+        return dapAnDAO.selectByMaCauHoiFull(macauhoi);
     }
 
     public boolean add(DapAnDTO da) {
@@ -74,7 +78,7 @@ public class DapAnBUS {
 
     public ArrayList<DapAnDTO> getDapAnDungByCauHoi(int macauhoi) {
         ArrayList<DapAnDTO> result = new ArrayList<>();
-        ArrayList<DapAnDTO> all = getByCauHoi(macauhoi);
+        ArrayList<DapAnDTO> all = getDapAnDeHienThi(macauhoi);
         for (DapAnDTO da : all) {
             if (da.isLadapan()) {
                 result.add(da);

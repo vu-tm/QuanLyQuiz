@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Mar 23, 2026 at 04:32 PM
+-- Generation Time: Mar 24, 2026 at 01:13 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.0.30
 
@@ -178,9 +178,7 @@ INSERT INTO `chitietquyen` (`manhomquyen`, `machucnang`, `hanhdong`) VALUES
 (1, 10, 'delete'),
 (1, 10, 'update'),
 (1, 10, 'view'),
-(1, 11, 'create'),
 (1, 11, 'delete'),
-(1, 11, 'update'),
 (1, 11, 'view'),
 (2, 2, 'create'),
 (2, 2, 'delete'),
@@ -193,7 +191,9 @@ INSERT INTO `chitietquyen` (`manhomquyen`, `machucnang`, `hanhdong`) VALUES
 (3, 0, 'create'),
 (3, 0, 'delete'),
 (3, 0, 'update'),
-(3, 0, 'view');
+(3, 0, 'view'),
+(3, 11, 'delete'),
+(3, 11, 'view');
 
 -- --------------------------------------------------------
 
@@ -487,6 +487,14 @@ CREATE TABLE `phancong` (
   `mamonhoc` int(11) NOT NULL,
   `manguoidung` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `phancong`
+--
+
+INSERT INTO `phancong` (`mamonhoc`, `manguoidung`) VALUES
+(2, 2),
+(3, 2);
 
 --
 -- Indexes for dumped tables

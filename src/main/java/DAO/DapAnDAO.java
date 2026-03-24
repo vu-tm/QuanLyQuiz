@@ -15,11 +15,11 @@ public class DapAnDAO {
      * Lấy danh sách đáp án theo mã câu hỏi.
      * Chỉ lấy noidungtl – KHÔNG lấy ladapan, để không lộ đáp án đúng khi in đề.
      */
-    public ArrayList<DapAnDTO> selectByCauHoi(int macauhoi) {
+    public ArrayList<DapAnDTO> selectByMaCauHoiHienThi(int macauhoi) {
         ArrayList<DapAnDTO> result = new ArrayList<>();
         try (Connection con = JDBCUtil.getConnection()) {
             String sql = "SELECT madapan, macauhoi, noidungtl "
-                       + "FROM dapan WHERE macauhoi = ? ORDER BY madapan ASC";
+                    + "FROM dapan WHERE macauhoi = ? ORDER BY madapan ASC";
             PreparedStatement pst = con.prepareStatement(sql);
             pst.setInt(1, macauhoi);
             ResultSet rs = pst.executeQuery();
@@ -28,6 +28,27 @@ public class DapAnDAO {
                 da.setMadapan(rs.getInt("madapan"));
                 da.setMacauhoi(rs.getInt("macauhoi"));
                 da.setNoidungtl(rs.getString("noidungtl"));
+                result.add(da);
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+        return result;
+    }
+
+    public ArrayList<DapAnDTO> selectByMaCauHoiFull(int macauhoi) {
+        ArrayList<DapAnDTO> result = new ArrayList<>();
+        try (Connection con = JDBCUtil.getConnection()) {
+            String sql = "SELECT * FROM dapan WHERE macauhoi = ?";
+            PreparedStatement pst = con.prepareStatement(sql);
+            pst.setInt(1, macauhoi);
+            ResultSet rs = pst.executeQuery();
+            while (rs.next()) {
+                DapAnDTO da = new DapAnDTO();
+                da.setMadapan(rs.getInt("madapan"));
+                da.setMacauhoi(rs.getInt("macauhoi"));
+                da.setNoidungtl(rs.getString("noidungtl"));
+                da.setLadapan(rs.getBoolean("ladapan"));
                 result.add(da);
             }
         } catch (SQLException ex) {

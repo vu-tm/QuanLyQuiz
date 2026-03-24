@@ -11,6 +11,7 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 
 public class BaiThiBUS {
+
     private ArrayList<BaiThiDTO> listBaiThi;
     private BaiThiDAO bDao = BaiThiDAO.getInstance();
     private ChiTietBaiThiDAO ctDao = ChiTietBaiThiDAO.getInstance();
@@ -48,18 +49,6 @@ public class BaiThiBUS {
         return result;
     }
 
-    public ArrayList<BaiThiDTO> search(String keyword) {
-        ArrayList<BaiThiDTO> result = new ArrayList<>();
-        for (BaiThiDTO bt : listBaiThi) {
-            // Chuyển manguoidung (int) sang String để so sánh với keyword
-            if (String.valueOf(bt.getManguoidung()).contains(keyword) ||
-                    String.valueOf(bt.getMabaithi()).contains(keyword)) {
-                result.add(bt);
-            }
-        }
-        return result;
-    }
-
     public ArrayList<BaiThiDTO> search(String text, String type, ArrayList<BaiThiDTO> list) {
         ArrayList<BaiThiDTO> result = new ArrayList<>();
         text = text.toLowerCase();
@@ -67,9 +56,9 @@ public class BaiThiBUS {
             boolean match = false;
             switch (type) {
                 case "Tất cả":
-                    match = String.valueOf(bt.getMabaithi()).contains(text) || 
-                            String.valueOf(bt.getMade()).contains(text) ||
-                            String.valueOf(bt.getManguoidung()).contains(text);
+                    match = String.valueOf(bt.getMabaithi()).contains(text)
+                            || String.valueOf(bt.getMade()).contains(text)
+                            || String.valueOf(bt.getManguoidung()).contains(text);
                     break;
                 case "Mã bài thi":
                     match = String.valueOf(bt.getMabaithi()).contains(text);
@@ -77,7 +66,7 @@ public class BaiThiBUS {
                 case "Mã đề":
                     match = String.valueOf(bt.getMade()).contains(text);
                     break;
-                case "Mã người dùng": // Thêm case này nếu cần
+                case "Mã người dùng":
                     match = String.valueOf(bt.getManguoidung()).contains(text);
                     break;
             }
@@ -88,17 +77,7 @@ public class BaiThiBUS {
         return result;
     }
 
-    public boolean hasTakenExam(int userId, int made) { // userId chuyển sang int
-        ArrayList<BaiThiDTO> list = getByUser(userId);
-        for (BaiThiDTO bt : list) {
-            if (bt.getMade() == made) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public ArrayList<BaiThiDTO> getByUser(int userId) { // userId chuyển sang int
+    public ArrayList<BaiThiDTO> getByUser(int userId) {
         return bDao.selectByUserId(userId);
     }
 
@@ -106,7 +85,7 @@ public class BaiThiBUS {
         return ctDao.insert(ct);
     }
 
-    public double gradeAndSave(DeThiDTO deThi, int userId, ArrayList<String> answers, int timeSpent) { // userId sang int
+    public double gradeAndSave(DeThiDTO deThi, int userId, ArrayList<String> answers, int timeSpent) {
         DeThiBUS deThiBUS = new DeThiBUS();
         DapAnBUS dapAnBUS = new DapAnBUS();
         ArrayList<CauHoiDTO> dsCauHoi = deThiBUS.getDanhSachCauHoiByMade(deThi.getMade());
@@ -114,14 +93,14 @@ public class BaiThiBUS {
         int soCauDung = 0;
         for (int i = 0; i < dsCauHoi.size(); i++) {
             CauHoiDTO ch = dsCauHoi.get(i);
-            // QUAN TRỌNG: Sử dụng hàm lấy đầy đủ thông tin (có ladapan) để chấm điểm
-            ArrayList<DapAnDTO> listDA = dapAnBUS.getDapAnDayDu(ch.getMacauhoi()); 
+            ArrayList<DapAnDTO> listDA = dapAnBUS.getDapAnDayDu(ch.getMacauhoi());
             String userAnswer = i < answers.size() ? answers.get(i) : "";
 
-            if (userAnswer == null || userAnswer.trim().isEmpty())
+            if (userAnswer == null || userAnswer.trim().isEmpty()) {
                 continue;
+            }
 
-            if (ch.getMaloai() == 1) { // Trắc nghiệm
+            if (ch.getMaloai() == 1 || ch.getMaloai() == 2) {
                 try {
                     int chosenId = Integer.parseInt(userAnswer);
                     for (DapAnDTO da : listDA) {
@@ -132,7 +111,7 @@ public class BaiThiBUS {
                     }
                 } catch (NumberFormatException e) {
                 }
-            } else if (ch.getMaloai() == 2) { // Điền khuyết
+            } else if (ch.getMaloai() == 3) {
                 for (DapAnDTO da : listDA) {
                     if (da.isLadapan() && da.getNoidungtl().trim().equalsIgnoreCase(userAnswer.trim())) {
                         soCauDung++;
@@ -148,7 +127,7 @@ public class BaiThiBUS {
 
         BaiThiDTO bt = new BaiThiDTO();
         bt.setMade(deThi.getMade());
-        bt.setManguoidung(userId); // set int
+        bt.setManguoidung(userId);
         bt.setDiemthi(diem);
         bt.setThoigianvaothi(new Timestamp(System.currentTimeMillis()));
         bt.setThoigianlambai(timeSpent);
@@ -165,14 +144,15 @@ public class BaiThiBUS {
                 ct.setMabaithi(maBaiThi);
                 ct.setMacauhoi(ch.getMacauhoi());
 
-                if (ch.getMaloai() == 1 && !userAnswer.isEmpty()) {
+                if ((ch.getMaloai() == 1 || ch.getMaloai() == 2) && !userAnswer.isEmpty()) {
                     try {
                         ct.setDapanchon(Integer.parseInt(userAnswer));
                     } catch (NumberFormatException e) {
                         ct.setDapanchon(0);
                     }
                     ct.setNoidungdienkhuyet(null);
-                } else if (ch.getMaloai() == 2) {
+                } // Lưu cho Điền khuyết
+                else if (ch.getMaloai() == 3) {
                     ct.setDapanchon(0);
                     ct.setNoidungdienkhuyet(userAnswer);
                 }
@@ -186,21 +166,26 @@ public class BaiThiBUS {
         CauHoiBUS cauHoiBUS = new CauHoiBUS();
         DapAnBUS dapAnBUS = new DapAnBUS();
         CauHoiDTO ch = cauHoiBUS.getById(ct.getMacauhoi());
-        if (ch == null) return "Sai";
+        if (ch == null) {
+            return "Sai";
+        }
 
+        // Kiểm tra xem có làm bài không
         if (ct.getDapanchon() == 0 && (ct.getNoidungdienkhuyet() == null || ct.getNoidungdienkhuyet().trim().isEmpty())) {
             return "Chưa làm";
         }
 
-        // Dùng getDapAnDayDu để có thông tin isLadapan
         ArrayList<DapAnDTO> listDA = dapAnBUS.getDapAnDayDu(ch.getMacauhoi());
-        if (ch.getMaloai() == 1) { // Trắc nghiệm
+
+        // Trắc nghiệm (1) & Đúng sai (2)
+        if (ch.getMaloai() == 1 || ch.getMaloai() == 2) {
             for (DapAnDTO da : listDA) {
                 if (da.isLadapan() && da.getMadapan() == ct.getDapanchon()) {
                     return "Đúng";
                 }
             }
-        } else if (ch.getMaloai() == 2) { // Điền khuyết
+        } // Điền khuyết (3)
+        else if (ch.getMaloai() == 3) {
             for (DapAnDTO da : listDA) {
                 if (da.isLadapan() && da.getNoidungtl().trim().equalsIgnoreCase(ct.getNoidungdienkhuyet().trim())) {
                     return "Đúng";
@@ -211,22 +196,27 @@ public class BaiThiBUS {
     }
 
     public String getAnswerText(ChiTietBaiThiDTO ct) {
-        if (ct.getDapanchon() == 0 && (ct.getNoidungdienkhuyet() == null || ct.getNoidungdienkhuyet().trim().isEmpty())) {
-            return "Chưa chọn";
-        }
         CauHoiBUS cauHoiBUS = new CauHoiBUS();
         DapAnBUS dapAnBUS = new DapAnBUS();
         CauHoiDTO ch = cauHoiBUS.getById(ct.getMacauhoi());
-        if (ch != null && ch.getMaloai() == 1) { // Trắc nghiệm
+
+        if (ch == null) {
+            return "N/A";
+        }
+
+        if (ct.getDapanchon() == 0 && (ct.getNoidungdienkhuyet() == null || ct.getNoidungdienkhuyet().trim().isEmpty())) {
+            return "Chưa chọn";
+        }
+        if (ch.getMaloai() == 1 || ch.getMaloai() == 2) {
             ArrayList<DapAnDTO> listDA = dapAnBUS.getDapAnDayDu(ch.getMacauhoi());
             for (DapAnDTO da : listDA) {
                 if (da.getMadapan() == ct.getDapanchon()) {
                     return da.getNoidungtl();
                 }
             }
-        } else if (ch != null && ch.getMaloai() == 2) {
+        } else if (ch.getMaloai() == 3) {
             return ct.getNoidungdienkhuyet();
         }
-        return String.valueOf(ct.getDapanchon());
+        return "N/A";
     }
 }

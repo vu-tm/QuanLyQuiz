@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Mar 24, 2026 at 01:13 AM
+-- Generation Time: Mar 24, 2026 at 11:49 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.0.30
 
@@ -38,6 +38,26 @@ CREATE TABLE `baithi` (
   `socausai` int(11) DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Dumping data for table `baithi`
+--
+
+INSERT INTO `baithi` (`mabaithi`, `made`, `manguoidung`, `diemthi`, `thoigianvaothi`, `thoigianlambai`, `socaudung`, `socausai`) VALUES
+(1, 3, 7, 8.46, '2026-03-24 16:47:06', 66, 11, 2),
+(2, 3, 10, 9.23, '2026-03-24 16:49:32', 66, 12, 1),
+(3, 4, 7, 6.67, '2026-03-24 17:40:00', 11, 2, 1),
+(4, 1, 12, 7, '2026-03-24 17:41:17', 61, 7, 3),
+(5, 1, 8, 8, '2024-05-10 08:30:00', 45, 8, 2),
+(6, 2, 9, 6.67, '2025-01-15 09:00:00', 25, 2, 1),
+(7, 3, 11, 7.69, '2025-06-20 14:00:00', 14, 10, 3),
+(8, 4, 12, 10, '2025-12-25 10:00:00', 20, 3, 0),
+(9, 1, 13, 5, '2026-01-05 15:00:00', 55, 5, 5),
+(10, 2, 14, 3.33, '2026-02-14 08:30:00', 40, 1, 2),
+(11, 3, 15, 9.23, '2026-03-01 09:00:00', 13, 12, 1),
+(12, 1, 16, 8, '2026-03-15 10:30:00', 50, 8, 2),
+(13, 4, 7, 10, '2026-03-24 18:00:00', 15, 3, 0),
+(14, 2, 8, 0, '2026-03-25 11:00:00', 45, 0, 3);
+
 -- --------------------------------------------------------
 
 --
@@ -67,7 +87,27 @@ INSERT INTO `cauhoi` (`macauhoi`, `noidung`, `madokho`, `maloai`, `mamonhoc`, `n
 (6, 'Hệ điều hành là một phần mềm ứng dụng, đúng hay sai?', 1, 2, 2, 1, 1),
 (7, 'Thẻ HTML nào được dùng để tạo một danh sách không thứ tự?', 1, 1, 3, 1, 1),
 (8, 'Giao thức mặc định được sử dụng để truyền tải dữ liệu trên Web là gì?', 1, 1, 3, 1, 1),
-(9, 'CSS là viết tắt của từ nào?', 2, 1, 3, 1, 1);
+(9, 'CSS là viết tắt của từ nào?', 2, 1, 3, 1, 1),
+(10, 'Từ khóa nào được dùng để kế thừa một lớp trong Java?', 1, 3, 1, 1, 1),
+(11, 'Trong Java, một lớp có thể thực thi (implement) tối đa bao nhiêu interface?', 2, 1, 1, 1, 1),
+(12, 'Phương thức nào là điểm bắt đầu của mọi ứng dụng Java độc lập?', 1, 3, 1, 1, 1),
+(13, 'Để so sánh hai chuỗi trong Java, ta nên dùng phương thức nào?', 2, 1, 1, 1, 1),
+(14, 'Từ khóa \"final\" đặt trước một lớp có ý nghĩa là lớp đó không thể bị kế thừa. Đúng hay sai?', 1, 2, 1, 1, 1),
+(15, 'Tên của bộ thu gom rác tự động trong Java là gì?', 2, 3, 1, 1, 1),
+(16, 'Kiểu dữ liệu nào được dùng để lưu trữ một ký tự duy nhất?', 1, 3, 1, 1, 1),
+(17, 'Lớp nào là lớp cha của tất cả các lớp trong Java?', 2, 1, 1, 1, 1),
+(18, 'Câu lệnh nào dùng để thoát khỏi vòng lặp ngay lập tức?', 1, 3, 1, 1, 1),
+(19, 'Java là ngôn ngữ lập trình thông dịch hoàn toàn, đúng hay sai?', 2, 2, 1, 1, 1),
+(20, 'Thẻ HTML nào dùng để chèn một hình ảnh?', 1, 3, 3, 1, 1),
+(21, 'Trong CSS, thuộc tính nào dùng để thay đổi màu chữ?', 1, 3, 3, 1, 1),
+(22, 'Ký hiệu nào được dùng cho ID selector trong CSS?', 1, 1, 3, 1, 1),
+(23, 'Sự kiện nào xảy ra khi người dùng nhấp chuột vào một phần tử HTML?', 2, 1, 3, 1, 1),
+(24, 'Thẻ nào dùng để định nghĩa một liên kết (hyperlink)?', 1, 3, 3, 1, 1),
+(25, 'JavaScript là ngôn ngữ lập trình chạy trên trình duyệt. Đúng hay sai?', 1, 2, 3, 1, 1),
+(26, 'Trong HTML, thẻ nào dùng để tạo một ô nhập dữ liệu?', 1, 3, 3, 1, 1),
+(27, 'Để căn giữa nội dung văn bản trong CSS, ta dùng thuộc tính text-align với giá trị là gì?', 2, 3, 3, 1, 1),
+(28, 'Mô hình DOM viết tắt của từ gì?', 3, 1, 3, 1, 1),
+(29, 'Giao thức HTTPS bảo mật hơn HTTP nhờ vào việc mã hóa dữ liệu. Đúng hay sai?', 1, 2, 3, 1, 1);
 
 -- --------------------------------------------------------
 
@@ -81,6 +121,122 @@ CREATE TABLE `chitietbaithi` (
   `dapanchon` int(11) DEFAULT NULL,
   `noidungdienkhuyet` varchar(500) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `chitietbaithi`
+--
+
+INSERT INTO `chitietbaithi` (`mabaithi`, `macauhoi`, `dapanchon`, `noidungdienkhuyet`) VALUES
+(1, 7, 21, ''),
+(1, 8, 27, ''),
+(1, 9, 29, ''),
+(1, 20, NULL, '<img>'),
+(1, 21, NULL, 'fontColor'),
+(1, 22, 53, ''),
+(1, 23, 57, ''),
+(1, 24, NULL, '<a>'),
+(1, 25, 60, ''),
+(1, 26, NULL, '<input>'),
+(1, 27, NULL, 'center'),
+(1, 28, 64, ''),
+(1, 29, 67, ''),
+(2, 7, 21, ''),
+(2, 8, 27, ''),
+(2, 9, 29, ''),
+(2, 20, NULL, '<img>'),
+(2, 21, NULL, 'fontColor'),
+(2, 22, 54, ''),
+(2, 23, 57, ''),
+(2, 24, NULL, '<a>'),
+(2, 25, 60, ''),
+(2, 26, NULL, '<input>'),
+(2, 27, NULL, 'center'),
+(2, 28, 64, ''),
+(2, 29, 67, ''),
+(3, 4, 11, ''),
+(3, 5, 15, ''),
+(3, 6, 19, ''),
+(4, 10, NULL, 'extends'),
+(4, 11, 35, ''),
+(4, 12, NULL, 'Main'),
+(4, 13, 40, ''),
+(4, 14, 41, ''),
+(4, 15, NULL, 't'),
+(4, 16, NULL, 'char'),
+(4, 17, 47, ''),
+(4, 18, NULL, 'break'),
+(4, 19, 50, ''),
+(5, 10, 33, ''),
+(5, 11, 35, ''),
+(5, 12, 37, ''),
+(5, 13, 39, ''),
+(5, 14, 41, ''),
+(5, 15, 43, ''),
+(5, 16, 44, ''),
+(5, 17, 45, ''),
+(5, 18, 48, ''),
+(5, 19, 49, ''),
+(6, 4, 11, ''),
+(6, 5, 15, ''),
+(6, 6, 19, ''),
+(7, 7, 21, ''),
+(7, 8, 27, ''),
+(7, 9, 29, ''),
+(7, 20, NULL, 'img'),
+(7, 21, NULL, 'color'),
+(7, 22, 54, ''),
+(7, 23, 57, ''),
+(7, 24, NULL, 'a'),
+(7, 25, 60, ''),
+(7, 26, NULL, 'input'),
+(7, 27, NULL, 'center'),
+(7, 28, 64, ''),
+(7, 29, 67, ''),
+(8, 4, 11, ''),
+(8, 5, 15, ''),
+(8, 6, 20, ''),
+(9, 10, 33, ''),
+(9, 11, 34, ''),
+(9, 12, 37, ''),
+(9, 13, 38, ''),
+(9, 14, 42, ''),
+(9, 15, 43, ''),
+(9, 16, 44, ''),
+(9, 17, 46, ''),
+(9, 18, 48, ''),
+(9, 19, 49, ''),
+(10, 4, 11, ''),
+(10, 5, 16, ''),
+(10, 6, 19, ''),
+(11, 7, 21, ''),
+(11, 8, 27, ''),
+(11, 9, 29, ''),
+(11, 20, NULL, '<img>'),
+(11, 21, NULL, 'color'),
+(11, 22, 54, ''),
+(11, 23, 57, ''),
+(11, 24, NULL, '<a>'),
+(11, 25, 60, ''),
+(11, 26, NULL, '<input>'),
+(11, 27, NULL, 'center'),
+(11, 28, 64, ''),
+(11, 29, 67, ''),
+(12, 10, 33, ''),
+(12, 11, 35, ''),
+(12, 12, 37, ''),
+(12, 13, 39, ''),
+(12, 14, 41, ''),
+(12, 15, 43, ''),
+(12, 16, 44, ''),
+(12, 17, 45, ''),
+(12, 18, 48, ''),
+(12, 19, 49, ''),
+(13, 4, 11, ''),
+(13, 5, 15, ''),
+(13, 6, 20, ''),
+(14, 4, 12, ''),
+(14, 5, 17, ''),
+(14, 6, 19, '');
 
 -- --------------------------------------------------------
 
@@ -99,15 +255,35 @@ CREATE TABLE `chitietdethi` (
 --
 
 INSERT INTO `chitietdethi` (`made`, `macauhoi`, `thutu`) VALUES
-(1, 1, 1),
-(1, 2, 2),
-(1, 3, 3),
+(1, 10, 5),
+(1, 11, 6),
+(1, 12, 7),
+(1, 13, 8),
+(1, 14, 9),
+(1, 15, 10),
+(1, 16, 1),
+(1, 17, 2),
+(1, 18, 3),
+(1, 19, 4),
 (2, 4, 1),
 (2, 5, 2),
 (2, 6, 3),
 (3, 7, 1),
 (3, 8, 2),
-(3, 9, 3);
+(3, 9, 3),
+(3, 20, 4),
+(3, 21, 5),
+(3, 22, 6),
+(3, 23, 7),
+(3, 24, 8),
+(3, 25, 9),
+(3, 26, 10),
+(3, 27, 11),
+(3, 28, 12),
+(3, 29, 13),
+(4, 4, 1),
+(4, 5, 2),
+(4, 6, 3);
 
 -- --------------------------------------------------------
 
@@ -120,6 +296,52 @@ CREATE TABLE `chitietlop` (
   `manguoidung` int(11) NOT NULL,
   `hienthi` tinyint(1) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `chitietlop`
+--
+
+INSERT INTO `chitietlop` (`malop`, `manguoidung`, `hienthi`) VALUES
+(1, 7, 1),
+(1, 8, 1),
+(1, 9, 1),
+(1, 10, 1),
+(1, 11, 0),
+(1, 12, 1),
+(1, 13, 1),
+(1, 14, 1),
+(1, 15, 1),
+(1, 16, 1),
+(2, 7, 1),
+(2, 8, 1),
+(2, 9, 1),
+(2, 10, 1),
+(2, 11, 1),
+(2, 12, 1),
+(2, 13, 1),
+(2, 14, 1),
+(2, 15, 1),
+(2, 16, 1),
+(3, 7, 1),
+(3, 8, 1),
+(3, 9, 1),
+(3, 10, 1),
+(3, 11, 1),
+(3, 12, 1),
+(3, 13, 1),
+(3, 14, 1),
+(3, 15, 1),
+(3, 16, 1),
+(4, 7, 1),
+(4, 8, 1),
+(4, 9, 1),
+(4, 10, 1),
+(4, 11, 1),
+(4, 12, 1),
+(4, 13, 1),
+(4, 14, 1),
+(4, 15, 1),
+(4, 16, 1);
 
 -- --------------------------------------------------------
 
@@ -274,7 +496,43 @@ INSERT INTO `dapan` (`madapan`, `macauhoi`, `noidungtl`, `ladapan`) VALUES
 (29, 9, 'Cascading Style Sheets', 1),
 (30, 9, 'Creative Style System', 0),
 (31, 9, 'Computer Style Sheets', 0),
-(32, 9, 'Colorful Style Sheets', 0);
+(32, 9, 'Colorful Style Sheets', 0),
+(33, 10, 'extends', 1),
+(34, 11, 'Chỉ 1', 0),
+(35, 11, 'Không giới hạn', 1),
+(36, 11, 'Tối đa 2', 0),
+(37, 12, 'main', 1),
+(38, 13, '==', 0),
+(39, 13, 'equals()', 1),
+(40, 13, 'compare()', 0),
+(41, 14, 'Đúng', 1),
+(42, 14, 'Sai', 0),
+(43, 15, 'Garbage Collector', 1),
+(44, 16, 'char', 1),
+(45, 17, 'Object', 1),
+(46, 17, 'String', 0),
+(47, 17, 'Class', 0),
+(48, 18, 'break', 1),
+(49, 19, 'Đúng', 0),
+(50, 19, 'Sai (Kết hợp biên dịch và thông dịch)', 1),
+(51, 20, '<img>', 1),
+(52, 21, 'color', 1),
+(53, 22, '.', 0),
+(54, 22, '#', 1),
+(55, 22, '*', 0),
+(56, 23, 'onchange', 0),
+(57, 23, 'onclick', 1),
+(58, 23, 'onmouseover', 0),
+(59, 24, '<a>', 1),
+(60, 25, 'Đúng', 1),
+(61, 25, 'Sai', 0),
+(62, 26, '<input>', 1),
+(63, 27, 'center', 1),
+(64, 28, 'Document Object Model', 1),
+(65, 28, 'Data Object Management', 0),
+(66, 28, 'Digital Object Model', 0),
+(67, 29, 'Đúng', 1),
+(68, 29, 'Sai', 0);
 
 -- --------------------------------------------------------
 
@@ -300,8 +558,9 @@ CREATE TABLE `dethi` (
 
 INSERT INTO `dethi` (`made`, `makythi`, `monthi`, `nguoitao`, `tende`, `thoigiantao`, `thoigianthi`, `tongsocau`, `trangthai`) VALUES
 (1, 1, 1, 1, 'Đề thi Java cơ bản', '2025-03-17 08:00:00', 60, 10, 1),
-(2, 1, 2, 2, 'Đề thi hệ điều hành giữa kỳ', '2025-03-17 09:00:00', 45, 10, 1),
-(3, 2, 3, 1, 'Đề thi Lập trình web 15 phút', '2025-03-17 10:00:00', 15, 3, 1);
+(2, 3, 2, 2, 'Đề thi hệ điều hành giữa kỳ', '2025-03-17 09:00:00', 45, 3, 1),
+(3, 2, 3, 1, 'Đề thi Lập trình web 15 phút', '2025-03-17 10:00:00', 15, 13, 1),
+(4, 4, 2, 1, 'Hệ điều hành học kỳ 1', '2026-03-24 16:53:42', 30, 3, 1);
 
 -- --------------------------------------------------------
 
@@ -335,6 +594,17 @@ CREATE TABLE `giaodethi` (
   `malop` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Dumping data for table `giaodethi`
+--
+
+INSERT INTO `giaodethi` (`made`, `malop`) VALUES
+(1, 2),
+(1, 3),
+(2, 3),
+(3, 1),
+(4, 3);
+
 -- --------------------------------------------------------
 
 --
@@ -354,8 +624,10 @@ CREATE TABLE `kythi` (
 --
 
 INSERT INTO `kythi` (`makythi`, `tenkythi`, `thoigianbatdau`, `thoigianketthuc`, `trangthai`) VALUES
-(1, 'Thi Giữa Kỳ 1', '2026-03-01 07:30:00', '2026-03-30 17:00:00', 1),
-(2, 'Kiểm tra 15 phút', '2026-03-17 02:00:00', '2026-03-17 02:15:00', 1);
+(1, 'Thi Giữa Kỳ 1', '2026-03-01 07:30:00', '2026-04-30 17:00:00', 1),
+(2, 'Kiểm tra 15 phút', '2026-03-20 02:00:00', '2026-04-24 02:15:00', 1),
+(3, 'Kiểm tra tốt nghiệp', '2026-04-01 07:00:00', '2026-04-30 14:30:00', 1),
+(4, 'Kiểm tra 30 phút', '2025-11-06 02:00:00', '2026-04-15 02:30:00', 1);
 
 -- --------------------------------------------------------
 
@@ -394,6 +666,16 @@ CREATE TABLE `lop` (
   `giangvien` int(11) NOT NULL,
   `mamonhoc` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `lop`
+--
+
+INSERT INTO `lop` (`malop`, `tenlop`, `siso`, `namhoc`, `hocky`, `trangthai`, `giangvien`, `mamonhoc`) VALUES
+(1, 'Web1', 0, 2026, 2, 1, 1, 3),
+(2, 'Java1', 0, 2026, 1, 1, 1, 1),
+(3, 'Hệ điều hành 1', 0, 2026, 2, 1, 1, 2),
+(4, 'Hệ điều hành 2', 10, 2025, 2, 1, 1, 2);
 
 -- --------------------------------------------------------
 
@@ -515,14 +797,16 @@ ALTER TABLE `cauhoi`
   ADD PRIMARY KEY (`macauhoi`),
   ADD KEY `madokho` (`madokho`),
   ADD KEY `maloai` (`maloai`),
-  ADD KEY `mamonhoc` (`mamonhoc`);
+  ADD KEY `mamonhoc` (`mamonhoc`),
+  ADD KEY `cauhoi_ibfk_4` (`nguoitao`);
 
 --
 -- Indexes for table `chitietbaithi`
 --
 ALTER TABLE `chitietbaithi`
   ADD PRIMARY KEY (`mabaithi`,`macauhoi`),
-  ADD KEY `macauhoi` (`macauhoi`);
+  ADD KEY `macauhoi` (`macauhoi`),
+  ADD KEY `chitietbaithi_ibfk_3` (`dapanchon`);
 
 --
 -- Indexes for table `chitietdethi`
@@ -563,7 +847,9 @@ ALTER TABLE `dapan`
 --
 ALTER TABLE `dethi`
   ADD PRIMARY KEY (`made`),
-  ADD KEY `makythi` (`makythi`);
+  ADD KEY `makythi` (`makythi`),
+  ADD KEY `dethi_ibfk_2` (`nguoitao`),
+  ADD KEY `dethi_ibfk_3` (`monthi`);
 
 --
 -- Indexes for table `dokho`
@@ -632,25 +918,25 @@ ALTER TABLE `phancong`
 -- AUTO_INCREMENT for table `baithi`
 --
 ALTER TABLE `baithi`
-  MODIFY `mabaithi` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `mabaithi` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
 
 --
 -- AUTO_INCREMENT for table `cauhoi`
 --
 ALTER TABLE `cauhoi`
-  MODIFY `macauhoi` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `macauhoi` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=30;
 
 --
 -- AUTO_INCREMENT for table `dapan`
 --
 ALTER TABLE `dapan`
-  MODIFY `madapan` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=33;
+  MODIFY `madapan` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=69;
 
 --
 -- AUTO_INCREMENT for table `dethi`
 --
 ALTER TABLE `dethi`
-  MODIFY `made` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `made` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `dokho`
@@ -662,7 +948,7 @@ ALTER TABLE `dokho`
 -- AUTO_INCREMENT for table `kythi`
 --
 ALTER TABLE `kythi`
-  MODIFY `makythi` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `makythi` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `loaicauhoi`
@@ -674,7 +960,7 @@ ALTER TABLE `loaicauhoi`
 -- AUTO_INCREMENT for table `lop`
 --
 ALTER TABLE `lop`
-  MODIFY `malop` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `malop` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `monhoc`
@@ -711,14 +997,16 @@ ALTER TABLE `baithi`
 ALTER TABLE `cauhoi`
   ADD CONSTRAINT `cauhoi_ibfk_1` FOREIGN KEY (`madokho`) REFERENCES `dokho` (`madokho`),
   ADD CONSTRAINT `cauhoi_ibfk_2` FOREIGN KEY (`maloai`) REFERENCES `loaicauhoi` (`maloai`),
-  ADD CONSTRAINT `cauhoi_ibfk_3` FOREIGN KEY (`mamonhoc`) REFERENCES `monhoc` (`mamonhoc`);
+  ADD CONSTRAINT `cauhoi_ibfk_3` FOREIGN KEY (`mamonhoc`) REFERENCES `monhoc` (`mamonhoc`),
+  ADD CONSTRAINT `cauhoi_ibfk_4` FOREIGN KEY (`nguoitao`) REFERENCES `nguoidung` (`id`);
 
 --
 -- Constraints for table `chitietbaithi`
 --
 ALTER TABLE `chitietbaithi`
   ADD CONSTRAINT `chitietbaithi_ibfk_1` FOREIGN KEY (`mabaithi`) REFERENCES `baithi` (`mabaithi`),
-  ADD CONSTRAINT `chitietbaithi_ibfk_2` FOREIGN KEY (`macauhoi`) REFERENCES `cauhoi` (`macauhoi`);
+  ADD CONSTRAINT `chitietbaithi_ibfk_2` FOREIGN KEY (`macauhoi`) REFERENCES `cauhoi` (`macauhoi`),
+  ADD CONSTRAINT `chitietbaithi_ibfk_3` FOREIGN KEY (`dapanchon`) REFERENCES `dapan` (`madapan`);
 
 --
 -- Constraints for table `chitietdethi`
@@ -738,7 +1026,8 @@ ALTER TABLE `chitietlop`
 -- Constraints for table `chitietquyen`
 --
 ALTER TABLE `chitietquyen`
-  ADD CONSTRAINT `chitietquyen_ibfk_1` FOREIGN KEY (`manhomquyen`) REFERENCES `nhomquyen` (`manhomquyen`);
+  ADD CONSTRAINT `chitietquyen_ibfk_1` FOREIGN KEY (`manhomquyen`) REFERENCES `nhomquyen` (`manhomquyen`),
+  ADD CONSTRAINT `chitietquyen_ibfk_2` FOREIGN KEY (`machucnang`) REFERENCES `danhmucchucnang` (`machucnang`);
 
 --
 -- Constraints for table `dapan`
@@ -750,7 +1039,9 @@ ALTER TABLE `dapan`
 -- Constraints for table `dethi`
 --
 ALTER TABLE `dethi`
-  ADD CONSTRAINT `dethi_ibfk_1` FOREIGN KEY (`makythi`) REFERENCES `kythi` (`makythi`);
+  ADD CONSTRAINT `dethi_ibfk_1` FOREIGN KEY (`makythi`) REFERENCES `kythi` (`makythi`),
+  ADD CONSTRAINT `dethi_ibfk_2` FOREIGN KEY (`nguoitao`) REFERENCES `nguoidung` (`id`),
+  ADD CONSTRAINT `dethi_ibfk_3` FOREIGN KEY (`monthi`) REFERENCES `monhoc` (`mamonhoc`);
 
 --
 -- Constraints for table `giaodethi`

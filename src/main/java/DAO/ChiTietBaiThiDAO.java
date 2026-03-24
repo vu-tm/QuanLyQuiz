@@ -18,7 +18,11 @@ public class ChiTietBaiThiDAO {
             PreparedStatement pst = con.prepareStatement(sql);
             pst.setInt(1, t.getMabaithi());
             pst.setInt(2, t.getMacauhoi());
-            pst.setInt(3, t.getDapanchon());
+            if (t.getDapanchon() == 0) {
+                pst.setNull(3, java.sql.Types.INTEGER);
+            } else {
+                pst.setInt(3, t.getDapanchon());
+            }
             pst.setString(4, t.getNoidungdienkhuyet());
             result = pst.executeUpdate();
         } catch (SQLException ex) {

@@ -74,9 +74,9 @@ public class CauHoi extends JPanel implements ActionListener, ItemListener {
         table.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 13));
         table.getTableHeader().setPreferredSize(new Dimension(0, 40));
         table.setFocusable(false);
-        
+
         // Tăng chiều cao hàng mặc định để nhìn thoáng hơn
-        table.setRowHeight(40); 
+        table.setRowHeight(40);
         scrollTable.setViewportView(table);
 
         // Renderer căn giữa cho các cột thông thường
@@ -131,7 +131,7 @@ public class CauHoi extends JPanel implements ActionListener, ItemListener {
         functionBar.setBorder(new EmptyBorder(10, 10, 10, 10));
         functionBar.setBackground(Color.WHITE);
 
-        String[] action = {"create", "update", "delete", "import", "export"};
+        String[] action = {"create", "update", "delete", "detail", "import", "export"};
         mainFunction = new MainFunction(mainFrame.getNguoiDung().getManhomquyen(), "1", action);
         for (String ac : action) {
             mainFunction.btn.get(ac).addActionListener(this);
@@ -164,6 +164,7 @@ public class CauHoi extends JPanel implements ActionListener, ItemListener {
     }
 
     class MultiLineTableCellRenderer extends JTextArea implements TableCellRenderer {
+
         public MultiLineTableCellRenderer() {
             setLineWrap(true);
             setWrapStyleWord(true);
@@ -186,7 +187,7 @@ public class CauHoi extends JPanel implements ActionListener, ItemListener {
 
             int width = table.getColumnModel().getColumn(column).getWidth();
             setSize(new Dimension(width, getPreferredSize().height));
-            
+
             if (table.getRowHeight(row) != getPreferredSize().height) {
                 table.setRowHeight(row, Math.max(40, getPreferredSize().height));
             }
@@ -236,6 +237,8 @@ public class CauHoi extends JPanel implements ActionListener, ItemListener {
 
             if (source == mainFunction.btn.get("update")) {
                 new CauHoiDialog(this, owner, "Chỉnh sửa câu hỏi", selected);
+            } else if (source == mainFunction.btn.get("detail")) {
+                new CauHoiDialog(this, owner, "Thông tin chi tiết câu hỏi", selected);
             } else if (source == mainFunction.btn.get("delete")) {
                 if (JOptionPane.showConfirmDialog(this, "Bạn có chắc chắn muốn xóa câu hỏi mã " + macauhoi + "?", "Xác nhận", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
                     if (bus.delete(macauhoi)) {
@@ -267,7 +270,9 @@ public class CauHoi extends JPanel implements ActionListener, ItemListener {
                 int countSuccess = 0, countError = 0;
                 for (int row = 1; row <= excelSheet.getLastRowNum(); row++) {
                     XSSFRow excelRow = excelSheet.getRow(row);
-                    if (excelRow == null) continue;
+                    if (excelRow == null) {
+                        continue;
+                    }
 
                     try {
                         String noidung = formatter.formatCellValue(excelRow.getCell(0)).trim();
@@ -275,7 +280,9 @@ public class CauHoi extends JPanel implements ActionListener, ItemListener {
                         String tenLoai = formatter.formatCellValue(excelRow.getCell(2)).trim();
                         String tenMonHoc = formatter.formatCellValue(excelRow.getCell(3)).trim();
 
-                        if (noidung.isEmpty()) continue;
+                        if (noidung.isEmpty()) {
+                            continue;
+                        }
 
                         int madokho = -1;
                         for (var dk : doKhoBUS.getAll()) {
@@ -309,7 +316,11 @@ public class CauHoi extends JPanel implements ActionListener, ItemListener {
                             ch.setMamonhoc(mamonhoc);
                             ch.setNguoitao(mainFrame.getNguoiDung().getId());
                             ch.setTrangthai(1);
-                            if (bus.add(ch)) countSuccess++; else countError++;
+                            if (bus.add(ch)) {
+                                countSuccess++;
+                            } else {
+                                countError++;
+                            }
                         } else {
                             countError++;
                         }

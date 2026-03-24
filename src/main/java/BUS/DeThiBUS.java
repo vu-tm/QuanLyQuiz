@@ -23,12 +23,12 @@ public class DeThiBUS {
         return this.listDeThi;
     }
 
-    public boolean add(DeThiDTO dt) {
-        boolean check = dethiDAO.insert(dt) > 0;
-        if (check) {
+    public int add(DeThiDTO dt) {
+        int newId = dethiDAO.insert(dt);
+        if (newId > 0) {
             getAll();
         }
-        return check;
+        return newId;
     }
 
     public boolean update(DeThiDTO dt) {
@@ -105,9 +105,10 @@ public class DeThiBUS {
     }
 
     public DeThiDTO getById(int made) {
-        for (int i = 0; i < listDeThi.size(); i++) {
-            if (listDeThi.get(i).getMade() == made) {
-                return listDeThi.get(i);
+        this.listDeThi = dethiDAO.selectAll();
+        for (DeThiDTO dt : listDeThi) {
+            if (dt.getMade() == made) {
+                return dt;
             }
         }
         return null;

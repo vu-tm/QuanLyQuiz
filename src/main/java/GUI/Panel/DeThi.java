@@ -11,14 +11,12 @@ import GUI.Component.PanelBorderRadius;
 import GUI.Component.TableSorter;
 import GUI.Dialog.ChiTietDeThiDialog;
 import GUI.Dialog.DeThiDialog;
-import helper.Validation;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -239,7 +237,7 @@ public class DeThi extends JPanel implements ActionListener, ItemListener {
                             dt.setTongsocau(0);
                             dt.setTrangthai(true);
 
-                            if (bus.add(dt)) {
+                            if (bus.add(dt) > 0) {
                                 countSuccess++;
                             } else {
                                 countError++;
@@ -291,8 +289,13 @@ public class DeThi extends JPanel implements ActionListener, ItemListener {
                 JOptionPane.showMessageDialog(this, "Vui lòng chọn đề thi!");
                 return;
             }
-            int made = (int) table.getValueAt(index, 0);
+            int modelIndex = table.convertRowIndexToModel(index);
+            int made = (int) table.getModel().getValueAt(modelIndex, 0);
             DeThiDTO selected = bus.getById(made);
+            if (selected == null) {
+                JOptionPane.showMessageDialog(this, "Không tìm thấy dữ liệu đề thi!");
+                return;
+            }
 
             if (source == mainFunction.btn.get("update")) {
                 new DeThiDialog(this, owner, "Chỉnh sửa đề thi", true, "update", selected);

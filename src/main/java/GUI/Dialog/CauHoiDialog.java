@@ -104,7 +104,11 @@ public class CauHoiDialog extends JDialog {
         loadComboBoxData();
         if (currentDTO != null) {
             loadDataForEdit();
-            if (this.getTitle().contains("độ khó")) {
+
+            if (this.getTitle().toLowerCase().contains("chi tiết")) {
+                disableAllFields();
+                btnLuu.setVisible(false);
+            } else if (this.getTitle().contains("độ khó")) {
                 disableAllExceptDifficulty();
             }
         } else {
@@ -384,5 +388,20 @@ public class CauHoiDialog extends JDialog {
             rd.setEnabled(false);
         }
         btnLuu.setText("Cập nhật độ khó");
+    }
+
+    private void disableAllFields() {
+        cmbLoaiCauHoi.setEnabled(false);
+        cmbDoKho.setEnabled(false);
+        cmbMonHoc.setEnabled(false);
+        txtaCauHoi.setEditable(false);
+        txtaCauHoi.setBackground(new Color(245, 245, 245));
+        for (JTextField txt : txtAnswers) {
+            txt.setEditable(false);
+            txt.setBackground(new Color(245, 245, 245));
+        }
+        for (JRadioButton rd : rdAnswers) {
+            rd.setEnabled(false);
+        }
     }
 }

@@ -57,12 +57,13 @@ public class DeThiDialog extends JDialog {
     private HashSet<Integer> selectedCauHoi = new HashSet<>();
     private HashSet<Integer> selectedLop = new HashSet<>();
     private ArrayList<LopDTO> listLopHienThi = new ArrayList<>();
-    private JCheckBox chkChonTatCa;
+    private JCheckBox chkChonTatCa, chkAllQuestions;
 
     private DeThi parent;
     private DeThiDTO currentDTO;
     private String currentType;
 
+    private List<CauHoiDTO> currentFilteredQuestions = new ArrayList<>();
     private List<CauHoiDTO> allCauHoi;
     private ArrayList<MonHocDTO> listMH;
 
@@ -142,7 +143,22 @@ public class DeThiDialog extends JDialog {
 
         cbxMonHoc.getCbb().addItemListener((ItemEvent e) -> {
             if (e.getStateChange() == ItemEvent.SELECTED) {
+                int indexMH = cbxMonHoc.getCbb().getSelectedIndex() - 1;
+
+                if (indexMH >= 0) {
+                    int selectedMaMH = listMH.get(indexMH).getMamonhoc();
+                    selectedCauHoi.removeIf(id -> {
+                        DTO.CauHoiDTO q = cauHoiBUS.getById(id);
+                        return q != null && q.getMamonhoc() != selectedMaMH;
+                    });
+                } else {
+                    selectedCauHoi.clear();
+                }
+
+                soCau.setText(String.valueOf(selectedCauHoi.size()));
+
                 capNhatDanhSachLop();
+                applyFilter();
             }
         });
 
@@ -226,6 +242,23 @@ public class DeThiDialog extends JDialog {
         JPanel pnlSearchTool = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 5));
         pnlSearchTool.setBackground(Color.WHITE);
 
+        chkAllQuestions = new JCheckBox("Chọn tất cả");
+        chkAllQuestions.setBackground(Color.WHITE);
+        chkAllQuestions.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+
+        chkAllQuestions.addActionListener(e -> {
+            boolean isSelected = chkAllQuestions.isSelected();
+            for (CauHoiDTO ch : currentFilteredQuestions) {
+                if (isSelected) {
+                    selectedCauHoi.add(ch.getMacauhoi());
+                } else {
+                    selectedCauHoi.remove(ch.getMacauhoi());
+                }
+            }
+            soCau.setText(String.valueOf(selectedCauHoi.size()));
+            renderCauHoi(currentFilteredQuestions);
+        });
+
         JLabel lblTimKiem = new JLabel("Tìm kiếm:");
         txtSearch = new JTextField(15);
         txtSearch.setPreferredSize(new Dimension(180, 32));
@@ -248,6 +281,8 @@ public class DeThiDialog extends JDialog {
         });
         cbxFilterDoKho.addActionListener(e -> applyFilter());
 
+        pnlSearchTool.add(chkAllQuestions);
+        pnlSearchTool.add(new JSeparator(JSeparator.VERTICAL));
         pnlSearchTool.add(lblTimKiem);
         pnlSearchTool.add(txtSearch);
         pnlSearchTool.add(cbxFilterDoKho);
@@ -380,19 +415,30 @@ public class DeThiDialog extends JDialog {
     private void applyFilter() {
         String keyword = txtSearch.getText().toLowerCase().trim();
         String tenDoKho = (String) cbxFilterDoKho.getSelectedItem();
+
+        int indexMH = cbxMonHoc.getCbb().getSelectedIndex() - 1;
+        int selectedMaMH = (indexMH >= 0) ? listMH.get(indexMH).getMamonhoc() : -1;
+
         ArrayList<CauHoiDTO> filtered = new ArrayList<>();
         for (CauHoiDTO ch : allCauHoi) {
+            boolean matchMonHoc = (selectedMaMH == -1) || (ch.getMamonhoc() == selectedMaMH);
+
             boolean matchKeyword = keyword.isEmpty() || ch.getNoidung().toLowerCase().contains(keyword);
+
             boolean matchDoKho = "Tất cả độ khó".equals(tenDoKho)
                     || doKhoBUS.getTenDoKho(ch.getMadokho()).equals(tenDoKho);
-            if (matchKeyword && matchDoKho) {
+
+            if (matchMonHoc && matchKeyword && matchDoKho) {
                 filtered.add(ch);
             }
         }
+        this.currentFilteredQuestions = filtered;
+        syncChonTatCaCauHoi();
         renderCauHoi(filtered);
     }
 
     private void renderCauHoi(List<CauHoiDTO> danhSach) {
+        this.currentFilteredQuestions = danhSach;
         pnlQuestionList.removeAll();
         for (CauHoiDTO ch : danhSach) {
             String tenDoKho = doKhoBUS.getTenDoKho(ch.getMadokho());
@@ -423,6 +469,7 @@ public class DeThiDialog extends JDialog {
                     selectedCauHoi.remove(maCauHoi);
                 }
                 soCau.setText(String.valueOf(selectedCauHoi.size()));
+                syncChonTatCaCauHoi();
             });
         } else {
             chk.setEnabled(false);
@@ -512,16 +559,15 @@ public class DeThiDialog extends JDialog {
             dt.setThoigiantao(new Timestamp(System.currentTimeMillis()));
             dt.setNguoitao(mainFrame.getNguoiDung().getId());
             dt.setTrangthai(true);
+            int madeVuaTao = deThiBUS.add(dt);
 
-            if (deThiBUS.add(dt)) {
-                ArrayList<DeThiDTO> all = deThiBUS.getAll();
-                int madeVuaTao = all.get(all.size() - 1).getMade();
-
+            if (madeVuaTao > 0) {
                 deThiBUS.saveChiTiet(madeVuaTao, listMaCauHoi);
                 giaoDeThiDAO.deleteByMaDe(madeVuaTao);
                 for (int malop : listMaLop) {
                     giaoDeThiDAO.insert(new GiaoDeThiDTO(madeVuaTao, malop));
                 }
+
                 JOptionPane.showMessageDialog(this, "Thêm đề thi thành công!");
                 parent.loadDataTable(deThiBUS.getAll());
                 dispose();
@@ -548,5 +594,21 @@ public class DeThiDialog extends JDialog {
                 JOptionPane.showMessageDialog(this, "Cập nhật thất bại!", "Lỗi", JOptionPane.ERROR_MESSAGE);
             }
         }
+    }
+
+    private void syncChonTatCaCauHoi() {
+        if (currentFilteredQuestions.isEmpty()) {
+            chkAllQuestions.setSelected(false);
+            return;
+        }
+
+        boolean allSelected = true;
+        for (CauHoiDTO ch : currentFilteredQuestions) {
+            if (!selectedCauHoi.contains(ch.getMacauhoi())) {
+                allSelected = false;
+                break;
+            }
+        }
+        chkAllQuestions.setSelected(allSelected);
     }
 }

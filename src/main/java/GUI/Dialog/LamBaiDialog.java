@@ -286,12 +286,25 @@ public class LamBaiDialog extends JDialog {
             String oldAns = userAnswers.get(index);
             txtFillInput.setText(oldAns != null ? oldAns : "");
 
-            txtFillInput.addKeyListener(new KeyAdapter() {
-                @Override
-                public void keyReleased(KeyEvent e) {
+            txtFillInput.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
+                public void changedUpdate(javax.swing.event.DocumentEvent e) {
+                    save();
+                }
+
+                public void removeUpdate(javax.swing.event.DocumentEvent e) {
+                    save();
+                }
+
+                public void insertUpdate(javax.swing.event.DocumentEvent e) {
+                    save();
+                }
+
+                public void save() {
                     userAnswers.put(index, txtFillInput.getText().trim());
                     updateNavStatus(index);
-                    if (btnNavs != null) styleNavNum(btnNavs[index], index, index);
+                    if (btnNavs != null) {
+                        styleNavNum(btnNavs[index], index, index);
+                    }
                     rebuildAnswerBarForFill(index);
                 }
             });
@@ -349,7 +362,7 @@ public class LamBaiDialog extends JDialog {
         keyLbl.setForeground(selected ? C_WHITE : C_TEXT2);
         keyLbl.setPreferredSize(new Dimension(34, 34));
 
-        JLabel textLbl = new JLabel("<html>" + text + "</html>");
+        JLabel textLbl = new JLabel("<html>" + escapeHtml(text) + "</html>");
         textLbl.setFont(new Font("Segoe UI", Font.PLAIN, 15));
         textLbl.setForeground(C_TEXT);
 
@@ -379,7 +392,9 @@ public class LamBaiDialog extends JDialog {
     }
 
     private void goTo(int idx) {
-        if (idx < 0 || idx >= dsCauHoi.size()) return;
+        if (idx < 0 || idx >= dsCauHoi.size()) {
+            return;
+        }
         loadQuestion(idx);
     }
 
@@ -401,6 +416,10 @@ public class LamBaiDialog extends JDialog {
     }
 
     private void submitQuiz() {
+        if (dsCauHoi.get(currentIdx).getMaloai() == 3 && txtFillInput != null) {
+            userAnswers.put(currentIdx, txtFillInput.getText().trim());
+        }
+        
         timer.stop();
         int socaudung = 0;
         DapAnBUS daBus = new DapAnBUS();
@@ -408,14 +427,18 @@ public class LamBaiDialog extends JDialog {
         for (int i = 0; i < dsCauHoi.size(); i++) {
             CauHoiDTO q = dsCauHoi.get(i);
             String userAns = userAnswers.get(i);
-            if (userAns == null || userAns.isEmpty()) continue;
+            if (userAns == null || userAns.isEmpty()) {
+                continue;
+            }
 
             ArrayList<DapAnDTO> dsDung = daBus.getDapAnDungByCauHoi(q.getMacauhoi());
 
             if (q.getMaloai() == 3) { // Điền khuyết
                 if (!dsDung.isEmpty()) {
                     String correctText = dsDung.get(0).getNoidungtl().trim();
-                    if (userAns.equalsIgnoreCase(correctText)) socaudung++;
+                    if (userAns.equalsIgnoreCase(correctText)) {
+                        socaudung++;
+                    }
                 }
             } else { // Trắc nghiệm / Đúng sai
                 try {
@@ -426,7 +449,8 @@ public class LamBaiDialog extends JDialog {
                             break;
                         }
                     }
-                } catch (NumberFormatException e) {}
+                } catch (NumberFormatException e) {
+                }
             }
         }
 
@@ -449,7 +473,7 @@ public class LamBaiDialog extends JDialog {
                 ChiTietBaiThiDTO ct = new ChiTietBaiThiDTO();
                 ct.setMabaithi(mabaithiGenerated);
                 ct.setMacauhoi(dsCauHoi.get(i).getMacauhoi());
-                
+
                 String ans = userAnswers.get(i);
                 if (dsCauHoi.get(i).getMaloai() == 3) {
                     ct.setDapanchon(0);
@@ -595,5 +619,16 @@ public class LamBaiDialog extends JDialog {
         row.add(dot);
         row.add(lbl);
         return row;
+    }
+
+    private String escapeHtml(String text) {
+        if (text == null) {
+            return "";
+        }
+        return text.replace("&", "&amp;")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;")
+                .replace("\"", "&quot;")
+                .replace("'", "&#39;");
     }
 }

@@ -357,9 +357,10 @@ public class LopDialog extends JDialog implements ActionListener {
             return;
         }
 
+        int siSoThucTe = Integer.parseInt(txtSoSVDaChon.getText().trim());
         LopDTO newLop = new LopDTO();
         newLop.setTenlop(txtTenlop.getText().trim());
-        newLop.setSiso(0);
+        newLop.setSiso(siSoThucTe);
         newLop.setNamhoc(Integer.parseInt(txtNamhoc.getText().trim()));
         newLop.setHocky(Integer.parseInt(txtHocky.getText().trim()));
         newLop.setGiangvien(nguoiDungDangNhap.getId());
@@ -368,7 +369,7 @@ public class LopDialog extends JDialog implements ActionListener {
 
         if (lopBUS.add(newLop)) {
             ArrayList<LopDTO> all = lopBUS.getAll();
-            LopDTO created = all.get(all.size() - 1);
+            LopDTO created = all.get(0);
             luuChiTietLop(created.getMalop());
             lopHocPanel.refreshData();
             dispose();
@@ -388,8 +389,9 @@ public class LopDialog extends JDialog implements ActionListener {
             return;
         }
 
+        int siSoMoi = Integer.parseInt(txtSoSVDaChon.getText().trim());
         lop.setTenlop(txtTenlop.getText().trim());
-        lop.setSiso(0);
+        lop.setSiso(siSoMoi);
         lop.setNamhoc(Integer.parseInt(txtNamhoc.getText().trim()));
         lop.setHocky(Integer.parseInt(txtHocky.getText().trim()));
         lop.setGiangvien(nguoiDungDangNhap.getId());

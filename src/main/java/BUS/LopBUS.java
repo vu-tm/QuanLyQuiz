@@ -63,8 +63,8 @@ public class LopBUS {
     }
 
     public ArrayList<LopDTO> search(ArrayList<LopDTO> sourceList, String text, String type) {
-    ArrayList<LopDTO> result = new ArrayList<>();
-    text = text.toLowerCase();
+        ArrayList<LopDTO> result = new ArrayList<>();
+        text = text.toLowerCase();
         for (LopDTO lop : sourceList) {
             boolean match = false;
             switch (type) {
@@ -120,5 +120,14 @@ public class LopBUS {
 
     public int countSiSoByMaLop(int malop) {
         return chitietlopDAO.countByMaLop(malop);
+    }
+
+    public ArrayList<Integer> getListMaLopByUser(int manguoidung) {
+        ArrayList<Integer> dsMaLop = new ArrayList<>();
+        ArrayList<ChiTietLopDTO> listCT = chitietlopDAO.selectByUser(manguoidung);
+        for (ChiTietLopDTO ct : listCT) {
+            dsMaLop.add(ct.getMalop());
+        }
+        return dsMaLop;
     }
 }

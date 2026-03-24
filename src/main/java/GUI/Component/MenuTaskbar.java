@@ -145,7 +145,7 @@ public class MenuTaskbar extends JPanel {
                             main.setPanel(new KyThi(main));
                             break;
                         case 9:;
-                            main.setPanel(new LamBai());
+                            main.setPanel(new LamBai(main));
                             break;
                         case 10:
                              main.setPanel(new BaiThi(main));

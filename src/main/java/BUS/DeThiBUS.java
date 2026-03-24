@@ -112,4 +112,25 @@ public class DeThiBUS {
         }
         return null;
     }
+
+    public ArrayList<DeThiDTO> getDeThiChoSinhVien(int manguoidung) {
+        LopBUS lopBus = new LopBUS();
+        ArrayList<Integer> listMaLop = lopBus.getListMaLopByUser(manguoidung);
+
+        DAO.GiaoDeThiDAO giaoDeThiDAO = DAO.GiaoDeThiDAO.getInstance();
+        java.util.HashSet<Integer> setMaDe = new java.util.HashSet<>();
+
+        for (int malop : listMaLop) {
+            ArrayList<Integer> dsMaDeCuaLop = giaoDeThiDAO.getMaDeByMaLop(malop);
+            setMaDe.addAll(dsMaDeCuaLop);
+        }
+        ArrayList<DeThiDTO> result = new ArrayList<>();
+        for (int made : setMaDe) {
+            DeThiDTO dt = getById(made);
+            if (dt != null && dt.isTrangthai()) {
+                result.add(dt);
+            }
+        }
+        return result;
+    }
 }

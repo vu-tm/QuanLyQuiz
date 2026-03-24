@@ -53,4 +53,20 @@ public class GiaoDeThiDAO {
         }
         return result;
     }
+
+    public ArrayList<Integer> getMaDeByMaLop(int malop) {
+        ArrayList<Integer> result = new ArrayList<>();
+        try (Connection con = JDBCUtil.getConnection()) {
+            String sql = "SELECT made FROM giaodethi WHERE malop = ?";
+            PreparedStatement pst = con.prepareStatement(sql);
+            pst.setInt(1, malop);
+            ResultSet rs = pst.executeQuery();
+            while (rs.next()) {
+                result.add(rs.getInt("made"));
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+        return result;
+    }
 }

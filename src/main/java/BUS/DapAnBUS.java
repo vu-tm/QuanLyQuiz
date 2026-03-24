@@ -78,7 +78,7 @@ public class DapAnBUS {
 
     public ArrayList<DapAnDTO> getDapAnDungByCauHoi(int macauhoi) {
         ArrayList<DapAnDTO> result = new ArrayList<>();
-        ArrayList<DapAnDTO> all = getDapAnDeHienThi(macauhoi);
+        ArrayList<DapAnDTO> all = getDapAnDayDu(macauhoi); 
         for (DapAnDTO da : all) {
             if (da.isLadapan()) {
                 result.add(da);

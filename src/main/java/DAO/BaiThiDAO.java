@@ -127,7 +127,6 @@ public class BaiThiDAO {
         return result;
     }
     
-    // Đừng quên sửa hàm delete tương tự nếu cần
     public int delete(int mabaithi) {
         int result = 0;
         try (Connection con = JDBCUtil.getConnection()) {

@@ -6,6 +6,7 @@ import GUI.Component.ButtonCustom;
 import GUI.Component.InputForm;
 import GUI.Component.PanelBorderRadius;
 import GUI.Component.TableSorter;
+import GUI.Dialog.CauHoiDialog;
 import helper.JTableExporter;
 
 import java.awt.*;
@@ -26,6 +27,8 @@ public class ThongKeCauHoi extends JPanel implements ActionListener, KeyListener
     InputForm inputSearch;
     ButtonCustom btnExport, btnReset;
     ArrayList<ThongKeCauHoiDTO> list;
+    private BUS.CauHoiBUS cauHoiBUS = new BUS.CauHoiBUS();
+    private BUS.DoKhoBUS doKhoBUS = new BUS.DoKhoBUS();
 
     public ThongKeCauHoi() {
         list = ThongKeBUS.getThongKeCauHoi();
@@ -82,16 +85,38 @@ public class ThongKeCauHoi extends JPanel implements ActionListener, KeyListener
         tblCauHoi = new JTable();
         scrollTbl = new JScrollPane();
         tblModel = new DefaultTableModel();
-        String[] header = {"STT", "Mã câu hỏi", "Nội dung", "Tổng lần thi", "Tỷ lệ đúng (%)", "Tỷ lệ sai (%)"};
+        String[] header = {"STT", "Mã câu hỏi", "Nội dung", "Độ khó", "Tổng lần thi", "Tỷ lệ đúng (%)", "Tỷ lệ sai (%)"};
         tblModel.setColumnIdentifiers(header);
         tblCauHoi.setModel(tblModel);
 
         // table
-        tblCauHoi.setAutoCreateRowSorter(true);
+        tblCauHoi.getColumnModel().getColumn(0).setPreferredWidth(40);  // STT
+        tblCauHoi.getColumnModel().getColumn(1).setPreferredWidth(80);  // Mã
+        tblCauHoi.getColumnModel().getColumn(2).setPreferredWidth(350); // Nội dung
+        tblCauHoi.getColumnModel().getColumn(3).setPreferredWidth(100); // Độ khó (Mới)
+        tblCauHoi.getColumnModel().getColumn(4).setPreferredWidth(100); // Tổng lần thi
+        tblCauHoi.getColumnModel().getColumn(5).setPreferredWidth(110); // % Đúng
+        tblCauHoi.getColumnModel().getColumn(6).setPreferredWidth(110); // % Sai
         tblCauHoi.setDefaultEditor(Object.class, null);
         tblCauHoi.setRowHeight(35);
         tblCauHoi.setFocusable(false);
         scrollTbl.setViewportView(tblCauHoi);
+        tblCauHoi.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() == 2) { // double click
+                    int row = tblCauHoi.getSelectedRow();
+                    if (row != -1) {
+                        int macauhoi = (int) tblCauHoi.getValueAt(row, 1);
+                        DTO.CauHoiDTO dto = cauHoiBUS.getById(macauhoi);
+
+                        JFrame owner = (JFrame) SwingUtilities.getWindowAncestor(ThongKeCauHoi.this);
+                        CauHoiDialog diag = new CauHoiDialog(null, owner, "Chỉnh sửa độ khó câu hỏi", dto);
+                        refreshTable();
+                    }
+                }
+            }
+        });
 
         DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
         centerRenderer.setHorizontalAlignment(JLabel.CENTER);
@@ -126,10 +151,13 @@ public class ThongKeCauHoi extends JPanel implements ActionListener, KeyListener
             return;
         }
         for (ThongKeCauHoiDTO i : data) {
+            DTO.CauHoiDTO ch = cauHoiBUS.getById(i.getMacauhoi());
+            String tenDoKho = (ch != null) ? doKhoBUS.getTenDoKho(ch.getMadokho()) : "N/A";
             tblModel.addRow(new Object[]{
                 i.getStt(),
                 i.getMacauhoi(),
                 i.getNoidung(),
+                tenDoKho,
                 i.getTonglan(),
                 String.format("%.1f%%", i.getTyleDung()),
                 String.format("%.1f%%", i.getTyleSai())

@@ -104,6 +104,9 @@ public class CauHoiDialog extends JDialog {
         loadComboBoxData();
         if (currentDTO != null) {
             loadDataForEdit();
+            if (this.getTitle().contains("độ khó")) {
+                disableAllExceptDifficulty();
+            }
         } else {
             if (cmbLoaiCauHoi.getItemCount() > 0) {
                 updateAnswerUIByTen(cmbLoaiCauHoi.getItemAt(0).getTenloai());
@@ -124,28 +127,36 @@ public class CauHoiDialog extends JDialog {
         cmbLoaiCauHoi.setRenderer(new DefaultListCellRenderer() {
             public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
                 super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-                if (value instanceof LoaiCauHoiDTO) setText(((LoaiCauHoiDTO) value).getTenloai());
+                if (value instanceof LoaiCauHoiDTO) {
+                    setText(((LoaiCauHoiDTO) value).getTenloai());
+                }
                 return this;
             }
         });
-        
+
         cmbLoaiCauHoi.addActionListener(e -> {
             LoaiCauHoiDTO selected = (LoaiCauHoiDTO) cmbLoaiCauHoi.getSelectedItem();
-            if (selected != null) updateAnswerUIByTen(selected.getTenloai());
+            if (selected != null) {
+                updateAnswerUIByTen(selected.getTenloai());
+            }
         });
 
         cmbDoKho.setRenderer(new DefaultListCellRenderer() {
             public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
                 super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-                if (value instanceof DoKhoDTO) setText(((DoKhoDTO) value).getTendokho());
+                if (value instanceof DoKhoDTO) {
+                    setText(((DoKhoDTO) value).getTendokho());
+                }
                 return this;
             }
         });
-        
+
         cmbMonHoc.setRenderer(new DefaultListCellRenderer() {
             public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
                 super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-                if (value instanceof MonHocDTO) setText(((MonHocDTO) value).getTenmonhoc());
+                if (value instanceof MonHocDTO) {
+                    setText(((MonHocDTO) value).getTenmonhoc());
+                }
                 return this;
             }
         });
@@ -158,9 +169,13 @@ public class CauHoiDialog extends JDialog {
     }
 
     private void updateAnswerUIByTen(String tenLoai) {
-        if (tenLoai.contains("Trắc")) updateAnswerUI(TYPE_TRAC_NGHIEM);
-        else if (tenLoai.contains("Đúng")) updateAnswerUI(TYPE_DUNG_SAI);
-        else updateAnswerUI(TYPE_DIEN_KHUYET);
+        if (tenLoai.contains("Trắc")) {
+            updateAnswerUI(TYPE_TRAC_NGHIEM);
+        } else if (tenLoai.contains("Đúng")) {
+            updateAnswerUI(TYPE_DUNG_SAI);
+        } else {
+            updateAnswerUI(TYPE_DIEN_KHUYET);
+        }
     }
 
     private JPanel createComboWrapper(String label, JComboBox<?> combo) {
@@ -201,9 +216,13 @@ public class CauHoiDialog extends JDialog {
         gbc.insets = new Insets(10, 15, 10, 15);
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.gridy = 0;
-        if (type.equals(TYPE_TRAC_NGHIEM)) renderMultipleChoice(gbc);
-        else if (type.equals(TYPE_DUNG_SAI)) renderTrueFalse(gbc);
-        else if (type.equals(TYPE_DIEN_KHUYET)) renderFillInBlank(gbc);
+        if (type.equals(TYPE_TRAC_NGHIEM)) {
+            renderMultipleChoice(gbc);
+        } else if (type.equals(TYPE_DUNG_SAI)) {
+            renderTrueFalse(gbc);
+        } else if (type.equals(TYPE_DIEN_KHUYET)) {
+            renderFillInBlank(gbc);
+        }
         pnlAnswers.revalidate();
         pnlAnswers.repaint();
     }
@@ -211,13 +230,15 @@ public class CauHoiDialog extends JDialog {
     private void renderMultipleChoice(GridBagConstraints gbc) {
         String[] labels = {"A", "B", "C", "D"};
         for (int i = 0; i < 4; i++) {
-            gbc.gridx = 0; gbc.weightx = 0;
+            gbc.gridx = 0;
+            gbc.weightx = 0;
             JRadioButton rd = new JRadioButton("Đúng");
             rd.setOpaque(false);
             btnGroup.add(rd);
             rdAnswers.add(rd);
             pnlAnswers.add(rd, gbc);
-            gbc.gridx = 1; gbc.weightx = 1.0;
+            gbc.gridx = 1;
+            gbc.weightx = 1.0;
             JTextField txt = new JTextField();
             txt.setPreferredSize(new Dimension(0, 35));
             txt.setBorder(BorderFactory.createTitledBorder("Nội dung đáp án " + labels[i]));
@@ -225,19 +246,23 @@ public class CauHoiDialog extends JDialog {
             pnlAnswers.add(txt, gbc);
             gbc.gridy++;
         }
-        if (!rdAnswers.isEmpty()) rdAnswers.get(0).setSelected(true);
+        if (!rdAnswers.isEmpty()) {
+            rdAnswers.get(0).setSelected(true);
+        }
     }
 
     private void renderTrueFalse(GridBagConstraints gbc) {
         String[] options = {"Đúng", "Sai"};
         for (int i = 0; i < 2; i++) {
-            gbc.gridx = 0; gbc.weightx = 0;
+            gbc.gridx = 0;
+            gbc.weightx = 0;
             JRadioButton rd = new JRadioButton("Đáp án đúng");
             rd.setOpaque(false);
             btnGroup.add(rd);
             rdAnswers.add(rd);
             pnlAnswers.add(rd, gbc);
-            gbc.gridx = 1; gbc.weightx = 1.0;
+            gbc.gridx = 1;
+            gbc.weightx = 1.0;
             JTextField txt = new JTextField(options[i]);
             txt.setEditable(false);
             txt.setPreferredSize(new Dimension(0, 35));
@@ -250,7 +275,8 @@ public class CauHoiDialog extends JDialog {
     }
 
     private void renderFillInBlank(GridBagConstraints gbc) {
-        gbc.gridx = 0; gbc.weightx = 1.0;
+        gbc.gridx = 0;
+        gbc.weightx = 1.0;
         JLabel lbl = new JLabel("Nhập câu trả lời chính xác cần điền:");
         lbl.setFont(new Font("Segoe UI", Font.ITALIC, 12));
         pnlAnswers.add(lbl, gbc);
@@ -273,18 +299,29 @@ public class CauHoiDialog extends JDialog {
 
     private void loadDataForEdit() {
         txtaCauHoi.setText(currentDTO.getNoidung());
-        for (int i = 0; i < cmbDoKho.getItemCount(); i++)
-            if (cmbDoKho.getItemAt(i).getMadokho() == currentDTO.getMadokho()) cmbDoKho.setSelectedIndex(i);
-        for (int i = 0; i < cmbMonHoc.getItemCount(); i++)
-            if (cmbMonHoc.getItemAt(i).getMamonhoc() == currentDTO.getMamonhoc()) cmbMonHoc.setSelectedIndex(i);
-        for (int i = 0; i < cmbLoaiCauHoi.getItemCount(); i++)
-            if (cmbLoaiCauHoi.getItemAt(i).getMaloai() == currentDTO.getMaloai()) cmbLoaiCauHoi.setSelectedIndex(i);
+        for (int i = 0; i < cmbDoKho.getItemCount(); i++) {
+            if (cmbDoKho.getItemAt(i).getMadokho() == currentDTO.getMadokho()) {
+                cmbDoKho.setSelectedIndex(i);
+            }
+        }
+        for (int i = 0; i < cmbMonHoc.getItemCount(); i++) {
+            if (cmbMonHoc.getItemAt(i).getMamonhoc() == currentDTO.getMamonhoc()) {
+                cmbMonHoc.setSelectedIndex(i);
+            }
+        }
+        for (int i = 0; i < cmbLoaiCauHoi.getItemCount(); i++) {
+            if (cmbLoaiCauHoi.getItemAt(i).getMaloai() == currentDTO.getMaloai()) {
+                cmbLoaiCauHoi.setSelectedIndex(i);
+            }
+        }
 
         updateAnswerUIByTen(((LoaiCauHoiDTO) cmbLoaiCauHoi.getSelectedItem()).getTenloai());
         ArrayList<DapAnDTO> listDA = busDapAn.getDapAnDeHienThi(currentDTO.getMacauhoi());
         for (int i = 0; i < listDA.size() && i < txtAnswers.size(); i++) {
             txtAnswers.get(i).setText(listDA.get(i).getNoidungtl());
-            if (listDA.get(i).isLadapan()) rdAnswers.get(i).setSelected(true);
+            if (listDA.get(i).isLadapan()) {
+                rdAnswers.get(i).setSelected(true);
+            }
         }
     }
 
@@ -300,13 +337,19 @@ public class CauHoiDialog extends JDialog {
             ch.setMamonhoc(((MonHocDTO) cmbMonHoc.getSelectedItem()).getMamonhoc());
             ch.setMaloai(((LoaiCauHoiDTO) cmbLoaiCauHoi.getSelectedItem()).getMaloai());
             ch.setTrangthai(1);
-            if (currentDTO == null) ch.setNguoitao(mainFrame.getNguoiDung().getId());
+            if (currentDTO == null) {
+                ch.setNguoitao(mainFrame.getNguoiDung().getId());
+            }
             boolean success = (currentDTO == null) ? busCauHoi.add(ch) : busCauHoi.update(ch);
             if (success) {
                 int maCH = (currentDTO == null) ? findMaxId() : ch.getMacauhoi();
-                saveAnswers(maCH);
-                JOptionPane.showMessageDialog(this, "Đã lưu thông tin câu hỏi!");
-                parent.loadDataTable(busCauHoi.getAll());
+                if (!this.getTitle().contains("độ khó")) {
+                    saveAnswers(maCH);
+                }
+                JOptionPane.showMessageDialog(this, "Đã lưu thông tin!");
+                if (parent != null) {
+                    parent.loadDataTable(busCauHoi.getAll());
+                }
                 dispose();
             }
         } catch (Exception e) {
@@ -318,11 +361,28 @@ public class CauHoiDialog extends JDialog {
         busDapAn.deleteByMaCauHoi(maCH);
         for (int i = 0; i < txtAnswers.size(); i++) {
             String content = txtAnswers.get(i).getText().trim();
-            if (!content.isEmpty()) busDapAn.add(new DapAnDTO(0, maCH, content, rdAnswers.get(i).isSelected()));
+            if (!content.isEmpty()) {
+                busDapAn.add(new DapAnDTO(0, maCH, content, rdAnswers.get(i).isSelected()));
+            }
         }
     }
 
     private int findMaxId() {
         return busCauHoi.getAll().stream().mapToInt(CauHoiDTO::getMacauhoi).max().orElse(0);
+    }
+
+    private void disableAllExceptDifficulty() {
+        cmbLoaiCauHoi.setEnabled(false);
+        cmbMonHoc.setEnabled(false);
+        txtaCauHoi.setEditable(false);
+        txtaCauHoi.setBackground(new Color(240, 240, 240));
+        for (JTextField txt : txtAnswers) {
+            txt.setEditable(false);
+            txt.setBackground(new Color(240, 240, 240));
+        }
+        for (JRadioButton rd : rdAnswers) {
+            rd.setEnabled(false);
+        }
+        btnLuu.setText("Cập nhật độ khó");
     }
 }

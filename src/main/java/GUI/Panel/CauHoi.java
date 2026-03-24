@@ -22,6 +22,7 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableCellRenderer;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -73,17 +74,27 @@ public class CauHoi extends JPanel implements ActionListener, ItemListener {
         table.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 13));
         table.getTableHeader().setPreferredSize(new Dimension(0, 40));
         table.setFocusable(false);
-        table.setRowHeight(30);
+        
+        // Tăng chiều cao hàng mặc định để nhìn thoáng hơn
+        table.setRowHeight(40); 
         scrollTable.setViewportView(table);
 
+        // Renderer căn giữa cho các cột thông thường
         DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
         centerRenderer.setHorizontalAlignment(JLabel.CENTER);
+
+        // Thiết lập Renderer cho từng cột
         for (int i = 0; i < table.getColumnCount(); i++) {
-            table.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);
+            if (i == 1) {
+                table.getColumnModel().getColumn(i).setCellRenderer(new MultiLineTableCellRenderer());
+            } else {
+                table.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);
+            }
         }
 
+        // Độ rộng các cột
         table.getColumnModel().getColumn(0).setPreferredWidth(60);  // Mã CH
-        table.getColumnModel().getColumn(1).setPreferredWidth(400); // Nội dung
+        table.getColumnModel().getColumn(1).setPreferredWidth(450); // Nội dung
         table.getColumnModel().getColumn(2).setPreferredWidth(100); // Độ khó
         table.getColumnModel().getColumn(3).setPreferredWidth(100); // Loại
         table.getColumnModel().getColumn(4).setPreferredWidth(150); // Môn học
@@ -150,6 +161,38 @@ public class CauHoi extends JPanel implements ActionListener, ItemListener {
         pnlMain.setBackground(Color.WHITE);
         pnlMain.add(scrollTable, BorderLayout.CENTER);
         contentCenter.add(pnlMain, BorderLayout.CENTER);
+    }
+
+    class MultiLineTableCellRenderer extends JTextArea implements TableCellRenderer {
+        public MultiLineTableCellRenderer() {
+            setLineWrap(true);
+            setWrapStyleWord(true);
+            setOpaque(true);
+            setEditable(false);
+            setFont(new Font("Segoe UI", Font.PLAIN, 13));
+            setBorder(new EmptyBorder(8, 10, 8, 10)); // Tạo khoảng cách đệm cho chữ
+        }
+
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+            if (isSelected) {
+                setForeground(table.getSelectionForeground());
+                setBackground(table.getSelectionBackground());
+            } else {
+                setForeground(table.getForeground());
+                setBackground(table.getBackground());
+            }
+            setText(value != null ? value.toString() : "");
+
+            int width = table.getColumnModel().getColumn(column).getWidth();
+            setSize(new Dimension(width, getPreferredSize().height));
+            
+            if (table.getRowHeight(row) != getPreferredSize().height) {
+                table.setRowHeight(row, Math.max(40, getPreferredSize().height));
+            }
+
+            return this;
+        }
     }
 
     public void thucHienTimKiem() {
@@ -222,25 +265,18 @@ public class CauHoi extends JPanel implements ActionListener, ItemListener {
                 org.apache.poi.ss.usermodel.DataFormatter formatter = new org.apache.poi.ss.usermodel.DataFormatter();
 
                 int countSuccess = 0, countError = 0;
-                // Chạy từ dòng 1 (bỏ qua tiêu đề)
                 for (int row = 1; row <= excelSheet.getLastRowNum(); row++) {
                     XSSFRow excelRow = excelSheet.getRow(row);
-                    if (excelRow == null) {
-                        continue;
-                    }
+                    if (excelRow == null) continue;
 
                     try {
-                        // 1. Đọc tên từ Excel
                         String noidung = formatter.formatCellValue(excelRow.getCell(0)).trim();
                         String tenDoKho = formatter.formatCellValue(excelRow.getCell(1)).trim();
                         String tenLoai = formatter.formatCellValue(excelRow.getCell(2)).trim();
                         String tenMonHoc = formatter.formatCellValue(excelRow.getCell(3)).trim();
 
-                        if (noidung.isEmpty()) {
-                            continue;
-                        }
+                        if (noidung.isEmpty()) continue;
 
-                        // 2. Chuyển đổi Tên -> ID (Tìm trong danh sách BUS)
                         int madokho = -1;
                         for (var dk : doKhoBUS.getAll()) {
                             if (dk.getTendokho().equalsIgnoreCase(tenDoKho)) {
@@ -265,7 +301,6 @@ public class CauHoi extends JPanel implements ActionListener, ItemListener {
                             }
                         }
 
-                        // 3. Kiểm tra nếu tìm thấy đủ ID thì mới add
                         if (madokho != -1 && maloai != -1 && mamonhoc != -1) {
                             CauHoiDTO ch = new CauHoiDTO();
                             ch.setNoidung(noidung);
@@ -274,14 +309,9 @@ public class CauHoi extends JPanel implements ActionListener, ItemListener {
                             ch.setMamonhoc(mamonhoc);
                             ch.setNguoitao(mainFrame.getNguoiDung().getId());
                             ch.setTrangthai(1);
-
-                            if (bus.add(ch)) {
-                                countSuccess++;
-                            } else {
-                                countError++;
-                            }
+                            if (bus.add(ch)) countSuccess++; else countError++;
                         } else {
-                            countError++; // Không tìm thấy tên tương ứng trong DB
+                            countError++;
                         }
                     } catch (Exception e) {
                         countError++;

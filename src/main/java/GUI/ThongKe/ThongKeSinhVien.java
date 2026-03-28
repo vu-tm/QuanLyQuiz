@@ -1,7 +1,7 @@
 package GUI.ThongKe;
 
 import BUS.ThongKeBUS;
-import DTO.ThongKe.ThongKeHocSinhDTO;
+import DTO.ThongKe.ThongKeSinhVienDTO;
 import GUI.Component.InputForm;
 import GUI.Component.ButtonCustom;
 import GUI.Component.PanelBorderRadius;
@@ -16,18 +16,18 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 
-public class ThongKeHocSinh extends JPanel implements ActionListener, KeyListener {
+public class ThongKeSinhVien extends JPanel implements ActionListener, KeyListener {
 
     PanelBorderRadius pnlLeft, pnlCenter;
-    JTable tblHocSinh;
+    JTable tblSinhVien;
     JScrollPane scrollTbl;
     DefaultTableModel tblModel;
     InputForm inputSearch;
     ButtonCustom btnExport, btnReset;
-    ArrayList<ThongKeHocSinhDTO> list;
+    ArrayList<ThongKeSinhVienDTO> list;
 
-    public ThongKeHocSinh() {
-        list = ThongKeBUS.getThongKeHocSinh();
+    public ThongKeSinhVien() {
+        list = ThongKeBUS.getThongKeSinhVien();
         initComponent();
         loadDataTable(list);
     }
@@ -50,7 +50,7 @@ public class ThongKeHocSinh extends JPanel implements ActionListener, KeyListene
         pnlLeft.add(left_content, BorderLayout.NORTH);
 
         // Input Tìm kiếm
-        inputSearch = new InputForm("Tìm kiếm học sinh");
+        inputSearch = new InputForm("Tìm kiếm sinh viên");
         inputSearch.getTxtForm().putClientProperty("JTextField.showClearButton", true);
         inputSearch.getTxtForm().addKeyListener(this);
 
@@ -77,37 +77,37 @@ public class ThongKeHocSinh extends JPanel implements ActionListener, KeyListene
         pnlCenter = new PanelBorderRadius();
         pnlCenter.setLayout(new BorderLayout());
 
-        tblHocSinh = new JTable();
+        tblSinhVien = new JTable();
         scrollTbl = new JScrollPane();
         tblModel = new DefaultTableModel();
-        String[] header = {"STT", "Mã học sinh", "Tên học sinh", "Tổng số đề đã làm"};
+        String[] header = {"STT", "Mã sinh viên", "Tên sinh viên", "Tổng số đề đã làm"};
         tblModel.setColumnIdentifiers(header);
-        tblHocSinh.setModel(tblModel);
+        tblSinhVien.setModel(tblModel);
 
         // table
-        tblHocSinh.setAutoCreateRowSorter(true);
-        tblHocSinh.setDefaultEditor(Object.class, null);
-        tblHocSinh.setRowHeight(35);
-        tblHocSinh.setFocusable(false);
-        scrollTbl.setViewportView(tblHocSinh);
+        tblSinhVien.setAutoCreateRowSorter(true);
+        tblSinhVien.setDefaultEditor(Object.class, null);
+        tblSinhVien.setRowHeight(35);
+        tblSinhVien.setFocusable(false);
+        scrollTbl.setViewportView(tblSinhVien);
 
         DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
         centerRenderer.setHorizontalAlignment(JLabel.CENTER);
-        tblHocSinh.setDefaultRenderer(Object.class, centerRenderer);
+        tblSinhVien.setDefaultRenderer(Object.class, centerRenderer);
         DefaultTableCellRenderer leftRenderer = new DefaultTableCellRenderer();
         leftRenderer.setHorizontalAlignment(JLabel.LEFT);
-        tblHocSinh.getColumnModel().getColumn(2).setCellRenderer(leftRenderer);
+        tblSinhVien.getColumnModel().getColumn(2).setCellRenderer(leftRenderer);
 
         // Chỉnh độ rộng cột
-        tblHocSinh.getColumnModel().getColumn(0).setPreferredWidth(50);
-        tblHocSinh.getColumnModel().getColumn(1).setPreferredWidth(100);
-        tblHocSinh.getColumnModel().getColumn(2).setPreferredWidth(300);
-        tblHocSinh.getColumnModel().getColumn(3).setPreferredWidth(150);
+        tblSinhVien.getColumnModel().getColumn(0).setPreferredWidth(50);
+        tblSinhVien.getColumnModel().getColumn(1).setPreferredWidth(100);
+        tblSinhVien.getColumnModel().getColumn(2).setPreferredWidth(300);
+        tblSinhVien.getColumnModel().getColumn(3).setPreferredWidth(150);
 
         // Sắp xếp
-        TableSorter.configureTableColumnSorter(tblHocSinh, 0, TableSorter.INTEGER_COMPARATOR);
-        TableSorter.configureTableColumnSorter(tblHocSinh, 1, TableSorter.INTEGER_COMPARATOR);
-        TableSorter.configureTableColumnSorter(tblHocSinh, 3, TableSorter.INTEGER_COMPARATOR);
+        TableSorter.configureTableColumnSorter(tblSinhVien, 0, TableSorter.INTEGER_COMPARATOR);
+        TableSorter.configureTableColumnSorter(tblSinhVien, 1, TableSorter.INTEGER_COMPARATOR);
+        TableSorter.configureTableColumnSorter(tblSinhVien, 3, TableSorter.INTEGER_COMPARATOR);
 
         pnlCenter.add(scrollTbl, BorderLayout.CENTER);
 
@@ -115,12 +115,12 @@ public class ThongKeHocSinh extends JPanel implements ActionListener, KeyListene
         this.add(pnlCenter, BorderLayout.CENTER);
     }
 
-    public void loadDataTable(ArrayList<ThongKeHocSinhDTO> data) {
+    public void loadDataTable(ArrayList<ThongKeSinhVienDTO> data) {
         tblModel.setRowCount(0);
         if (data == null) {
             return;
         }
-        for (ThongKeHocSinhDTO i : data) {
+        for (ThongKeSinhVienDTO i : data) {
             tblModel.addRow(new Object[]{
                 i.getStt(),
                 i.getManguoidung(),
@@ -131,7 +131,7 @@ public class ThongKeHocSinh extends JPanel implements ActionListener, KeyListene
     }
 
     public void refreshTable() {
-        list = ThongKeBUS.getThongKeHocSinh();
+        list = ThongKeBUS.getThongKeSinhVien();
         loadDataTable(list);
     }
 
@@ -139,7 +139,7 @@ public class ThongKeHocSinh extends JPanel implements ActionListener, KeyListene
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == btnExport) {
             try {
-                JTableExporter.exportJTableToExcel(tblHocSinh);
+                JTableExporter.exportJTableToExcel(tblSinhVien);
             } catch (IOException ex) {
                 JOptionPane.showMessageDialog(this, "Lỗi xuất file Excel!");
             }
@@ -155,9 +155,9 @@ public class ThongKeHocSinh extends JPanel implements ActionListener, KeyListene
         if (searchText.isEmpty()) {
             loadDataTable(list);
         } else {
-            ArrayList<ThongKeHocSinhDTO> temp = new ArrayList<>();
+            ArrayList<ThongKeSinhVienDTO> temp = new ArrayList<>();
             if (list != null) {
-                for (ThongKeHocSinhDTO i : list) {
+                for (ThongKeSinhVienDTO i : list) {
                     if (i.getHoten().toLowerCase().contains(searchText)
                             || String.valueOf(i.getManguoidung()).contains(searchText)) {
                         temp.add(i);

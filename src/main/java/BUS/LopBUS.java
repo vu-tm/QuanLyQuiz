@@ -8,6 +8,7 @@ import java.util.ArrayList;
 
 public class LopBUS {
 
+    private final NguoiDungBUS nguoiDungBUS = new NguoiDungBUS();
     private final LopDAO lopDAO = LopDAO.getInstance();
     private final ChiTietLopDAO chitietlopDAO = ChiTietLopDAO.getInstance();
     private ArrayList<LopDTO> listLop;
@@ -58,6 +59,10 @@ public class LopBUS {
         return lopDAO.selectByGiangVien(magiangvien);
     }
 
+    public ArrayList<LopDTO> getBySinhVien(int masinhvien) {
+        return lopDAO.selectBySinhVien(masinhvien);
+    }
+
     public ArrayList<LopDTO> getByMonHoc(int mamonhoc) {
         return lopDAO.selectByMonHoc(mamonhoc);
     }
@@ -69,16 +74,29 @@ public class LopBUS {
             boolean match = false;
             switch (type) {
                 case "Tất cả":
+                    String tenGV = "";
+                    if (nguoiDungBUS.getById(lop.getGiangvien()) != null) {
+                        tenGV = nguoiDungBUS.getById(lop.getGiangvien()).getHoten().toLowerCase();
+                    }
+
                     match = Integer.toString(lop.getMalop()).contains(text)
                             || lop.getTenlop().toLowerCase().contains(text)
                             || Integer.toString(lop.getNamhoc()).contains(text)
-                            || Integer.toString(lop.getHocky()).contains(text);
+                            || Integer.toString(lop.getHocky()).contains(text)
+                            || tenGV.contains(text);
                     break;
                 case "Mã lớp":
                     match = Integer.toString(lop.getMalop()).contains(text);
                     break;
                 case "Tên lớp":
                     match = lop.getTenlop().toLowerCase().contains(text);
+                    break;
+                case "Giảng viên":
+                    String nameGV = "";
+                    if (nguoiDungBUS.getById(lop.getGiangvien()) != null) {
+                        nameGV = nguoiDungBUS.getById(lop.getGiangvien()).getHoten().toLowerCase();
+                    }
+                    match = nameGV.contains(text);
                     break;
                 case "Năm học":
                     match = Integer.toString(lop.getNamhoc()).contains(text);

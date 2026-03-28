@@ -231,7 +231,7 @@ public class DeThi extends JPanel implements ActionListener, ItemListener {
                             dt.setMakythi(makythi);
                             dt.setMonthi(mamonhoc);
                             dt.setThoigianthi(thoigianthi);
-                            dt.setNguoitao(mainFrame.getNguoiDung().getId());
+                            dt.setNguoitao(mainFrame.getNguoiDung().getManguoidung());
 
                             dt.setThoigiantao(new java.sql.Timestamp(System.currentTimeMillis()));
                             dt.setTongsocau(0);
@@ -281,7 +281,7 @@ public class DeThi extends JPanel implements ActionListener, ItemListener {
 
         if (source == mainFunction.btn.get("create")) {
             DeThiDTO newDe = new DeThiDTO();
-            newDe.setNguoitao(mainFrame.getNguoiDung().getId());
+            newDe.setNguoitao(mainFrame.getNguoiDung().getManguoidung());
             new DeThiDialog(this, owner, "Thêm đề thi mới", true, "create", newDe);
         } else if (source == mainFunction.btn.get("update") || source == mainFunction.btn.get("detail") || source == mainFunction.btn.get("delete")) {
             int index = table.getSelectedRow();

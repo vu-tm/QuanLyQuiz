@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Mar 24, 2026 at 11:49 AM
+-- Generation Time: Mar 28, 2026 at 12:40 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.0.30
 
@@ -43,20 +43,26 @@ CREATE TABLE `baithi` (
 --
 
 INSERT INTO `baithi` (`mabaithi`, `made`, `manguoidung`, `diemthi`, `thoigianvaothi`, `thoigianlambai`, `socaudung`, `socausai`) VALUES
-(1, 3, 7, 8.46, '2026-03-24 16:47:06', 66, 11, 2),
-(2, 3, 10, 9.23, '2026-03-24 16:49:32', 66, 12, 1),
-(3, 4, 7, 6.67, '2026-03-24 17:40:00', 11, 2, 1),
-(4, 1, 12, 7, '2026-03-24 17:41:17', 61, 7, 3),
-(5, 1, 8, 8, '2024-05-10 08:30:00', 45, 8, 2),
-(6, 2, 9, 6.67, '2025-01-15 09:00:00', 25, 2, 1),
-(7, 3, 11, 7.69, '2025-06-20 14:00:00', 14, 10, 3),
-(8, 4, 12, 10, '2025-12-25 10:00:00', 20, 3, 0),
-(9, 1, 13, 5, '2026-01-05 15:00:00', 55, 5, 5),
-(10, 2, 14, 3.33, '2026-02-14 08:30:00', 40, 1, 2),
-(11, 3, 15, 9.23, '2026-03-01 09:00:00', 13, 12, 1),
-(12, 1, 16, 8, '2026-03-15 10:30:00', 50, 8, 2),
-(13, 4, 7, 10, '2026-03-24 18:00:00', 15, 3, 0),
-(14, 2, 8, 0, '2026-03-25 11:00:00', 45, 0, 3);
+(1, 3, 7, 10, '2026-03-26 15:24:44', 82, 13, 0),
+(2, 3, 8, 10, '2026-03-26 15:35:46', 42, 13, 0),
+(3, 1, 8, 7, '2026-03-26 15:37:07', 123, 7, 3),
+(4, 4, 13, 6.67, '2026-03-26 15:42:03', 10, 2, 1),
+(5, 1, 13, 9, '2026-03-26 15:42:39', 62, 9, 1),
+(6, 4, 10, 6.67, '2026-03-26 15:44:31', 6, 2, 1),
+(7, 3, 10, 10, '2026-03-26 15:44:44', 37, 13, 0),
+(8, 1, 16, 9, '2026-03-27 10:11:13', 67, 9, 1),
+(9, 5, 9, 7, '2026-03-28 16:54:50', 52, 7, 3),
+(10, 6, 9, 5.71, '2026-03-28 16:56:05', 49, 4, 3),
+(11, 3, 12, 10, '2026-03-28 17:27:44', 49, 13, 0),
+(12, 1, 10, 9, '2026-03-28 17:37:36', 98, 9, 1),
+(13, 1, 14, 10, '2026-03-28 17:40:55', 34, 10, 0),
+(14, 6, 14, 7.14, '2026-03-28 17:41:35', 27, 5, 2),
+(15, 5, 14, 8, '2026-03-28 17:42:07', 34, 8, 2),
+(16, 3, 16, 10, '2026-03-28 18:36:25', 33, 13, 0),
+(17, 4, 16, 10, '2026-03-28 18:37:05', 6, 3, 0),
+(18, 5, 16, 9, '2026-03-28 18:37:16', 39, 9, 1),
+(19, 6, 16, 7.14, '2026-03-28 18:38:00', 13, 5, 2),
+(20, 7, 16, 8, '2026-03-28 18:38:24', 15, 4, 1);
 
 -- --------------------------------------------------------
 
@@ -82,9 +88,9 @@ INSERT INTO `cauhoi` (`macauhoi`, `noidung`, `madokho`, `maloai`, `mamonhoc`, `n
 (1, 'Trong Java, biến static được sử dụng để làm gì?', 2, 1, 1, 1, 1),
 (2, 'Java có hỗ trợ đa kế thừa thông qua Class không?', 1, 2, 1, 1, 1),
 (3, 'Kiểu dữ liệu nào có kích thước lớn nhất trong các kiểu số nguyên của Java?', 1, 1, 1, 1, 1),
-(4, 'Hiện tượng Deadlock là gì?', 3, 1, 2, 1, 1),
+(4, 'Hiện tượng Deadlock là gì?', 1, 1, 2, 1, 1),
 (5, 'Thành phần nào điều khiển việc cấp phát tài nguyên của hệ thống?', 1, 1, 2, 1, 1),
-(6, 'Hệ điều hành là một phần mềm ứng dụng, đúng hay sai?', 1, 2, 2, 1, 1),
+(6, 'Hệ điều hành là một phần mềm ứng dụng, đúng hay sai?', 3, 2, 2, 1, 1),
 (7, 'Thẻ HTML nào được dùng để tạo một danh sách không thứ tự?', 1, 1, 3, 1, 1),
 (8, 'Giao thức mặc định được sử dụng để truyền tải dữ liệu trên Web là gì?', 1, 1, 3, 1, 1),
 (9, 'CSS là viết tắt của từ nào?', 2, 1, 3, 1, 1),
@@ -106,8 +112,16 @@ INSERT INTO `cauhoi` (`macauhoi`, `noidung`, `madokho`, `maloai`, `mamonhoc`, `n
 (25, 'JavaScript là ngôn ngữ lập trình chạy trên trình duyệt. Đúng hay sai?', 1, 2, 3, 1, 1),
 (26, 'Trong HTML, thẻ nào dùng để tạo một ô nhập dữ liệu?', 1, 3, 3, 1, 1),
 (27, 'Để căn giữa nội dung văn bản trong CSS, ta dùng thuộc tính text-align với giá trị là gì?', 2, 3, 3, 1, 1),
-(28, 'Mô hình DOM viết tắt của từ gì?', 3, 1, 3, 1, 1),
-(29, 'Giao thức HTTPS bảo mật hơn HTTP nhờ vào việc mã hóa dữ liệu. Đúng hay sai?', 1, 2, 3, 1, 1);
+(28, 'Mô hình DOM viết tắt của từ gì?', 1, 1, 3, 1, 1),
+(29, 'Giao thức HTTPS bảo mật hơn HTTP nhờ vào việc mã hóa dữ liệu. Đúng hay sai?', 1, 2, 3, 1, 1),
+(30, 'JVM là viết tắt của cụm từ nào?', 2, 1, 1, 1, 1),
+(31, 'Trong Java, một lớp (class) có thể kế thừa từ nhiều lớp cha khác nhau.', 3, 2, 1, 1, 1),
+(32, 'Từ khóa _____ được dùng để xử lý ngoại lệ trong Java.', 2, 3, 1, 1, 1),
+(33, 'Collection nào không cho phép lưu trữ các phần tử trùng lặp?', 1, 1, 1, 1, 1),
+(34, 'Thuật toán lập lịch nào có thể gây ra hiện tượng \"đói\" (starvation)?', 3, 1, 2, 1, 1),
+(35, 'Tiến trình (Process) và Luồng (Thread) là hai khái niệm hoàn toàn giống nhau.', 2, 2, 2, 1, 1),
+(36, 'Trong quản lý bộ nhớ, hiện tượng _____ xảy ra khi bộ nhớ bị chia cắt thành nhiều vùng nhỏ không liên tục.', 3, 3, 2, 1, 1),
+(37, 'Thành phần nào của hệ điều hành chịu trách nhiệm quản lý file?', 1, 1, 2, 1, 1);
 
 -- --------------------------------------------------------
 
@@ -131,8 +145,8 @@ INSERT INTO `chitietbaithi` (`mabaithi`, `macauhoi`, `dapanchon`, `noidungdienkh
 (1, 8, 27, ''),
 (1, 9, 29, ''),
 (1, 20, NULL, '<img>'),
-(1, 21, NULL, 'fontColor'),
-(1, 22, 53, ''),
+(1, 21, NULL, 'color'),
+(1, 22, 54, ''),
 (1, 23, 57, ''),
 (1, 24, NULL, '<a>'),
 (1, 25, 60, ''),
@@ -144,7 +158,7 @@ INSERT INTO `chitietbaithi` (`mabaithi`, `macauhoi`, `dapanchon`, `noidungdienkh
 (2, 8, 27, ''),
 (2, 9, 29, ''),
 (2, 20, NULL, '<img>'),
-(2, 21, NULL, 'fontColor'),
+(2, 21, NULL, 'color'),
 (2, 22, 54, ''),
 (2, 23, 57, ''),
 (2, 24, NULL, '<a>'),
@@ -153,61 +167,72 @@ INSERT INTO `chitietbaithi` (`mabaithi`, `macauhoi`, `dapanchon`, `noidungdienkh
 (2, 27, NULL, 'center'),
 (2, 28, 64, ''),
 (2, 29, 67, ''),
-(3, 4, 11, ''),
-(3, 5, 15, ''),
-(3, 6, 19, ''),
-(4, 10, NULL, 'extends'),
-(4, 11, 35, ''),
-(4, 12, NULL, 'Main'),
-(4, 13, 40, ''),
-(4, 14, 41, ''),
-(4, 15, NULL, 't'),
-(4, 16, NULL, 'char'),
-(4, 17, 47, ''),
-(4, 18, NULL, 'break'),
-(4, 19, 50, ''),
-(5, 10, 33, ''),
+(3, 10, NULL, 'extends'),
+(3, 11, 35, ''),
+(3, 12, NULL, 'main'),
+(3, 13, 40, ''),
+(3, 14, 41, ''),
+(3, 15, NULL, 'Gabage Collector'),
+(3, 16, NULL, 'char'),
+(3, 17, 47, ''),
+(3, 18, NULL, 'break'),
+(3, 19, 50, ''),
+(4, 4, 11, ''),
+(4, 5, 15, ''),
+(4, 6, 19, ''),
+(5, 10, NULL, 'extends'),
 (5, 11, 35, ''),
-(5, 12, 37, ''),
+(5, 12, NULL, 'Main'),
 (5, 13, 39, ''),
 (5, 14, 41, ''),
-(5, 15, 43, ''),
-(5, 16, 44, ''),
-(5, 17, 45, ''),
-(5, 18, 48, ''),
-(5, 19, 49, ''),
+(5, 15, NULL, 'Garbage Collector'),
+(5, 16, NULL, 'char'),
+(5, 17, 47, ''),
+(5, 18, NULL, 'break'),
+(5, 19, 50, ''),
 (6, 4, 11, ''),
 (6, 5, 15, ''),
 (6, 6, 19, ''),
 (7, 7, 21, ''),
 (7, 8, 27, ''),
 (7, 9, 29, ''),
-(7, 20, NULL, 'img'),
+(7, 20, NULL, '<img>'),
 (7, 21, NULL, 'color'),
 (7, 22, 54, ''),
 (7, 23, 57, ''),
-(7, 24, NULL, 'a'),
+(7, 24, NULL, '<a>'),
 (7, 25, 60, ''),
-(7, 26, NULL, 'input'),
+(7, 26, NULL, '<input>'),
 (7, 27, NULL, 'center'),
 (7, 28, 64, ''),
 (7, 29, 67, ''),
-(8, 4, 11, ''),
-(8, 5, 15, ''),
-(8, 6, 20, ''),
-(9, 10, 33, ''),
-(9, 11, 34, ''),
-(9, 12, 37, ''),
-(9, 13, 38, ''),
-(9, 14, 42, ''),
-(9, 15, 43, ''),
-(9, 16, 44, ''),
-(9, 17, 46, ''),
-(9, 18, 48, ''),
-(9, 19, 49, ''),
+(8, 10, NULL, 'extends'),
+(8, 11, 35, ''),
+(8, 12, NULL, 'Main'),
+(8, 13, 39, ''),
+(8, 14, 41, ''),
+(8, 15, NULL, 'Garbade Collecter'),
+(8, 16, NULL, 'char'),
+(8, 17, 45, ''),
+(8, 18, NULL, 'break'),
+(8, 19, 50, ''),
+(9, 1, 1, ''),
+(9, 2, 6, ''),
+(9, 3, 9, ''),
+(9, 17, 45, ''),
+(9, 18, NULL, 'break'),
+(9, 19, 50, ''),
+(9, 30, 72, ''),
+(9, 31, 73, ''),
+(9, 32, NULL, 'exception'),
+(9, 33, 77, ''),
 (10, 4, 11, ''),
-(10, 5, 16, ''),
+(10, 5, 15, ''),
 (10, 6, 19, ''),
+(10, 34, 83, ''),
+(10, 35, 85, ''),
+(10, 36, NULL, 'dead'),
+(10, 37, 87, ''),
 (11, 7, 21, ''),
 (11, 8, 27, ''),
 (11, 9, 29, ''),
@@ -221,22 +246,81 @@ INSERT INTO `chitietbaithi` (`mabaithi`, `macauhoi`, `dapanchon`, `noidungdienkh
 (11, 27, NULL, 'center'),
 (11, 28, 64, ''),
 (11, 29, 67, ''),
-(12, 10, 33, ''),
+(12, 10, NULL, 'extends'),
 (12, 11, 35, ''),
-(12, 12, 37, ''),
+(12, 12, NULL, 'main'),
 (12, 13, 39, ''),
 (12, 14, 41, ''),
-(12, 15, 43, ''),
-(12, 16, 44, ''),
+(12, 15, NULL, 'Garbade Collector'),
+(12, 16, NULL, 'char'),
 (12, 17, 45, ''),
-(12, 18, 48, ''),
-(12, 19, 49, ''),
-(13, 4, 11, ''),
-(13, 5, 15, ''),
-(13, 6, 20, ''),
-(14, 4, 12, ''),
-(14, 5, 17, ''),
-(14, 6, 19, '');
+(12, 18, NULL, 'break'),
+(12, 19, 50, ''),
+(13, 10, NULL, 'extends'),
+(13, 11, 35, ''),
+(13, 12, NULL, 'main'),
+(13, 13, 39, ''),
+(13, 14, 41, ''),
+(13, 15, NULL, 'Garbage collector'),
+(13, 16, NULL, 'char'),
+(13, 17, 45, ''),
+(13, 18, NULL, 'break'),
+(13, 19, 50, ''),
+(14, 4, 11, ''),
+(14, 5, 15, ''),
+(14, 6, 20, ''),
+(14, 34, 83, ''),
+(14, 35, 85, ''),
+(14, 36, NULL, 'stavation'),
+(14, 37, 87, ''),
+(15, 1, 1, ''),
+(15, 2, 6, ''),
+(15, 3, 9, ''),
+(15, 17, 45, ''),
+(15, 18, NULL, 'break'),
+(15, 19, 50, ''),
+(15, 30, 72, ''),
+(15, 31, 73, ''),
+(15, 32, NULL, 'try-catch'),
+(15, 33, 77, ''),
+(16, 7, 21, ''),
+(16, 8, 27, ''),
+(16, 9, 29, ''),
+(16, 20, NULL, '<img>'),
+(16, 21, NULL, 'color'),
+(16, 22, 54, ''),
+(16, 23, 57, ''),
+(16, 24, NULL, '<a>'),
+(16, 25, 60, ''),
+(16, 26, NULL, '<input>'),
+(16, 27, NULL, 'center'),
+(16, 28, 64, ''),
+(16, 29, 67, ''),
+(17, 4, 11, ''),
+(17, 5, 15, ''),
+(17, 6, 20, ''),
+(18, 1, 1, ''),
+(18, 2, 6, ''),
+(18, 3, 9, ''),
+(18, 17, 45, ''),
+(18, 18, NULL, 'break'),
+(18, 19, 50, ''),
+(18, 30, 69, ''),
+(18, 31, 73, ''),
+(18, 32, NULL, 'try-catch'),
+(18, 33, 77, ''),
+(19, 4, 11, ''),
+(19, 5, 15, ''),
+(19, 6, 20, ''),
+(19, 34, 83, ''),
+(19, 35, 85, ''),
+(19, 36, NULL, '1'),
+(19, 37, 87, ''),
+(20, 7, 21, ''),
+(20, 26, NULL, '<input>'),
+(20, 27, NULL, 'center'),
+(20, 28, 64, ''),
+(20, 29, 68, '');
 
 -- --------------------------------------------------------
 
@@ -283,7 +367,29 @@ INSERT INTO `chitietdethi` (`made`, `macauhoi`, `thutu`) VALUES
 (3, 29, 13),
 (4, 4, 1),
 (4, 5, 2),
-(4, 6, 3);
+(4, 6, 3),
+(5, 1, 3),
+(5, 2, 4),
+(5, 3, 5),
+(5, 17, 6),
+(5, 18, 7),
+(5, 19, 8),
+(5, 30, 9),
+(5, 31, 10),
+(5, 32, 1),
+(5, 33, 2),
+(6, 4, 4),
+(6, 5, 6),
+(6, 6, 7),
+(6, 34, 1),
+(6, 35, 2),
+(6, 36, 3),
+(6, 37, 5),
+(7, 7, 1),
+(7, 26, 2),
+(7, 27, 3),
+(7, 28, 4),
+(7, 29, 5);
 
 -- --------------------------------------------------------
 
@@ -402,6 +508,7 @@ INSERT INTO `chitietquyen` (`manhomquyen`, `machucnang`, `hanhdong`) VALUES
 (1, 10, 'view'),
 (1, 11, 'delete'),
 (1, 11, 'view'),
+(1, 12, 'view'),
 (2, 2, 'create'),
 (2, 2, 'delete'),
 (2, 2, 'update'),
@@ -414,7 +521,6 @@ INSERT INTO `chitietquyen` (`manhomquyen`, `machucnang`, `hanhdong`) VALUES
 (3, 0, 'delete'),
 (3, 0, 'update'),
 (3, 0, 'view'),
-(3, 11, 'delete'),
 (3, 11, 'view');
 
 -- --------------------------------------------------------
@@ -445,7 +551,8 @@ INSERT INTO `danhmucchucnang` (`machucnang`, `tenchucnang`, `trangthai`) VALUES
 (8, 'Phân công giảng dạy', 1),
 (9, 'Thống kê báo cáo', 1),
 (10, 'Quản lý độ khó', 1),
-(11, 'Quản lý bài thi', 1);
+(11, 'Quản lý bài thi', 1),
+(12, 'Quản lý loại câu hỏi', 1);
 
 -- --------------------------------------------------------
 
@@ -532,7 +639,29 @@ INSERT INTO `dapan` (`madapan`, `macauhoi`, `noidungtl`, `ladapan`) VALUES
 (65, 28, 'Data Object Management', 0),
 (66, 28, 'Digital Object Model', 0),
 (67, 29, 'Đúng', 1),
-(68, 29, 'Sai', 0);
+(68, 29, 'Sai', 0),
+(69, 30, 'Java Virtual Machine', 1),
+(70, 30, 'Java Variable Method', 0),
+(71, 30, 'Java Visual Model', 0),
+(72, 30, 'Java Virtual Model', 0),
+(73, 31, 'Đúng', 0),
+(74, 31, 'Sai (Java chỉ hỗ trợ đơn kế thừa với lớp)', 1),
+(75, 32, 'try-catch', 1),
+(76, 33, 'ArrayList', 0),
+(77, 33, 'Set', 1),
+(78, 33, 'List', 0),
+(79, 33, 'LinkedList', 0),
+(80, 34, 'First-Come, First-Served (FCFS)', 0),
+(81, 34, 'Round Robin', 0),
+(82, 34, 'Lập lịch theo độ ưu tiên (Priority Scheduling)', 1),
+(83, 34, 'Tất cả các phương án trên', 0),
+(84, 35, 'Đúng', 0),
+(85, 35, 'Sai (Tiến trình chứa một hoặc nhiều luồng)', 1),
+(86, 36, 'phân mảnh', 1),
+(87, 37, 'File System', 1),
+(88, 37, 'CPU Scheduler', 0),
+(89, 37, 'Memory Manager', 0),
+(90, 37, 'Device Driver', 0);
 
 -- --------------------------------------------------------
 
@@ -560,7 +689,10 @@ INSERT INTO `dethi` (`made`, `makythi`, `monthi`, `nguoitao`, `tende`, `thoigian
 (1, 1, 1, 1, 'Đề thi Java cơ bản', '2025-03-17 08:00:00', 60, 10, 1),
 (2, 3, 2, 2, 'Đề thi hệ điều hành giữa kỳ', '2025-03-17 09:00:00', 45, 3, 1),
 (3, 2, 3, 1, 'Đề thi Lập trình web 15 phút', '2025-03-17 10:00:00', 15, 13, 1),
-(4, 4, 2, 1, 'Hệ điều hành học kỳ 1', '2026-03-24 16:53:42', 30, 3, 1);
+(4, 4, 2, 1, 'Hệ điều hành học kỳ 1', '2026-03-24 16:53:42', 30, 3, 1),
+(5, 4, 1, 1, 'Cuối kỳ java', '2026-03-28 16:43:03', 30, 10, 1),
+(6, 4, 2, 1, 'Hệ điều hành cuối kỳ', '2026-03-28 16:43:25', 30, 7, 1),
+(7, 2, 3, 1, 'Kiểm tra nhanh web', '2026-03-28 18:36:10', 15, 5, 1);
 
 -- --------------------------------------------------------
 
@@ -603,7 +735,11 @@ INSERT INTO `giaodethi` (`made`, `malop`) VALUES
 (1, 3),
 (2, 3),
 (3, 1),
-(4, 3);
+(4, 3),
+(5, 2),
+(6, 3),
+(6, 4),
+(7, 1);
 
 -- --------------------------------------------------------
 
@@ -756,8 +892,8 @@ CREATE TABLE `nhomquyen` (
 
 INSERT INTO `nhomquyen` (`manhomquyen`, `tennhomquyen`, `trangthai`) VALUES
 (1, 'Admin', 1),
-(2, 'Giáo viên', 1),
-(3, 'Học sinh', 1);
+(2, 'Giảng viên', 1),
+(3, 'Sinh viên', 1);
 
 -- --------------------------------------------------------
 
@@ -918,25 +1054,25 @@ ALTER TABLE `phancong`
 -- AUTO_INCREMENT for table `baithi`
 --
 ALTER TABLE `baithi`
-  MODIFY `mabaithi` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
+  MODIFY `mabaithi` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
 
 --
 -- AUTO_INCREMENT for table `cauhoi`
 --
 ALTER TABLE `cauhoi`
-  MODIFY `macauhoi` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=30;
+  MODIFY `macauhoi` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=38;
 
 --
 -- AUTO_INCREMENT for table `dapan`
 --
 ALTER TABLE `dapan`
-  MODIFY `madapan` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=69;
+  MODIFY `madapan` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=91;
 
 --
 -- AUTO_INCREMENT for table `dethi`
 --
 ALTER TABLE `dethi`
-  MODIFY `made` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `made` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT for table `dokho`

@@ -60,7 +60,7 @@ public class LoaiCauHoi extends JPanel implements ActionListener, ItemListener {
         tableLoai.setRowHeight(30);
         tableLoai.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 13));
         tableLoai.getTableHeader().setPreferredSize(new Dimension(0, 40));
-        
+
         DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
         centerRenderer.setHorizontalAlignment(JLabel.CENTER);
         for (int i = 0; i < tableLoai.getColumnCount(); i++) {
@@ -68,13 +68,25 @@ public class LoaiCauHoi extends JPanel implements ActionListener, ItemListener {
         }
 
         tableLoai.setAutoCreateRowSorter(true);
-        TableSorter.configureTableColumnSorter(tableLoai, 0, TableSorter.INTEGER_COMPARATOR);
+        TableSorter.configureTableColumnSorter(tableLoai, 0, (Object o1, Object o2) -> {
+            int id1 = Integer.parseInt(o1.toString().replace("LCH-", ""));
+            int id2 = Integer.parseInt(o2.toString().replace("LCH-", ""));
+            return Integer.compare(id1, id2);
+        });
         scrollTable.setViewportView(tableLoai);
 
-        pnlBorder1 = new JPanel(); pnlBorder1.setPreferredSize(new Dimension(0, 10)); pnlBorder1.setBackground(BackgroundColor);
-        pnlBorder2 = new JPanel(); pnlBorder2.setPreferredSize(new Dimension(0, 10)); pnlBorder2.setBackground(BackgroundColor);
-        pnlBorder3 = new JPanel(); pnlBorder3.setPreferredSize(new Dimension(10, 0)); pnlBorder3.setBackground(BackgroundColor);
-        pnlBorder4 = new JPanel(); pnlBorder4.setPreferredSize(new Dimension(10, 0)); pnlBorder4.setBackground(BackgroundColor);
+        pnlBorder1 = new JPanel();
+        pnlBorder1.setPreferredSize(new Dimension(0, 10));
+        pnlBorder1.setBackground(BackgroundColor);
+        pnlBorder2 = new JPanel();
+        pnlBorder2.setPreferredSize(new Dimension(0, 10));
+        pnlBorder2.setBackground(BackgroundColor);
+        pnlBorder3 = new JPanel();
+        pnlBorder3.setPreferredSize(new Dimension(10, 0));
+        pnlBorder3.setBackground(BackgroundColor);
+        pnlBorder4 = new JPanel();
+        pnlBorder4.setPreferredSize(new Dimension(10, 0));
+        pnlBorder4.setBackground(BackgroundColor);
 
         this.add(pnlBorder1, BorderLayout.NORTH);
         this.add(pnlBorder2, BorderLayout.SOUTH);
@@ -127,7 +139,7 @@ public class LoaiCauHoi extends JPanel implements ActionListener, ItemListener {
         tblModel.setRowCount(0);
         for (LoaiCauHoiDTO lch : danhSach) {
             tblModel.addRow(new Object[]{
-                lch.getMaloai(),
+                "LCH-" + lch.getMaloai(),
                 lch.getTenloai()
             });
         }
@@ -152,7 +164,8 @@ public class LoaiCauHoi extends JPanel implements ActionListener, ItemListener {
                 return;
             }
             int modelRow = tableLoai.convertRowIndexToModel(index);
-            int maloai = (int) tblModel.getValueAt(modelRow, 0);
+            String maStr = tblModel.getValueAt(modelRow, 0).toString();
+            int maloai = Integer.parseInt(maStr.replace("LCH-", ""));
             LoaiCauHoiDTO selected = loaiBUS.getById(maloai);
 
             if (source == mainFunction.btn.get("detail")) {

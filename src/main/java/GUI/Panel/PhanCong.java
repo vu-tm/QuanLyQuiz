@@ -78,7 +78,11 @@ public class PhanCong extends JPanel implements ActionListener, ItemListener {
 
         table.setAutoCreateRowSorter(true);
         TableSorter.configureTableColumnSorter(table, 0, TableSorter.INTEGER_COMPARATOR); // Mã GV là số
-        TableSorter.configureTableColumnSorter(table, 2, TableSorter.INTEGER_COMPARATOR); // Mã môn là số
+        TableSorter.configureTableColumnSorter(table, 2, (Object o1, Object o2) -> { // Mã môn
+            int id1 = Integer.parseInt(o1.toString().replace("MH-", ""));
+            int id2 = Integer.parseInt(o2.toString().replace("MH-", ""));
+            return Integer.compare(id1, id2);
+        });
 
         pnlBorder1 = new JPanel();
         pnlBorder1.setPreferredSize(new Dimension(0, 10));
@@ -135,12 +139,13 @@ public class PhanCong extends JPanel implements ActionListener, ItemListener {
     }
 
     public void loadDataTable(ArrayList<PhanCongDTO> result) {
+        this.listHienTai = result;
         tblModel.setRowCount(0);
         for (PhanCongDTO pc : result) {
             tblModel.addRow(new Object[]{
                 pc.getManguoidung(),
                 ndBUS.getById(pc.getManguoidung()).getHoten(),
-                pc.getMamonhoc(),
+                "MH-" + pc.getMamonhoc(),
                 mhBUS.getTenById(pc.getMamonhoc())
             });
         }

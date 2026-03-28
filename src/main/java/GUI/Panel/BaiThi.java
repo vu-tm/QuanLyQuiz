@@ -40,7 +40,7 @@ public class BaiThi extends JPanel implements ActionListener, ItemListener {
     public BaiThi(GUI.Main mainFrame) {
         this.mainFrame = mainFrame;
         int maQuyen = mainFrame.getNguoiDung().getManhomquyen();
-        int userId = mainFrame.getNguoiDung().getId();
+        int userId = mainFrame.getNguoiDung().getManguoidung();
         if (maQuyen == 1) {
             this.listHienTai = btBUS.getAll();
         } else {
@@ -110,7 +110,7 @@ public class BaiThi extends JPanel implements ActionListener, ItemListener {
         functionBar.setBorder(new EmptyBorder(10, 10, 10, 10));
         functionBar.setBackground(Color.WHITE);
 
-        String[] action = {"detail", "export"};
+        String[] action = {"detail", "delete", "export"};
         mainFunction = new MainFunction(mainFrame.getNguoiDung().getManhomquyen(), "11", action);
         for (String ac : action) {
             mainFunction.btn.get(ac).addActionListener(this);
@@ -132,7 +132,7 @@ public class BaiThi extends JPanel implements ActionListener, ItemListener {
             if (maQuyen == 1) {
                 listHienTai = btBUS.getAll();
             } else {
-                listHienTai = btBUS.getByUser(mainFrame.getNguoiDung().getId());
+                listHienTai = btBUS.getByUser(mainFrame.getNguoiDung().getManguoidung());
             }
             loadDataTable(listHienTai);
         });
@@ -170,7 +170,7 @@ public class BaiThi extends JPanel implements ActionListener, ItemListener {
         if (mainFrame.getNguoiDung().getManhomquyen() == 1) {
             danhSachGoc = btBUS.getAll();
         } else {
-            danhSachGoc = btBUS.getByUser(mainFrame.getNguoiDung().getId());
+            danhSachGoc = btBUS.getByUser(mainFrame.getNguoiDung().getManguoidung());
         }
         listHienTai = btBUS.search(text, kieu, danhSachGoc);
         loadDataTable(listHienTai);
@@ -190,6 +190,34 @@ public class BaiThi extends JPanel implements ActionListener, ItemListener {
             BaiThiDTO selected = btBUS.getById(maBT);
             JFrame owner = (JFrame) SwingUtilities.getWindowAncestor(this);
             new ChiTietBaiThiDialog(owner, "Chi tiết kết quả bài thi", true, selected);
+        } else if (source == mainFunction.btn.get("delete")) {
+            if (index == -1) {
+                JOptionPane.showMessageDialog(this, "Vui lòng chọn kết quả bài thi cần xóa!");
+                return;
+            }
+
+            int confirm = JOptionPane.showConfirmDialog(this,
+                    "Bạn có chắc chắn muốn xóa kết quả bài thi này? Dữ liệu chi tiết bài thi cũng sẽ bị mất!",
+                    "Xác nhận xóa", JOptionPane.YES_NO_OPTION);
+
+            if (confirm == JOptionPane.YES_OPTION) {
+                int maBT = (int) table.getValueAt(index, 0);
+
+                if (btBUS.delete(maBT) > 0) {
+                    JOptionPane.showMessageDialog(this, "Xóa thành công!");
+
+                    int maQuyen = mainFrame.getNguoiDung().getManhomquyen();
+                    int userId = mainFrame.getNguoiDung().getManguoidung();
+                    if (maQuyen == 1) {
+                        listHienTai = btBUS.getAll();
+                    } else {
+                        listHienTai = btBUS.getByUser(userId);
+                    }
+                    loadDataTable(listHienTai);
+                } else {
+                    JOptionPane.showMessageDialog(this, "Xóa thất bại!");
+                }
+            }
         } else if (source == mainFunction.btn.get("export")) {
             try {
                 helper.JTableExporter.exportJTableToExcel(table);

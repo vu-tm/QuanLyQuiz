@@ -46,8 +46,8 @@ public class ChiTietNguoiDungDialog extends JDialog implements ActionListener {
         gbc.insets = new Insets(5, 5, 5, 5);
 
         // Tạo các InputForm (chế độ chỉ đọc)
-        txtID = new InputForm("ID");
-        txtUsername = new InputForm("Username");
+        txtID = new InputForm("Mật khẩu");
+        txtUsername = new InputForm("Tên tài khoản");
         txtHoTen = new InputForm("Họ tên");
         txtGioiTinh = new InputForm("Giới tính");
         txtNgaySinh = new InputForm("Ngày sinh");
@@ -88,7 +88,7 @@ public class ChiTietNguoiDungDialog extends JDialog implements ActionListener {
     }
 
     private void fillData() {
-        txtID.setText(String.valueOf(nguoiDung.getId()));
+        txtID.setText(String.valueOf(nguoiDung.getManguoidung()));
         txtUsername.setText(nguoiDung.getUsername());
         txtHoTen.setText(nguoiDung.getHoten());
         txtGioiTinh.setText(nguoiDung.isGioitinh() ? "Nam" : "Nữ");

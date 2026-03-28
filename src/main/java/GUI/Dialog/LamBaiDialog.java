@@ -73,6 +73,14 @@ public class LamBaiDialog extends JDialog {
         getContentPane().setBackground(C_BG);
         add(buildHeader(), BorderLayout.NORTH);
         add(buildMain(), BorderLayout.CENTER);
+        setupKeyBindings();
+        setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+        addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                exitQuiz();
+            }
+        });
     }
 
     private JPanel buildHeader() {
@@ -87,6 +95,7 @@ public class LamBaiDialog extends JDialog {
 
         ButtonCustom btnThoat = new ButtonCustom("THOÁT", "danger", 13, 110, 40);
         btnThoat.addActionListener(e -> exitQuiz());
+        btnThoat.setFocusable(false);
         leftPnl.add(btnThoat);
 
         JPanel centerPnl = new JPanel(new GridBagLayout());
@@ -125,6 +134,7 @@ public class LamBaiDialog extends JDialog {
 
         ButtonCustom btnNop = new ButtonCustom("NỘP BÀI", "success", 13, 110, 40);
         btnNop.addActionListener(e -> confirmSubmit());
+        btnNop.setFocusable(false);
 
         rightPnl.add(timerBox, gbc);
         rightPnl.add(btnNop, gbc);
@@ -230,6 +240,8 @@ public class LamBaiDialog extends JDialog {
 
         btnPrev = makeNavArrow("Câu trước");
         btnNext = makeNavArrow("Câu tiếp");
+        btnPrev.setFocusable(false);
+        btnNext.setFocusable(false);
 
         lblProgress = new JLabel("1 / " + dsCauHoi.size(), JLabel.CENTER);
         lblProgress.setFont(new Font("Segoe UI", Font.BOLD, 14));
@@ -282,6 +294,7 @@ public class LamBaiDialog extends JDialog {
             txtFillInput = new JTextField();
             txtFillInput.setFont(new Font("Segoe UI", Font.BOLD, 18));
             txtFillInput.setPreferredSize(new Dimension(0, 50));
+            SwingUtilities.invokeLater(() -> txtFillInput.requestFocusInWindow());
 
             String oldAns = userAnswers.get(index);
             txtFillInput.setText(oldAns != null ? oldAns : "");
@@ -419,7 +432,7 @@ public class LamBaiDialog extends JDialog {
         if (dsCauHoi.get(currentIdx).getMaloai() == 3 && txtFillInput != null) {
             userAnswers.put(currentIdx, txtFillInput.getText().trim());
         }
-        
+
         timer.stop();
         int socaudung = 0;
         DapAnBUS daBus = new DapAnBUS();
@@ -459,7 +472,7 @@ public class LamBaiDialog extends JDialog {
 
         BaiThiDTO bt = new BaiThiDTO();
         bt.setMade(deThi.getMade());
-        bt.setManguoidung(user.getId());
+        bt.setManguoidung(user.getManguoidung());
         bt.setDiemthi(diem);
         bt.setThoigianvaothi(this.startTime);
         bt.setThoigianlambai((deThi.getThoigianthi() * 60) - timeLeft);
@@ -630,5 +643,75 @@ public class LamBaiDialog extends JDialog {
                 .replace(">", "&gt;")
                 .replace("\"", "&quot;")
                 .replace("'", "&#39;");
+    }
+
+    private void setupKeyBindings() {
+        getRootPane().setDefaultButton(null);
+
+        KeyboardFocusManager.getCurrentKeyboardFocusManager()
+                .addKeyEventDispatcher(new KeyEventDispatcher() {
+                    @Override
+                    public boolean dispatchKeyEvent(KeyEvent e) {
+                        // Chỉ xử lý khi dialog này đang active và là KEY_PRESSED
+                        if (!isActive() || e.getID() != KeyEvent.KEY_PRESSED) {
+                            return false;
+                        }
+
+                        int code = e.getKeyCode();
+
+                        // Câu điền khuyết: chỉ cho Enter chuyển câu, bỏ qua 1-4
+                        boolean fillFocused = (txtFillInput != null && txtFillInput.isFocusOwner());
+
+                        if (code == KeyEvent.VK_ENTER) {
+                            if (fillFocused) {
+                                // Enter trong ô điền khuyết -> chuyển câu hoặc nộp bài
+                                if (currentIdx == dsCauHoi.size() - 1) {
+                                    confirmSubmit();
+                                } else {
+                                    goTo(currentIdx + 1);
+                                }
+                                return true;
+                            } else {
+                                if (currentIdx == dsCauHoi.size() - 1) {
+                                    confirmSubmit();
+                                } else {
+                                    goTo(currentIdx + 1);
+                                }
+                                return true;
+                            }
+                        }
+
+                        // Phím 1-4 chỉ hoạt động khi không focus vào ô điền khuyết
+                        if (!fillFocused) {
+                            CauHoiDTO q = dsCauHoi.get(currentIdx);
+                            if (q.getMaloai() != 3) {
+                                int answerIdx = -1;
+                                if (code == KeyEvent.VK_1) {
+                                    answerIdx = 0;
+                                } else if (code == KeyEvent.VK_2) {
+                                    answerIdx = 1;
+                                } else if (code == KeyEvent.VK_3) {
+                                    answerIdx = 2;
+                                } else if (code == KeyEvent.VK_4) {
+                                    answerIdx = 3;
+                                }
+
+                                if (answerIdx >= 0) {
+                                    DapAnBUS daBus = new DapAnBUS();
+                                    ArrayList<DapAnDTO> dsDapAn = daBus.getDapAnDeHienThi(q.getMacauhoi());
+                                    if (answerIdx < dsDapAn.size()) {
+                                        String ansId = String.valueOf(dsDapAn.get(answerIdx).getMadapan());
+                                        userAnswers.put(currentIdx, ansId);
+                                        updateNavStatus(currentIdx);
+                                        loadQuestion(currentIdx);
+                                    }
+                                    return true;
+                                }
+                            }
+                        }
+
+                        return false;
+                    }
+                });
     }
 }

@@ -33,7 +33,7 @@ public class ThongKeTongQuan extends JPanel {
     String[][] getSt = {
         {"Tổng số đề thi", "dethi.svg", Integer.toString(ThongKeBUS.getTongSoDeThi())},
         {"Tổng số câu hỏi", "question.svg", Integer.toString(ThongKeBUS.getTongSoCauHoi())},
-        {"Tổng số học sinh", "nguoidung.svg", Integer.toString(ThongKeBUS.getTongSoHocSinh())}
+        {"Tổng số sinh viên", "nguoidung.svg", Integer.toString(ThongKeBUS.getTongSoSinhVien())}
     };
 
     public ThongKeTongQuan() {

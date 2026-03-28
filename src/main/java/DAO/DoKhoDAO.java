@@ -69,4 +69,38 @@ public class DoKhoDAO {
         }
         return result;
     }
+
+    public boolean checkTrungTen(String ten, int excludeId) {
+        String sql = "SELECT COUNT(*) FROM dokho WHERE LOWER(tendokho) = ? AND trangthai = 1 AND madokho != ?";
+        try (Connection c = JDBCUtil.getConnection(); PreparedStatement ps = c.prepareStatement(sql)) {
+            ps.setString(1, ten.toLowerCase().trim());
+            ps.setInt(2, excludeId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1) > 0;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public DoKhoDTO selectById(int id) {
+        DoKhoDTO result = null;
+        try (Connection con = JDBCUtil.getConnection()) {
+            String sql = "SELECT * FROM dokho WHERE madokho = ?";
+            PreparedStatement pst = con.prepareStatement(sql);
+            pst.setInt(1, id);
+            ResultSet rs = pst.executeQuery();
+            if (rs.next()) {
+                result = new DoKhoDTO();
+                result.setMadokho(rs.getInt("madokho"));
+                result.setTendokho(rs.getString("tendokho"));
+                result.setTrangthai(rs.getInt("trangthai"));
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+        return result;
+    }
 }

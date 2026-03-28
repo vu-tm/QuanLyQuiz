@@ -49,7 +49,7 @@ public class DapAnDTO {
         this.noidungtl = noidungtl;
     }
 
-    public boolean isLadapan() {
+    public boolean getLadapan() {
         return ladapan;
     }
 

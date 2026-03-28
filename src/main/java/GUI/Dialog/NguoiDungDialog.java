@@ -78,17 +78,16 @@ public class NguoiDungDialog extends JDialog {
     }
 
     public void init(String title, String type) {
-        // Giảm kích thước Dialog xuống vì các thành phần đã gọn hơn
-        this.setSize(new Dimension(450, 600));
+        this.setSize(new Dimension(450, 680));
         this.setLayout(new BorderLayout(0, 0));
 
         main = new JPanel();
         main.setLayout(new BoxLayout(main, BoxLayout.Y_AXIS));
         main.setBackground(Color.WHITE);
-        // Padding ngoài cùng nhỏ lại
-        main.setBorder(new EmptyBorder(5, 15, 5, 15));
+        main.setBorder(new EmptyBorder(10, 20, 0, 20));
+        int inputHeight = 35;
 
-        txtUsername = new InputForm("Username");
+        txtUsername = new InputForm("Tài khoản");
         txtHoten = new InputForm("Họ và tên");
         txtMatKhau = new InputForm("Mật khẩu");
 
@@ -102,7 +101,7 @@ public class NguoiDungDialog extends JDialog {
 
         JPanel pnlGender = new JPanel(new GridLayout(2, 1, 0, 0));
         pnlGender.setBackground(Color.WHITE);
-        pnlGender.setBorder(new EmptyBorder(0, 10, 5, 10)); // Giảm padding
+        pnlGender.setBorder(new EmptyBorder(0, 10, 5, 10));
         JLabel lbGender = new JLabel("Giới tính");
         lbGender.setFont(new Font("Segoe UI", Font.BOLD, 13));
         JPanel pnlRadio = new JPanel(new GridLayout(1, 2));
@@ -111,12 +110,12 @@ public class NguoiDungDialog extends JDialog {
         pnlRadio.add(female);
         pnlGender.add(lbGender);
         pnlGender.add(pnlRadio);
+        pnlGender.setMaximumSize(new Dimension(Integer.MAX_VALUE, 50));
 
         jcNgaySinh = new InputDate("Ngày sinh");
-        // Thu nhỏ padding bên trong InputDate nếu có thể thông qua component
 
         // Nhóm quyền
-        JPanel pnlNQ = new JPanel(new GridLayout(2, 1, 0, 5));
+        JPanel pnlNQ = new JPanel(new GridLayout(2, 1, 0, 2));
         pnlNQ.setBackground(Color.WHITE);
         pnlNQ.setBorder(new EmptyBorder(5, 10, 5, 10));
         JLabel lbNQ = new JLabel("Nhóm quyền");
@@ -126,11 +125,11 @@ public class NguoiDungDialog extends JDialog {
         for (NhomQuyenDTO nq : listNhomQuyen) {
             cbxNhomQuyen.addItem(nq.getTennhomquyen());
         }
-        cbxNhomQuyen.setPreferredSize(new Dimension(0, 35)); // Tăng chiều cao Dropdown
+        cbxNhomQuyen.setPreferredSize(new Dimension(0, inputHeight));
         pnlNQ.add(cbxNhomQuyen);
 
         // Trạng thái
-        JPanel pnlTT = new JPanel(new GridLayout(2, 1, 0, 5));
+        JPanel pnlTT = new JPanel(new GridLayout(2, 1, 0, 2));
         pnlTT.setBackground(Color.WHITE);
         pnlTT.setBorder(new EmptyBorder(5, 10, 5, 10));
         JLabel lbTT = new JLabel("Trạng thái");
@@ -138,15 +137,21 @@ public class NguoiDungDialog extends JDialog {
         pnlTT.add(lbTT);
         cbxTrangThai = new JComboBox<>(new String[]{"Ngưng hoạt động", "Hoạt động"});
         cbxTrangThai.setSelectedIndex(1);
-        cbxTrangThai.setPreferredSize(new Dimension(0, 35));
+        cbxTrangThai.setPreferredSize(new Dimension(0, inputHeight));
         pnlTT.add(cbxTrangThai);
 
         main.add(txtUsername);
+        main.add(Box.createVerticalStrut(5));
         main.add(txtHoten);
+        main.add(Box.createVerticalStrut(5));
         main.add(txtMatKhau);
+        main.add(Box.createVerticalStrut(5));
         main.add(pnlGender);
+        main.add(Box.createVerticalStrut(5));
         main.add(jcNgaySinh);
+        main.add(Box.createVerticalStrut(5));
         main.add(pnlNQ);
+        main.add(Box.createVerticalStrut(5));
         main.add(pnlTT);
 
         bottom = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
@@ -155,6 +160,9 @@ public class NguoiDungDialog extends JDialog {
         btnAdd = new ButtonCustom("Thêm người dùng", "success", 14);
         btnEdit = new ButtonCustom("Lưu thông tin", "success", 14);
         btnExit = new ButtonCustom("Hủy bỏ", "danger", 14);
+        btnExit.setPreferredSize(new Dimension(150, 40));
+        btnAdd.setPreferredSize(new Dimension(150, 40));
+        btnEdit.setPreferredSize(new Dimension(150, 40));
 
         btnExit.addActionListener(e -> dispose());
 
@@ -162,7 +170,7 @@ public class NguoiDungDialog extends JDialog {
             try {
                 if (validateInput()) {
                     if (bus.checkExistUsername(txtUsername.getText().trim())) {
-                        JOptionPane.showMessageDialog(this, "Username đã tồn tại!");
+                        JOptionPane.showMessageDialog(this, "Tài khoản đã tồn tại!");
                     } else {
                         actionSave("create");
                     }
@@ -218,7 +226,7 @@ public class NguoiDungDialog extends JDialog {
                 dispose();
             }
         } else {
-            NguoiDungDTO updatedUser = new NguoiDungDTO(currentDTO.getId(), username, hoten, gioiTinh, sqlDate, matkhau, trangthai, manhomquyen);
+            NguoiDungDTO updatedUser = new NguoiDungDTO(currentDTO.getManguoidung(), username, hoten, gioiTinh, sqlDate, matkhau, trangthai, manhomquyen);
             if (bus.update(updatedUser)) {
                 JOptionPane.showMessageDialog(this, "Cập nhật thành công!");
                 parent.loadDataTable((ArrayList<NguoiDungDTO>) bus.getAll());
@@ -235,7 +243,7 @@ public class NguoiDungDialog extends JDialog {
         java.util.Date today = new java.util.Date();
 
         if (Validation.isEmpty(userName)) {
-            JOptionPane.showMessageDialog(this, "Username không được để trống!");
+            JOptionPane.showMessageDialog(this, "Tên tài khoản không được để trống!");
             return false;
         }
         if (Validation.isEmpty(hoTen)) {

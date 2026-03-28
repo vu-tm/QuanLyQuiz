@@ -62,7 +62,7 @@ public class NguoiDung extends JPanel implements ActionListener, ItemListener {
             }
         };
 
-        String[] header = new String[]{"ID", "Username", "Họ tên", "Giới tính", "Ngày sinh", "Nhóm quyền", "Trạng thái"};
+        String[] header = new String[]{"Mã người dùng", "Tên đăng nhập", "Họ tên", "Giới tính", "Ngày sinh", "Nhóm quyền", "Trạng thái"};
         tblModel.setColumnIdentifiers(header);
         tableNguoiDung.setModel(tblModel);
         tableNguoiDung.setFocusable(false);
@@ -116,7 +116,7 @@ public class NguoiDung extends JPanel implements ActionListener, ItemListener {
         }
         functionBar.add(mainFunction);
 
-        search = new IntegratedSearch(new String[]{"Tất cả", "ID", "Username", "Họ tên", "Nhóm quyền"});
+        search = new IntegratedSearch(new String[]{"Tất cả", "Mã", "Tài khoản", "Họ tên", "Nhóm quyền"});
         search.txtSearchForm.addKeyListener(new KeyAdapter() {
             @Override
             public void keyReleased(KeyEvent e) {
@@ -160,7 +160,7 @@ public class NguoiDung extends JPanel implements ActionListener, ItemListener {
             }
 
             tblModel.addRow(new Object[]{
-                user.getId(),
+                user.getManguoidung(),
                 user.getUsername(),
                 user.getHoten(),
                 nguoidungBUS.getGioiTinhText(user.isGioitinh()),
@@ -208,7 +208,7 @@ public class NguoiDung extends JPanel implements ActionListener, ItemListener {
                         }
 
                         NguoiDungDTO user = new NguoiDungDTO();
-                        user.setId(id);
+                        user.setManguoidung(id);
                         user.setUsername(username);
                         user.setHoten(hoten);
                         user.setGioitinh(gioiTinhStr.equalsIgnoreCase("Nam"));

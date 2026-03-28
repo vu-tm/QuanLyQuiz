@@ -80,7 +80,7 @@ public class DapAnBUS {
         ArrayList<DapAnDTO> result = new ArrayList<>();
         ArrayList<DapAnDTO> all = getDapAnDayDu(macauhoi); 
         for (DapAnDTO da : all) {
-            if (da.isLadapan()) {
+            if (da.getLadapan()) {
                 result.add(da);
             }
         }

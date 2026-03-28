@@ -59,7 +59,7 @@ public class MonHocDialog extends JDialog {
 
         tenMonHoc = new InputForm("Tên môn học");
         soTinChi = new InputForm("Số tín chỉ");
-        
+
         PlainDocument doc = (PlainDocument) soTinChi.getTxtForm().getDocument();
         doc.setDocumentFilter(new NumericDocumentFilter());
 
@@ -102,22 +102,29 @@ public class MonHocDialog extends JDialog {
     }
 
     private void luuMonHoc(String type) {
+        String ten = tenMonHoc.getText().trim();
+        int soTin = Integer.parseInt(soTinChi.getText().trim());
+
         MonHocDTO mh = new MonHocDTO();
-        mh.setTenmonhoc(tenMonHoc.getText());
-        mh.setSotinchi(Integer.parseInt(soTinChi.getText()));
+        mh.setTenmonhoc(ten);
+        mh.setSotinchi(soTin);
 
         if (type.equals("create")) {
             if (bus.add(mh)) {
-                JOptionPane.showMessageDialog(null, "Thêm thành công!");
+                JOptionPane.showMessageDialog(this, "Thêm thành công!");
                 parent.loadDataTable(bus.getAll());
                 dispose();
+            } else {
+                JOptionPane.showMessageDialog(this, "Tên môn học đã tồn tại hoặc có lỗi xảy ra!", "Thông báo lỗi", JOptionPane.ERROR_MESSAGE);
             }
         } else {
             mh.setMamonhoc(currentDTO.getMamonhoc());
             if (bus.update(mh)) {
-                JOptionPane.showMessageDialog(null, "Cập nhật thành công!");
+                JOptionPane.showMessageDialog(this, "Cập nhật thành công!");
                 parent.loadDataTable(bus.getAll());
                 dispose();
+            } else {
+                JOptionPane.showMessageDialog(this, "Tên môn học đã tồn tại hoặc có lỗi xảy ra!", "Thông báo lỗi", JOptionPane.ERROR_MESSAGE);
             }
         }
     }

@@ -11,7 +11,7 @@ public class NguoiDungBUS {
     private final NguoiDungDAO dao = NguoiDungDAO.getInstance();
     private final NhomQuyenBUS nqBUS = new NhomQuyenBUS();
     private ArrayList<NguoiDungDTO> listNguoiDung;
-    private List<NhomQuyenDTO> listNQ;
+    private ArrayList<NhomQuyenDTO> listNQ;
 
     public NguoiDungBUS() {
         this.listNguoiDung = dao.selectAll();
@@ -25,7 +25,7 @@ public class NguoiDungBUS {
 
     public NguoiDungDTO getById(int id) {
         for (NguoiDungDTO u : listNguoiDung) {
-            if (u.getId() == id) {
+            if (u.getManguoidung() == id) {
                 return u;
             }
         }
@@ -72,14 +72,14 @@ public class NguoiDungBUS {
             switch (type) {
                 case "Tất cả" -> {
                     String tenNQ = getTenNhomQuyen(u.getManhomquyen()).toLowerCase();
-                    match = Integer.toString(u.getId()).contains(text)
+                    match = Integer.toString(u.getManguoidung()).contains(text)
                             || u.getUsername().toLowerCase().contains(text)
                             || u.getHoten().toLowerCase().contains(text)
                             || tenNQ.contains(text);
                 }
-                case "ID" ->
-                    match = Integer.toString(u.getId()).contains(text);
-                case "Username" ->
+                case "Mã người dùng" ->
+                    match = Integer.toString(u.getManguoidung()).contains(text);
+                case "Tài khoản" ->
                     match = u.getUsername().toLowerCase().contains(text);
                 case "Họ tên" ->
                     match = u.getHoten().toLowerCase().contains(text);

@@ -13,7 +13,6 @@ import GUI.Dialog.LopDialog;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.BufferedInputStream;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -82,7 +81,11 @@ public class LopHoc extends JPanel implements ActionListener, ItemListener {
         }
 
         tableLop.setAutoCreateRowSorter(true);
-        TableSorter.configureTableColumnSorter(tableLop, 0, TableSorter.INTEGER_COMPARATOR);
+        TableSorter.configureTableColumnSorter(tableLop, 0, (Object o1, Object o2) -> {
+            int id1 = Integer.parseInt(o1.toString().replace("LH-", ""));
+            int id2 = Integer.parseInt(o2.toString().replace("LH-", ""));
+            return Integer.compare(id1, id2);
+        });
         scrollTable.setViewportView(tableLop);
 
         // PADDING BORDERS
@@ -124,7 +127,7 @@ public class LopHoc extends JPanel implements ActionListener, ItemListener {
         functionBar.add(mainFunction);
 
         // SEARCH BAR
-        search = new IntegratedSearch(new String[]{"Tất cả", "Mã lớp", "Tên lớp", "Năm học"});
+        search = new IntegratedSearch(new String[]{"Tất cả", "Mã lớp", "Tên lớp", "Giảng viên", "Năm học"});
         search.txtSearchForm.addKeyListener(new KeyAdapter() {
             @Override
             public void keyReleased(KeyEvent e) {
@@ -163,7 +166,7 @@ public class LopHoc extends JPanel implements ActionListener, ItemListener {
             }
 
             tblModel.addRow(new Object[]{
-                lop.getMalop(),
+                "LH-" + lop.getMalop(),
                 lop.getTenlop(),
                 tenMH,
                 tenGV,
@@ -196,7 +199,8 @@ public class LopHoc extends JPanel implements ActionListener, ItemListener {
                 JOptionPane.showMessageDialog(this, "Vui lòng chọn lớp học cần sửa!");
             } else {
                 int modelRow = tableLop.convertRowIndexToModel(index);
-                int malop = (int) tblModel.getValueAt(modelRow, 0);
+                String maLoStr = tblModel.getValueAt(modelRow, 0).toString();
+                int malop = Integer.parseInt(maLoStr.replace("LH-", ""));
                 LopDTO selected = lopBUS.getById(malop);
                 new LopDialog(this, owner, "Chỉnh sửa lớp học", true, "update", selected, mainFrame.getNguoiDung());
             }
@@ -207,7 +211,8 @@ public class LopHoc extends JPanel implements ActionListener, ItemListener {
                 JOptionPane.showMessageDialog(this, "Vui lòng chọn lớp học để xem chi tiết!");
             } else {
                 int modelRow = tableLop.convertRowIndexToModel(index);
-                int malop = (int) tblModel.getValueAt(modelRow, 0);
+                String maLoStr = tblModel.getValueAt(modelRow, 0).toString();
+                int malop = Integer.parseInt(maLoStr.replace("LH-", ""));
                 LopDTO selected = lopBUS.getById(malop);
                 new ChiTietLopDialog(owner, "Chi tiết lớp học", true, selected);
             }
@@ -220,7 +225,8 @@ public class LopHoc extends JPanel implements ActionListener, ItemListener {
                 int confirm = JOptionPane.showConfirmDialog(this, "Bạn có chắc chắn muốn xóa lớp này?", "Xác nhận", JOptionPane.YES_NO_OPTION);
                 if (confirm == JOptionPane.YES_OPTION) {
                     int modelRow = tableLop.convertRowIndexToModel(index);
-                    int malop = (int) tblModel.getValueAt(modelRow, 0);
+                    String maLoStr = tblModel.getValueAt(modelRow, 0).toString();
+                    int malop = Integer.parseInt(maLoStr.replace("LH-", ""));
                     if (lopBUS.delete(malop)) {
                         JOptionPane.showMessageDialog(this, "Xóa thành công!");
                         listHienTai = getListTheoRole();
@@ -267,7 +273,7 @@ public class LopHoc extends JPanel implements ActionListener, ItemListener {
                         int magiangvien = -1;
                         for (DTO.NguoiDungDTO nd : dsNguoiDung) {
                             if (nd.getHoten().equalsIgnoreCase(tenGVExcel)) {
-                                magiangvien = nd.getId();
+                                magiangvien = nd.getManguoidung();
                                 break;
                             }
                         }
@@ -309,9 +315,14 @@ public class LopHoc extends JPanel implements ActionListener, ItemListener {
 
     private ArrayList<LopDTO> getListTheoRole() {
         int manhomquyen = mainFrame.getNguoiDung().getManhomquyen();
+        int userId = mainFrame.getNguoiDung().getManguoidung();
+
         if (manhomquyen == 2) {
-            return lopBUS.getByGiangVien(mainFrame.getNguoiDung().getId());
+            return lopBUS.getByGiangVien(userId);
+        } else if (manhomquyen == 3) {
+            return lopBUS.getBySinhVien(userId);
         }
+
         return lopBUS.getAll();
     }
 

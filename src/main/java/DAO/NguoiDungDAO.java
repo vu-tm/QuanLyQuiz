@@ -19,7 +19,7 @@ public class NguoiDungDAO {
              ResultSet rs = pst.executeQuery()) {
             while (rs.next()) {
                 NguoiDungDTO u = new NguoiDungDTO();
-                u.setId(rs.getInt("id"));
+                u.setManguoidung(rs.getInt("id"));
                 u.setUsername(rs.getString("username"));
                 u.setHoten(rs.getString("hoten"));
                 u.setGioitinh(rs.getBoolean("gioitinh"));
@@ -43,7 +43,7 @@ public class NguoiDungDAO {
             try (ResultSet rs = pst.executeQuery()) {
                 if (rs.next()) {
                     NguoiDungDTO u = new NguoiDungDTO();
-                    u.setId(rs.getInt("id"));
+                    u.setManguoidung(rs.getInt("id"));
                     u.setUsername(rs.getString("username"));
                     u.setHoten(rs.getString("hoten"));
                     u.setGioitinh(rs.getBoolean("gioitinh"));
@@ -64,7 +64,7 @@ public class NguoiDungDAO {
         String sql = "INSERT INTO nguoidung (id, username, hoten, gioitinh, ngaysinh, matkhau, trangthai, manhomquyen) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         try (Connection con = JDBCUtil.getConnection(); 
              PreparedStatement pst = con.prepareStatement(sql)) {
-            pst.setInt(1, t.getId());
+            pst.setInt(1, t.getManguoidung());
             pst.setString(2, t.getUsername());
             pst.setString(3, t.getHoten());
             pst.setBoolean(4, t.isGioitinh());
@@ -90,7 +90,7 @@ public class NguoiDungDAO {
             pst.setString(5, t.getMatkhau());
             pst.setInt(6, t.getManhomquyen());
             pst.setInt(7, t.getTrangthai());
-            pst.setInt(8, t.getId());
+            pst.setInt(8, t.getManguoidung());
             return pst.executeUpdate();
         } catch (SQLException ex) {
             ex.printStackTrace();

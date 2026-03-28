@@ -104,12 +104,12 @@ public class NhomQuyenDialog extends JDialog implements ActionListener {
 
         switch (type) {
             case "create" -> {
-                btnAdd = new ButtonCustom("Thêm nhóm quyền", "success", 14);
+                btnAdd = new ButtonCustom("Thêm", "success", 14);
                 btnAdd.addActionListener(this);
                 jpBottom.add(btnAdd);
             }
             case "update" -> {
-                btnUpdate = new ButtonCustom("Cập nhật nhóm quyền", "success", 14);
+                btnUpdate = new ButtonCustom("Cập nhật", "success", 14);
                 btnUpdate.addActionListener(this);
                 jpBottom.add(btnUpdate);
                 initUpdate();

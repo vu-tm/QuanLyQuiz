@@ -72,4 +72,39 @@ public class MonHocDAO {
         }
         return result;
     }
+
+    public MonHocDTO selectById(int mamonhoc) {
+        MonHocDTO mh = null;
+        try (Connection con = JDBCUtil.getConnection()) {
+            String sql = "SELECT * FROM monhoc WHERE mamonhoc = ?";
+            PreparedStatement pst = con.prepareStatement(sql);
+            pst.setInt(1, mamonhoc);
+            ResultSet rs = pst.executeQuery();
+            if (rs.next()) {
+                mh = new MonHocDTO();
+                mh.setMamonhoc(rs.getInt("mamonhoc"));
+                mh.setTenmonhoc(rs.getString("tenmonhoc"));
+                mh.setSotinchi(rs.getInt("sotinchi"));
+                mh.setTrangthai(rs.getInt("trangthai"));
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+        return mh;
+    }
+
+    public boolean checkTrungTen(String ten, int excludeId) {
+        String sql = "SELECT COUNT(*) FROM monhoc WHERE LOWER(tenmonhoc) = ? AND trangthai = 1 AND mamonhoc != ?";
+        try (Connection c = JDBCUtil.getConnection(); PreparedStatement ps = c.prepareStatement(sql)) {
+            ps.setString(1, ten.toLowerCase().trim());
+            ps.setInt(2, excludeId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1) > 0;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
 }

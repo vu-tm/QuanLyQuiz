@@ -23,8 +23,6 @@ import javax.swing.border.TitledBorder;
 
 public class LopDialog extends JDialog implements ActionListener {
 
-    private static final int MA_QUYEN_SINH_VIEN = 3;
-
     private InputForm txtTenlop, txtNamhoc, txtHocky;
     private InputForm txtGiangvien;
     private SelectForm cbMonhoc;
@@ -88,7 +86,8 @@ public class LopDialog extends JDialog implements ActionListener {
         txtGiangvien.setMaximumSize(new Dimension(Integer.MAX_VALUE, 70));
 
         cbMonhoc = new SelectForm("Môn học", new String[]{});
-        cbMonhoc.setMaximumSize(new Dimension(Integer.MAX_VALUE, 70));
+        cbMonhoc.setPreferredSize(new Dimension(cbMonhoc.getPreferredSize().width, 90));
+        cbMonhoc.setMaximumSize(new Dimension(Integer.MAX_VALUE, 90));
         loadMonHoc();
 
         txtSoSVDaChon = new InputForm("Số sinh viên đã chọn");
@@ -188,7 +187,7 @@ public class LopDialog extends JDialog implements ActionListener {
             }
         } else {
             PhanCongBUS phanCongBUS = new PhanCongBUS();
-            ArrayList<Integer> danhSachMaMon = phanCongBUS.getMonHocByGiangVien(nguoiDungDangNhap.getId());
+            ArrayList<Integer> danhSachMaMon = phanCongBUS.getMonHocByGiangVien(nguoiDungDangNhap.getManguoidung());
             for (int mamonhoc : danhSachMaMon) {
                 MonHocDTO mh = monhocBUS.getById(mamonhoc);
                 if (mh != null) {
@@ -209,7 +208,22 @@ public class LopDialog extends JDialog implements ActionListener {
     }
 
     private void loadSinhVien() {
-        listSV = nguoidungBUS.getByNhomQuyen(MA_QUYEN_SINH_VIEN);
+        int maQuyenSinhVien = -1;
+        BUS.NhomQuyenBUS nhomQuyenBUS = new BUS.NhomQuyenBUS();
+        for (DTO.NhomQuyenDTO nq : nhomQuyenBUS.getAll()) {
+            if (nq.getTennhomquyen().equalsIgnoreCase("Sinh viên")) {
+                maQuyenSinhVien = nq.getManhomquyen();
+                break;
+            }
+        }
+
+        if (maQuyenSinhVien != -1) {
+            listSV = nguoidungBUS.getByNhomQuyen(maQuyenSinhVien);
+        } else {
+            listSV = new ArrayList<>();
+            System.out.println("Cảnh báo: Không tìm thấy nhóm quyền 'Sinh viên' trong hệ thống.");
+        }
+
         listCheckBox.clear();
         pnlSinhVienList.removeAll();
         for (NguoiDungDTO sv : listSV) {
@@ -280,7 +294,7 @@ public class LopDialog extends JDialog implements ActionListener {
         ArrayList<ChiTietLopDTO> listTrongLop = lopBUS.getChiTietByMaLop(lop.getMalop());
         for (ChiTietLopDTO ct : listTrongLop) {
             for (int i = 0; i < listSV.size(); i++) {
-                if (listSV.get(i).getId() == ct.getManguoidung()) {
+                if (listSV.get(i).getManguoidung() == ct.getManguoidung()) {
                     listCheckBox.get(i).setSelected(true);
                     break;
                 }
@@ -363,7 +377,7 @@ public class LopDialog extends JDialog implements ActionListener {
         newLop.setSiso(siSoThucTe);
         newLop.setNamhoc(Integer.parseInt(txtNamhoc.getText().trim()));
         newLop.setHocky(Integer.parseInt(txtHocky.getText().trim()));
-        newLop.setGiangvien(nguoiDungDangNhap.getId());
+        newLop.setGiangvien(nguoiDungDangNhap.getManguoidung());
         newLop.setMamonhoc(maMonHoc);
         newLop.setTrangthai(1);
 
@@ -394,7 +408,7 @@ public class LopDialog extends JDialog implements ActionListener {
         lop.setSiso(siSoMoi);
         lop.setNamhoc(Integer.parseInt(txtNamhoc.getText().trim()));
         lop.setHocky(Integer.parseInt(txtHocky.getText().trim()));
-        lop.setGiangvien(nguoiDungDangNhap.getId());
+        lop.setGiangvien(nguoiDungDangNhap.getManguoidung());
         lop.setMamonhoc(maMonHoc);
 
         if (lopBUS.update(lop)) {
@@ -408,7 +422,7 @@ public class LopDialog extends JDialog implements ActionListener {
 
     private void luuChiTietLop(int malop) {
         for (int i = 0; i < listCheckBox.size(); i++) {
-            int maSV = listSV.get(i).getId();
+            int maSV = listSV.get(i).getManguoidung();
             boolean isChecked = listCheckBox.get(i).isSelected();
 
             if (isChecked) {

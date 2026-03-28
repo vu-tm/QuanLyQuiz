@@ -84,7 +84,7 @@ public class DapAnDAO {
             PreparedStatement pst = con.prepareStatement(sql);
             pst.setInt(1, da.getMacauhoi());
             pst.setString(2, da.getNoidungtl());
-            pst.setBoolean(3, da.isLadapan());
+            pst.setBoolean(3, da.getLadapan());
             result = pst.executeUpdate();
         } catch (SQLException ex) {
             ex.printStackTrace();
@@ -98,7 +98,7 @@ public class DapAnDAO {
             String sql = "UPDATE dapan SET noidungtl = ?, ladapan = ? WHERE madapan = ?";
             PreparedStatement pst = con.prepareStatement(sql);
             pst.setString(1, da.getNoidungtl());
-            pst.setBoolean(2, da.isLadapan());
+            pst.setBoolean(2, da.getLadapan());
             pst.setInt(3, da.getMadapan());
             result = pst.executeUpdate();
         } catch (SQLException ex) {

@@ -125,6 +125,32 @@ public class LopDAO {
         return ketQua;
     }
 
+    public ArrayList<LopDTO> selectBySinhVien(int masinhvien) {
+        ArrayList<LopDTO> ketQua = new ArrayList<>();
+        String sql = "SELECT l.* FROM lop l JOIN chitietlop ctl ON l.malop = ctl.malop "
+                + "WHERE ctl.manguoidung = ? AND l.trangthai = 1";
+        try (Connection con = JDBCUtil.getConnection(); PreparedStatement pst = con.prepareStatement(sql)) {
+            pst.setInt(1, masinhvien);
+            try (ResultSet rs = pst.executeQuery()) {
+                while (rs.next()) {
+                    LopDTO lop = new LopDTO();
+                    lop.setMalop(rs.getInt("malop"));
+                    lop.setTenlop(rs.getString("tenlop"));
+                    lop.setSiso(rs.getInt("siso"));
+                    lop.setNamhoc(rs.getInt("namhoc"));
+                    lop.setHocky(rs.getInt("hocky"));
+                    lop.setTrangthai(rs.getInt("trangthai"));
+                    lop.setGiangvien(rs.getInt("giangvien"));
+                    lop.setMamonhoc(rs.getInt("mamonhoc"));
+                    ketQua.add(lop);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return ketQua;
+    }
+
     public ArrayList<LopDTO> selectByMonHoc(int mamonhoc) {
         ArrayList<LopDTO> ketQua = new ArrayList<>();
         String sql = "SELECT * FROM lop WHERE mamonhoc=? AND trangthai=1";

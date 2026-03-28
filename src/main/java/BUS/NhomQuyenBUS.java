@@ -87,4 +87,13 @@ public class NhomQuyenBUS {
         }
         return false;
     }
+
+    public int getMaNhomQuyenByTen(String ten) {
+        for (NhomQuyenDTO nq : getAll()) {
+            if (nq.getTennhomquyen().equalsIgnoreCase(ten)) {
+                return nq.getManhomquyen();
+            }
+        }
+        return -1;
+    }
 }

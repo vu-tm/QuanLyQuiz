@@ -51,7 +51,7 @@ public class LoaiCauHoiDialog extends JDialog {
         tenLoai = new InputForm("Tên loại câu hỏi");
 
         if (currentDTO != null) {
-            maLoai.setText(String.valueOf(currentDTO.getMaloai()));
+            maLoai.setText("LCH-" + currentDTO.getMaloai());
             tenLoai.setText(currentDTO.getTenloai());
         }
 

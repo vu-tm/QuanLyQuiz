@@ -7,7 +7,7 @@ import java.sql.Date;
  * @author Windows
  */
 public class NguoiDungDTO {
-    private int id;
+    private int manguoidung;
     private String username;
     private String hoten;
     private boolean gioitinh;
@@ -19,8 +19,8 @@ public class NguoiDungDTO {
     public NguoiDungDTO() {
     }
 
-    public NguoiDungDTO(int id, String username, String hoten, boolean gioitinh, Date ngaysinh, String matkhau, int trangthai, int manhomquyen) {
-        this.id = id;
+    public NguoiDungDTO(int manguoidung, String username, String hoten, boolean gioitinh, Date ngaysinh, String matkhau, int trangthai, int manhomquyen) {
+        this.manguoidung = manguoidung;
         this.username = username;
         this.hoten = hoten;
         this.gioitinh = gioitinh;
@@ -31,12 +31,12 @@ public class NguoiDungDTO {
     }
         
     // Getters and Setters
-    public int getId() {
-        return id;
+    public int getManguoidung() {
+        return manguoidung;
     }
 
-    public void setId(int id) {
-        this.id = id;
+    public void setManguoidung(int manguoidung) {
+        this.manguoidung = manguoidung;
     }
 
     public String getUsername() {

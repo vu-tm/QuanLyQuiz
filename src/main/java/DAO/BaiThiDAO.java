@@ -126,7 +126,7 @@ public class BaiThiDAO {
         }
         return result;
     }
-    
+
     public int delete(int mabaithi) {
         int result = 0;
         try (Connection con = JDBCUtil.getConnection()) {
@@ -134,6 +134,23 @@ public class BaiThiDAO {
             PreparedStatement pst = con.prepareStatement(sql);
             pst.setInt(1, mabaithi);
             result = pst.executeUpdate();
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+        return result;
+    }
+
+    public boolean checkDaLam(int userId, int made) {
+        boolean result = false;
+        try (Connection con = JDBCUtil.getConnection()) {
+            String sql = "SELECT * FROM baithi WHERE manguoidung = ? AND made = ?";
+            PreparedStatement pst = con.prepareStatement(sql);
+            pst.setInt(1, userId);
+            pst.setInt(2, made);
+            ResultSet rs = pst.executeQuery();
+            if (rs.next()) {
+                result = true;
+            }
         } catch (SQLException ex) {
             ex.printStackTrace();
         }

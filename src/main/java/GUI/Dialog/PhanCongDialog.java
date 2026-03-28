@@ -30,6 +30,10 @@ public class PhanCongDialog extends JDialog {
     private PhanCongDTO currentDTO;
     private String currentType;
 
+    // Lưu lại danh sách để lấy ID theo index sau này
+    private List<NguoiDungDTO> listGV;
+    private ArrayList<MonHocDTO> listMH;
+
     public PhanCongDialog(PhanCong parent, JFrame owner, String title, boolean modal, String type, PhanCongDTO pc) {
         super(owner, title, modal);
         this.parent = parent;
@@ -48,27 +52,30 @@ public class PhanCongDialog extends JDialog {
         pnlContent.setBorder(new EmptyBorder(30, 30, 30, 30));
         pnlContent.setBackground(Color.WHITE);
 
-        List<NguoiDungDTO> listGV = ndBUS.getAll().stream()
+        // Xử lý danh sách Giảng viên
+        listGV = ndBUS.getAll().stream()
                 .filter(u -> u.getManhomquyen() == 2)
                 .collect(Collectors.toList());
         String[] dsGV = new String[listGV.size() + 1];
         dsGV[0] = "Chọn giảng viên";
         for (int i = 0; i < listGV.size(); i++) {
-            dsGV[i + 1] = listGV.get(i).getId() + " - " + listGV.get(i).getHoten();
+            dsGV[i + 1] = listGV.get(i).getHoten(); // CHỈ HIỂN THỊ TÊN
         }
         cbxNguoiDung = new SelectForm("Giảng viên", dsGV);
 
-        ArrayList<MonHocDTO> listMH = mhBUS.getAll();
+        // Xử lý danh sách Môn học
+        listMH = mhBUS.getAll();
         String[] dsMH = new String[listMH.size() + 1];
         dsMH[0] = "Chọn môn học";
         for (int i = 0; i < listMH.size(); i++) {
-            dsMH[i + 1] = listMH.get(i).getMamonhoc() + " - " + listMH.get(i).getTenmonhoc();
+            dsMH[i + 1] = listMH.get(i).getTenmonhoc(); // CHỈ HIỂN THỊ TÊN
         }
         cbxMonHoc = new SelectForm("Môn học", dsMH);
 
+        // Nếu là Update hoặc View: Set giá trị mặc định dựa theo Tên
         if (currentDTO != null) {
-            cbxNguoiDung.setSelectedItem(currentDTO.getManguoidung() + " - " + ndBUS.getById(currentDTO.getManguoidung()).getHoten());
-            cbxMonHoc.setSelectedItem(currentDTO.getMamonhoc() + " - " + mhBUS.getTenById(currentDTO.getMamonhoc()));
+            cbxNguoiDung.setSelectedItem(ndBUS.getById(currentDTO.getManguoidung()).getHoten());
+            cbxMonHoc.setSelectedItem(mhBUS.getTenById(currentDTO.getMamonhoc()));
         }
 
         pnlContent.add(cbxNguoiDung);
@@ -97,13 +104,18 @@ public class PhanCongDialog extends JDialog {
     }
 
     private void actionSave() {
-        if (cbxNguoiDung.getSelectedIndex() == 0 || cbxMonHoc.getSelectedIndex() == 0) {
+        int indexGV = cbxNguoiDung.getSelectedIndex();
+        int indexMH = cbxMonHoc.getSelectedIndex();
+
+        if (indexGV == 0 || indexMH == 0) {
             JOptionPane.showMessageDialog(this, "Vui lòng chọn đầy đủ thông tin!");
             return;
         }
 
-        int mand = Integer.parseInt(((String) cbxNguoiDung.getValue()).split(" - ")[0]);
-        int mamh = Integer.parseInt(((String) cbxMonHoc.getValue()).split(" - ")[0]);
+        // Lấy ID dựa trên index của danh sách (trừ đi 1 vì index 0 là "Chọn...")
+        int mand = listGV.get(indexGV - 1).getManguoidung();
+        int mamh = listMH.get(indexMH - 1).getMamonhoc();
+        
         PhanCongDTO newDTO = new PhanCongDTO(mamh, mand);
 
         if (currentType.equals("create")) {

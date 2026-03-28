@@ -20,6 +20,9 @@ public class CauHoiBUS {
     }
 
     public boolean add(CauHoiDTO ch) {
+        if (dao.checkTrungNoiDung(ch.getNoidung(), -1)) {
+            return false;
+        }
         boolean check = dao.insert(ch) > 0;
         if (check) {
             getAll();
@@ -28,6 +31,9 @@ public class CauHoiBUS {
     }
 
     public boolean update(CauHoiDTO ch) {
+        if (dao.checkTrungNoiDung(ch.getNoidung(), ch.getMacauhoi())) {
+            return false;
+        }
         boolean check = dao.update(ch) > 0;
         if (check) {
             getAll();
@@ -49,7 +55,7 @@ public class CauHoiBUS {
                 return ch;
             }
         }
-        return null;
+        return dao.selectById(macauhoi);
     }
 
     public ArrayList<CauHoiDTO> search(String text, String type) {

@@ -42,4 +42,23 @@ public class LoaiCauHoiDAO {
         }
         return result;
     }
+
+    public LoaiCauHoiDTO selectById(int id) {
+        LoaiCauHoiDTO result = null;
+        try (Connection con = JDBCUtil.getConnection()) {
+            String sql = "SELECT * FROM loaicauhoi WHERE maloai = ?";
+            PreparedStatement pst = con.prepareStatement(sql);
+            pst.setInt(1, id);
+            ResultSet rs = pst.executeQuery();
+            if (rs.next()) {
+                result = new LoaiCauHoiDTO();
+                result.setMaloai(rs.getInt("maloai"));
+                result.setTenloai(rs.getString("tenloai"));
+                result.setTrangthai(rs.getInt("trangthai"));
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+        return result;
+    }
 }

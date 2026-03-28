@@ -19,6 +19,10 @@ public class KyThiBUS {
     }
 
     public boolean add(KyThiDTO kt) {
+        if (kythiDAO.checkTrungTen(kt.getTenkythi(), -1)) {
+            javax.swing.JOptionPane.showMessageDialog(null, "Tên kỳ thi đã tồn tại!");
+            return false;
+        }
         boolean check = kythiDAO.insert(kt) > 0;
         if (check) {
             getAll();
@@ -27,11 +31,30 @@ public class KyThiBUS {
     }
 
     public boolean update(KyThiDTO kt) {
+        if (kythiDAO.checkTrungTen(kt.getTenkythi(), kt.getMakythi())) {
+            javax.swing.JOptionPane.showMessageDialog(null, "Tên kỳ thi đã tồn tại!");
+            return false;
+        }
         boolean check = kythiDAO.update(kt) > 0;
         if (check) {
             getAll();
         }
         return check;
+    }
+
+    public String getTenById(int makythi) {
+        for (KyThiDTO kt : listKyThi) {
+            if (kt.getMakythi() == makythi) {
+                return kt.getTenkythi();
+            }
+        }
+
+        KyThiDTO ktDb = kythiDAO.selectById(makythi);
+        if (ktDb != null) {
+            return ktDb.getTenkythi();
+        }
+
+        return "Không xác định";
     }
 
     public boolean delete(int id) {
@@ -42,22 +65,13 @@ public class KyThiBUS {
         return check;
     }
 
-    public String getTenById(int makythi) {
-        for (int i = 0; i < listKyThi.size(); i++) {
-            if (listKyThi.get(i).getMakythi() == makythi) {
-                return listKyThi.get(i).getTenkythi();
-            }
-        }
-        return "Không xác định";
-    }
-
     public KyThiDTO getById(int makythi) {
-        for (int i = 0; i < listKyThi.size(); i++) {
-            if (listKyThi.get(i).getMakythi() == makythi) {
-                return listKyThi.get(i);
+        for (KyThiDTO kt : listKyThi) {
+            if (kt.getMakythi() == makythi) {
+                return kt;
             }
         }
-        return null;
+        return kythiDAO.selectById(makythi);
     }
 
     public ArrayList<KyThiDTO> search(String text, String type) {

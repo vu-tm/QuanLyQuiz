@@ -101,7 +101,11 @@ public class CauHoi extends JPanel implements ActionListener, ItemListener {
         table.getColumnModel().getColumn(5).setPreferredWidth(150); // Người tạo
 
         table.setAutoCreateRowSorter(true);
-        TableSorter.configureTableColumnSorter(table, 0, TableSorter.INTEGER_COMPARATOR);
+        TableSorter.configureTableColumnSorter(table, 0, (Object o1, Object o2) -> {
+            int id1 = Integer.parseInt(o1.toString().replace("CH-", ""));
+            int id2 = Integer.parseInt(o2.toString().replace("CH-", ""));
+            return Integer.compare(id1, id2);
+        });
 
         pnlBorder1 = new JPanel();
         pnlBorder1.setPreferredSize(new Dimension(0, 10));
@@ -171,7 +175,10 @@ public class CauHoi extends JPanel implements ActionListener, ItemListener {
             setOpaque(true);
             setEditable(false);
             setFont(new Font("Segoe UI", Font.PLAIN, 13));
-            setBorder(new EmptyBorder(8, 10, 8, 10)); // Tạo khoảng cách đệm cho chữ
+            setBorder(BorderFactory.createCompoundBorder(
+                    BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(230, 230, 230)),
+                    BorderFactory.createEmptyBorder(8, 10, 8, 10)
+            ));
         }
 
         @Override
@@ -204,10 +211,11 @@ public class CauHoi extends JPanel implements ActionListener, ItemListener {
     }
 
     public void loadDataTable(ArrayList<CauHoiDTO> danhSach) {
+        this.listHienTai = danhSach;
         tblModel.setRowCount(0);
         for (CauHoiDTO ch : danhSach) {
             tblModel.addRow(new Object[]{
-                ch.getMacauhoi(),
+                "CH-" + ch.getMacauhoi(),
                 ch.getNoidung(),
                 doKhoBUS.getTenDoKho(ch.getMadokho()),
                 loaiCauHoiBUS.getTenById(ch.getMaloai()),
@@ -224,7 +232,7 @@ public class CauHoi extends JPanel implements ActionListener, ItemListener {
 
         if (source == mainFunction.btn.get("create")) {
             CauHoiDTO newCH = new CauHoiDTO();
-            newCH.setNguoitao(mainFrame.getNguoiDung().getId());
+            newCH.setNguoitao(mainFrame.getNguoiDung().getManguoidung());
             new CauHoiDialog(this, owner, "Thêm câu hỏi mới", newCH);
         } else if (source == mainFunction.btn.get("update") || source == mainFunction.btn.get("detail") || source == mainFunction.btn.get("delete")) {
             int index = table.getSelectedRow();
@@ -232,7 +240,9 @@ public class CauHoi extends JPanel implements ActionListener, ItemListener {
                 JOptionPane.showMessageDialog(this, "Vui lòng chọn câu hỏi!");
                 return;
             }
-            int macauhoi = (int) table.getValueAt(index, 0);
+            String maStr = table.getValueAt(index, 0).toString();
+            int macauhoi = Integer.parseInt(maStr.replace("CH-", ""));
+            bus.getAll();
             CauHoiDTO selected = bus.getById(macauhoi);
 
             if (source == mainFunction.btn.get("update")) {
@@ -314,7 +324,7 @@ public class CauHoi extends JPanel implements ActionListener, ItemListener {
                             ch.setMadokho(madokho);
                             ch.setMaloai(maloai);
                             ch.setMamonhoc(mamonhoc);
-                            ch.setNguoitao(mainFrame.getNguoiDung().getId());
+                            ch.setNguoitao(mainFrame.getNguoiDung().getManguoidung());
                             ch.setTrangthai(1);
                             if (bus.add(ch)) {
                                 countSuccess++;

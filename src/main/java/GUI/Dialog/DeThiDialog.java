@@ -557,7 +557,7 @@ public class DeThiDialog extends JDialog {
             dt.setThoigianthi(thoiGian);
             dt.setTongsocau(listMaCauHoi.size());
             dt.setThoigiantao(new Timestamp(System.currentTimeMillis()));
-            dt.setNguoitao(mainFrame.getNguoiDung().getId());
+            dt.setNguoitao(mainFrame.getNguoiDung().getManguoidung());
             dt.setTrangthai(true);
             int madeVuaTao = deThiBUS.add(dt);
 

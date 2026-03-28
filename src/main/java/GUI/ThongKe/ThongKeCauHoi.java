@@ -89,6 +89,18 @@ public class ThongKeCauHoi extends JPanel implements ActionListener, KeyListener
         tblModel.setColumnIdentifiers(header);
         tblCauHoi.setModel(tblModel);
 
+        DefaultTableCellRenderer percentRenderer = new DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+                if (value instanceof Double) {
+                    value = String.format("%.1f%%", (Double) value);
+                }
+                super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+                setHorizontalAlignment(JLabel.CENTER);
+                return this;
+            }
+        };
+
         // table
         tblCauHoi.getColumnModel().getColumn(0).setPreferredWidth(40);  // STT
         tblCauHoi.getColumnModel().getColumn(1).setPreferredWidth(80);  // Mã
@@ -100,6 +112,8 @@ public class ThongKeCauHoi extends JPanel implements ActionListener, KeyListener
         tblCauHoi.setDefaultEditor(Object.class, null);
         tblCauHoi.setRowHeight(35);
         tblCauHoi.setFocusable(false);
+        tblCauHoi.getColumnModel().getColumn(5).setCellRenderer(percentRenderer);
+        tblCauHoi.getColumnModel().getColumn(6).setCellRenderer(percentRenderer);
         scrollTbl.setViewportView(tblCauHoi);
         tblCauHoi.addMouseListener(new MouseAdapter() {
             @Override
@@ -107,7 +121,8 @@ public class ThongKeCauHoi extends JPanel implements ActionListener, KeyListener
                 if (e.getClickCount() == 2) { // double click
                     int row = tblCauHoi.getSelectedRow();
                     if (row != -1) {
-                        int macauhoi = (int) tblCauHoi.getValueAt(row, 1);
+                        String maStr = tblCauHoi.getValueAt(row, 1).toString();
+                        int macauhoi = Integer.parseInt(maStr.replace("CH-", ""));
                         DTO.CauHoiDTO dto = cauHoiBUS.getById(macauhoi);
 
                         JFrame owner = (JFrame) SwingUtilities.getWindowAncestor(ThongKeCauHoi.this);
@@ -135,9 +150,12 @@ public class ThongKeCauHoi extends JPanel implements ActionListener, KeyListener
         tblCauHoi.getColumnModel().getColumn(5).setPreferredWidth(120);
 
         // Sắp xếp
-        TableSorter.configureTableColumnSorter(tblCauHoi, 0, TableSorter.INTEGER_COMPARATOR);
-        TableSorter.configureTableColumnSorter(tblCauHoi, 1, TableSorter.INTEGER_COMPARATOR);
-        TableSorter.configureTableColumnSorter(tblCauHoi, 3, TableSorter.INTEGER_COMPARATOR);
+        TableSorter.configureTableColumnSorter(tblCauHoi, 0, TableSorter.INTEGER_COMPARATOR); // STT
+        TableSorter.configureTableColumnSorter(tblCauHoi, 1, TableSorter.INTEGER_COMPARATOR); // Mã CH
+        TableSorter.configureTableColumnSorter(tblCauHoi, 3, TableSorter.INTEGER_COMPARATOR); // Độ khó
+        TableSorter.configureTableColumnSorter(tblCauHoi, 4, TableSorter.INTEGER_COMPARATOR); // Tổng lần thi
+        TableSorter.configureTableColumnSorter(tblCauHoi, 5, TableSorter.DOUBLE_COMPARATOR);  // Tỷ lệ đúng (%)
+        TableSorter.configureTableColumnSorter(tblCauHoi, 6, TableSorter.DOUBLE_COMPARATOR);  // Tỷ lệ sai (%)
 
         pnlCenter.add(scrollTbl, BorderLayout.CENTER);
 
@@ -155,12 +173,12 @@ public class ThongKeCauHoi extends JPanel implements ActionListener, KeyListener
             String tenDoKho = (ch != null) ? doKhoBUS.getTenDoKho(ch.getMadokho()) : "N/A";
             tblModel.addRow(new Object[]{
                 i.getStt(),
-                i.getMacauhoi(),
+                "CH-" + i.getMacauhoi(),
                 i.getNoidung(),
                 tenDoKho,
                 i.getTonglan(),
-                String.format("%.1f%%", i.getTyleDung()),
-                String.format("%.1f%%", i.getTyleSai())
+                i.getTyleDung(),
+                i.getTyleSai()
             });
         }
     }

@@ -1,16 +1,16 @@
 package DTO.ThongKe;
 
-public class ThongKeHocSinhDTO {
+public class ThongKeSinhVienDTO {
 
     private int stt;
     private int manguoidung;
     private String hoten;
     private int soDedalLam;
 
-    public ThongKeHocSinhDTO() {
+    public ThongKeSinhVienDTO() {
     }
 
-    public ThongKeHocSinhDTO(int stt, int manguoidung, String hoten, int soDedalLam) {
+    public ThongKeSinhVienDTO(int stt, int manguoidung, String hoten, int soDedalLam) {
         this.stt = stt;
         this.manguoidung = manguoidung;
         this.hoten = hoten;

@@ -10,7 +10,7 @@ public class ThongKe extends JPanel {
     JTabbedPane tabbedPane;
     ThongKeTongQuan tongQuan;
     ThongKeCauHoi cauHoi;
-    ThongKeHocSinh hocSinh;
+    ThongKeSinhVien SinhVien;
     ThongKeDiemThi diemThi;
 
     public ThongKe() {
@@ -23,14 +23,14 @@ public class ThongKe extends JPanel {
 
         tongQuan = new ThongKeTongQuan();
         cauHoi   = new ThongKeCauHoi();
-        hocSinh  = new ThongKeHocSinh();
+        SinhVien  = new ThongKeSinhVien();
         diemThi  = new ThongKeDiemThi();
 
         tabbedPane = new JTabbedPane();
         tabbedPane.setOpaque(false);
         tabbedPane.addTab("Tổng quan", tongQuan);
         tabbedPane.addTab("Câu hỏi",   cauHoi);
-        tabbedPane.addTab("Học sinh",  hocSinh);
+        tabbedPane.addTab("Sinh viên",  SinhVien);
         tabbedPane.addTab("Điểm thi",  diemThi);
 
         tabbedPane.addChangeListener(e -> refreshCurrentTab());
@@ -43,7 +43,7 @@ public class ThongKe extends JPanel {
         switch (index) {
             case 0 -> tongQuan.refreshData();
             case 1 -> cauHoi.refreshTable();
-            case 2 -> hocSinh.refreshTable();
+            case 2 -> SinhVien.refreshTable();
             case 3 -> diemThi.refreshFirstTab();
         }
     }
@@ -55,6 +55,6 @@ public class ThongKe extends JPanel {
     public JTabbedPane getTabbedPane() { return tabbedPane; }
     public ThongKeTongQuan getTongQuan() { return tongQuan; }
     public ThongKeCauHoi getCauHoi()    { return cauHoi; }
-    public ThongKeHocSinh getHocSinh() { return hocSinh; }
+    public ThongKeSinhVien getSinhVien() { return SinhVien; }
     public ThongKeDiemThi getDiemThi() { return diemThi; }
 }

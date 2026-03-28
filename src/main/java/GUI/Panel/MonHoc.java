@@ -76,7 +76,11 @@ public class MonHoc extends JPanel implements ActionListener, ItemListener {
         }
 
         table.setAutoCreateRowSorter(true);
-        TableSorter.configureTableColumnSorter(table, 0, TableSorter.INTEGER_COMPARATOR);
+        TableSorter.configureTableColumnSorter(table, 0, (Object o1, Object o2) -> {
+            int id1 = Integer.parseInt(o1.toString().replace("MH-", ""));
+            int id2 = Integer.parseInt(o2.toString().replace("MH-", ""));
+            return Integer.compare(id1, id2);
+        });
 
         pnlBorder1 = new JPanel();
         pnlBorder1.setPreferredSize(new Dimension(0, 10));
@@ -204,7 +208,7 @@ public class MonHoc extends JPanel implements ActionListener, ItemListener {
         tblModel.setRowCount(0);
         for (MonHocDTO mh : danhSach) {
             tblModel.addRow(new Object[]{
-                mh.getMamonhoc(),
+                "MH-" + mh.getMamonhoc(),
                 mh.getTenmonhoc(),
                 mh.getSotinchi()
             });
@@ -224,7 +228,8 @@ public class MonHoc extends JPanel implements ActionListener, ItemListener {
                 JOptionPane.showMessageDialog(this, "Vui lòng chọn môn học!");
                 return;
             }
-            int mamonhoc = (int) table.getValueAt(index, 0);
+            String maStr = table.getValueAt(index, 0).toString();
+            int mamonhoc = Integer.parseInt(maStr.replace("MH-", ""));
             MonHocDTO selected = bus.getById(mamonhoc);
 
             if (source == mainFunction.btn.get("update")) {

@@ -1,5 +1,6 @@
 package GUI.Panel;
 
+import BUS.BaiThiBUS;
 import BUS.DeThiBUS;
 import BUS.KyThiBUS;
 import BUS.MonHocBUS;
@@ -31,6 +32,7 @@ public class LamBai extends JPanel implements ActionListener {
     private DeThiBUS deThiBUS = new DeThiBUS();
     private KyThiBUS kyThiBUS = new KyThiBUS();
     private MonHocBUS monHocBUS = new MonHocBUS();
+    private BaiThiBUS baiThiBUS = new BaiThiBUS();
 
     private ArrayList<DeThiDTO> listDeThi;
     private NguoiDungDTO user;
@@ -88,6 +90,10 @@ public class LamBai extends JPanel implements ActionListener {
                             break;
                         case "Chưa bắt đầu":
                             c.setForeground(Color.BLUE);
+                            c.setFont(c.getFont().deriveFont(Font.BOLD));
+                            break;
+                        case "Đã hoàn thành":
+                            c.setForeground(new Color(128, 128, 128));
                             c.setFont(c.getFont().deriveFont(Font.BOLD));
                             break;
                         default:
@@ -151,9 +157,9 @@ public class LamBai extends JPanel implements ActionListener {
         JPanel pnlFilter = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 20));
         pnlFilter.setOpaque(false);
         pnlFilter.add(new JLabel("Lọc trạng thái:"));
-        cbxFilterTrangThai = new JComboBox<>(new String[]{"Tất cả", "Đang mở", "Chưa bắt đầu", "Hết hạn"});
+        cbxFilterTrangThai = new JComboBox<>(new String[]{"Tất cả", "Đang mở", "Chưa bắt đầu", "Hết hạn", "Đã hoàn thành"});
         cbxFilterTrangThai.setPreferredSize(new Dimension(150, 35));
-        cbxFilterTrangThai.addActionListener(e -> thucHienLoc()); // Lọc khi chọn
+        cbxFilterTrangThai.addActionListener(e -> thucHienLoc());
         pnlFilter.add(cbxFilterTrangThai);
 
         functionBar.add(pnlFilter, BorderLayout.EAST);
@@ -168,7 +174,7 @@ public class LamBai extends JPanel implements ActionListener {
     }
 
     public void loadData() {
-        listDeThi = deThiBUS.getDeThiChoSinhVien(user.getId());
+        listDeThi = deThiBUS.getDeThiChoSinhVien(user.getManguoidung());
         loadDataTable(listDeThi);
     }
 
@@ -182,7 +188,7 @@ public class LamBai extends JPanel implements ActionListener {
                 monHocBUS.getTenById(dt.getMonthi()),
                 dt.getThoigianthi() + " phút",
                 dt.getTongsocau(),
-                calculateTrangThai(dt.getMakythi())
+                calculateTrangThai(dt.getMakythi(), dt.getMade())
             });
         }
     }
@@ -197,7 +203,7 @@ public class LamBai extends JPanel implements ActionListener {
 
         ArrayList<DeThiDTO> result = new ArrayList<>();
         for (DeThiDTO dt : listDeThi) {
-            String currentStatus = calculateTrangThai(dt.getMakythi());
+            String currentStatus = calculateTrangThai(dt.getMakythi(), dt.getMade());
             if (currentStatus.equals(selected)) {
                 result.add(dt);
             }
@@ -214,9 +220,13 @@ public class LamBai extends JPanel implements ActionListener {
                 return;
             }
 
-            // Lấy giá trị trạng thái trực tiếp từ bảng (đã convert từ view sang model nếu có sorter)
             int modelRow = table.convertRowIndexToModel(index);
             String trangThai = tblModel.getValueAt(modelRow, 6).toString();
+
+            if (trangThai.equals("Đã hoàn thành")) {
+                JOptionPane.showMessageDialog(this, "Bạn đã hoàn thành bài thi này rồi, không thể thi lại!", "Thông báo", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
 
             if (trangThai.equals("Hết hạn")) {
                 JOptionPane.showMessageDialog(this, "Kỳ thi này đã kết thúc, bạn không thể vào thi!", "Thông báo", JOptionPane.WARNING_MESSAGE);
@@ -239,15 +249,19 @@ public class LamBai extends JPanel implements ActionListener {
             if (confirm == JOptionPane.YES_OPTION) {
                 LamBaiDialog dialog = new LamBaiDialog(mainFrame, selectedDeThi, user);
                 dialog.setVisible(true);
-                loadData(); 
+                loadData();
             }
         }
     }
 
-    private String calculateTrangThai(int maKyThi) {
+    private String calculateTrangThai(int maKyThi, int made) {
+        if (baiThiBUS.checkDaLam(user.getManguoidung(), made)) {
+            return "Đã hoàn thành";
+        }
+
         DTO.KyThiDTO kt = kyThiBUS.getById(maKyThi);
-        if (kt == null) {
-            return "Không xác định";
+        if (kt == null || kt.getTrangthai() == 0) {
+            return "Hết hạn";
         }
 
         long now = System.currentTimeMillis();

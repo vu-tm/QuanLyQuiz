@@ -42,6 +42,7 @@ public class BaiThiBUS {
     }
 
     public int delete(int mabaithi) {
+        ctDao.delete(mabaithi);
         int result = bDao.delete(mabaithi);
         if (result > 0) {
             listBaiThi.removeIf(bt -> bt.getMabaithi() == mabaithi);
@@ -104,7 +105,7 @@ public class BaiThiBUS {
                 try {
                     int chosenId = Integer.parseInt(userAnswer);
                     for (DapAnDTO da : listDA) {
-                        if (da.isLadapan() && da.getMadapan() == chosenId) {
+                        if (da.getLadapan() && da.getMadapan() == chosenId) {
                             soCauDung++;
                             break;
                         }
@@ -113,7 +114,7 @@ public class BaiThiBUS {
                 }
             } else if (ch.getMaloai() == 3) {
                 for (DapAnDTO da : listDA) {
-                    if (da.isLadapan() && da.getNoidungtl().trim().equalsIgnoreCase(userAnswer.trim())) {
+                    if (da.getLadapan() && da.getNoidungtl().trim().equalsIgnoreCase(userAnswer.trim())) {
                         soCauDung++;
                         break;
                     }
@@ -180,14 +181,14 @@ public class BaiThiBUS {
         // Trắc nghiệm (1) & Đúng sai (2)
         if (ch.getMaloai() == 1 || ch.getMaloai() == 2) {
             for (DapAnDTO da : listDA) {
-                if (da.isLadapan() && da.getMadapan() == ct.getDapanchon()) {
+                if (da.getLadapan() && da.getMadapan() == ct.getDapanchon()) {
                     return "Đúng";
                 }
             }
         } // Điền khuyết (3)
         else if (ch.getMaloai() == 3) {
             for (DapAnDTO da : listDA) {
-                if (da.isLadapan() && da.getNoidungtl().trim().equalsIgnoreCase(ct.getNoidungdienkhuyet().trim())) {
+                if (da.getLadapan() && da.getNoidungtl().trim().equalsIgnoreCase(ct.getNoidungdienkhuyet().trim())) {
                     return "Đúng";
                 }
             }
@@ -218,5 +219,9 @@ public class BaiThiBUS {
             return ct.getNoidungdienkhuyet();
         }
         return "N/A";
+    }
+
+    public boolean checkDaLam(int userId, int made) {
+        return bDao.checkDaLam(userId, made);
     }
 }

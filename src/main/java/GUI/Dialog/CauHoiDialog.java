@@ -303,27 +303,62 @@ public class CauHoiDialog extends JDialog {
 
     private void loadDataForEdit() {
         txtaCauHoi.setText(currentDTO.getNoidung());
+        int maDK = currentDTO.getMadokho();
+        boolean foundDK = false;
         for (int i = 0; i < cmbDoKho.getItemCount(); i++) {
-            if (cmbDoKho.getItemAt(i).getMadokho() == currentDTO.getMadokho()) {
+            if (cmbDoKho.getItemAt(i).getMadokho() == maDK) {
                 cmbDoKho.setSelectedIndex(i);
+                foundDK = true;
+                break;
             }
         }
-        for (int i = 0; i < cmbMonHoc.getItemCount(); i++) {
-            if (cmbMonHoc.getItemAt(i).getMamonhoc() == currentDTO.getMamonhoc()) {
-                cmbMonHoc.setSelectedIndex(i);
-            }
-        }
-        for (int i = 0; i < cmbLoaiCauHoi.getItemCount(); i++) {
-            if (cmbLoaiCauHoi.getItemAt(i).getMaloai() == currentDTO.getMaloai()) {
-                cmbLoaiCauHoi.setSelectedIndex(i);
+        if (!foundDK) {
+            DoKhoDTO deletedDK = busDoKho.getById(maDK);
+            if (deletedDK != null) {
+                cmbDoKho.addItem(deletedDK);
+                cmbDoKho.setSelectedItem(deletedDK);
             }
         }
 
+        int maMH = currentDTO.getMamonhoc();
+        boolean foundMH = false;
+        for (int i = 0; i < cmbMonHoc.getItemCount(); i++) {
+            if (cmbMonHoc.getItemAt(i).getMamonhoc() == maMH) {
+                cmbMonHoc.setSelectedIndex(i);
+                foundMH = true;
+                break;
+            }
+        }
+        if (!foundMH) {
+            MonHocDTO deletedMH = busMonHoc.getById(maMH);
+            if (deletedMH != null) {
+                cmbMonHoc.addItem(deletedMH);
+                cmbMonHoc.setSelectedItem(deletedMH);
+            }
+        }
+
+        int maLCH = currentDTO.getMaloai();
+        boolean foundLCH = false;
+        for (int i = 0; i < cmbLoaiCauHoi.getItemCount(); i++) {
+            if (cmbLoaiCauHoi.getItemAt(i).getMaloai() == maLCH) {
+                cmbLoaiCauHoi.setSelectedIndex(i);
+                foundLCH = true;
+                break;
+            }
+        }
+        if (!foundLCH) {
+            LoaiCauHoiDTO deletedLCH = busLoaiCauHoi.getById(maLCH);
+            if (deletedLCH != null) {
+                cmbLoaiCauHoi.addItem(deletedLCH);
+                cmbLoaiCauHoi.setSelectedItem(deletedLCH);
+            }
+        }
         updateAnswerUIByTen(((LoaiCauHoiDTO) cmbLoaiCauHoi.getSelectedItem()).getTenloai());
+
         ArrayList<DapAnDTO> listDA = busDapAn.getDapAnDeHienThi(currentDTO.getMacauhoi());
         for (int i = 0; i < listDA.size() && i < txtAnswers.size(); i++) {
             txtAnswers.get(i).setText(listDA.get(i).getNoidungtl());
-            if (listDA.get(i).isLadapan()) {
+            if (listDA.get(i).getLadapan()) {
                 rdAnswers.get(i).setSelected(true);
             }
         }
@@ -331,9 +366,10 @@ public class CauHoiDialog extends JDialog {
 
     private void luuCauHoi() {
         if (Validation.isEmpty(txtaCauHoi.getText())) {
-            JOptionPane.showMessageDialog(this, "Nội dung câu hỏi không được để trống!");
+            JOptionPane.showMessageDialog(this, "Nội dung câu hỏi không được để trống!", "Cảnh báo", JOptionPane.WARNING_MESSAGE);
             return;
         }
+
         try {
             CauHoiDTO ch = (currentDTO != null) ? currentDTO : new CauHoiDTO();
             ch.setNoidung(txtaCauHoi.getText().trim());
@@ -341,23 +377,34 @@ public class CauHoiDialog extends JDialog {
             ch.setMamonhoc(((MonHocDTO) cmbMonHoc.getSelectedItem()).getMamonhoc());
             ch.setMaloai(((LoaiCauHoiDTO) cmbLoaiCauHoi.getSelectedItem()).getMaloai());
             ch.setTrangthai(1);
+
             if (currentDTO == null) {
-                ch.setNguoitao(mainFrame.getNguoiDung().getId());
+                ch.setNguoitao(mainFrame.getNguoiDung().getManguoidung());
             }
+
+            // Thực hiện lưu
             boolean success = (currentDTO == null) ? busCauHoi.add(ch) : busCauHoi.update(ch);
+
             if (success) {
                 int maCH = (currentDTO == null) ? findMaxId() : ch.getMacauhoi();
                 if (!this.getTitle().contains("độ khó")) {
                     saveAnswers(maCH);
                 }
-                JOptionPane.showMessageDialog(this, "Đã lưu thông tin!");
+                JOptionPane.showMessageDialog(this, "Đã lưu thông tin câu hỏi thành công!");
                 if (parent != null) {
                     parent.loadDataTable(busCauHoi.getAll());
                 }
                 dispose();
+            } else {
+                JOptionPane.showMessageDialog(this,
+                        "Lưu thất bại! Nội dung câu hỏi này đã tồn tại trong hệ thống.",
+                        "Lỗi trùng lặp",
+                        JOptionPane.ERROR_MESSAGE);
             }
+
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Lỗi khi lưu dữ liệu!");
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Có lỗi xảy ra trong quá trình lưu dữ liệu!", "Lỗi hệ thống", JOptionPane.ERROR_MESSAGE);
         }
     }
 

@@ -92,21 +92,27 @@ public class DoKhoDialog extends JDialog {
     }
 
     private void luuDoKho(String type) {
+        String ten = tenDoKho.getText().trim();
+
         DoKhoDTO dk = new DoKhoDTO();
-        dk.setTendokho(tenDoKho.getText());
+        dk.setTendokho(ten);
 
         if (type.equals("create")) {
             if (bus.add(dk)) {
-                JOptionPane.showMessageDialog(null, "Thêm thành công!");
+                JOptionPane.showMessageDialog(this, "Thêm thành công!");
                 parent.loadDataTable(bus.getAll());
                 dispose();
+            } else {
+                JOptionPane.showMessageDialog(this, "Thêm thất bại! Tên độ khó đã tồn tại hoặc có lỗi xảy ra.", "Cảnh báo", JOptionPane.WARNING_MESSAGE);
             }
         } else {
             dk.setMadokho(currentDTO.getMadokho());
             if (bus.update(dk)) {
-                JOptionPane.showMessageDialog(null, "Cập nhật thành công!");
+                JOptionPane.showMessageDialog(this, "Cập nhật thành công!");
                 parent.loadDataTable(bus.getAll());
                 dispose();
+            } else {
+                JOptionPane.showMessageDialog(this, "Cập nhật thất bại! Tên độ khó đã tồn tại hoặc có lỗi xảy ra.", "Cảnh báo", JOptionPane.WARNING_MESSAGE);
             }
         }
     }

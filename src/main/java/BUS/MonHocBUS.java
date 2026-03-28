@@ -19,6 +19,10 @@ public class MonHocBUS {
     }
 
     public boolean add(MonHocDTO mh) {
+        // Check trùng tên trước khi thêm mới (excludeId = -1 vì chưa có ID)
+        if (mhDAO.checkTrungTen(mh.getTenmonhoc(), -1)) {
+            return false;
+        }
         boolean check = mhDAO.insert(mh) > 0;
         if (check) {
             getAll();
@@ -27,6 +31,9 @@ public class MonHocBUS {
     }
 
     public boolean update(MonHocDTO mh) {
+        if (mhDAO.checkTrungTen(mh.getTenmonhoc(), mh.getMamonhoc())) {
+            return false;
+        }
         boolean check = mhDAO.update(mh) > 0;
         if (check) {
             getAll();
@@ -42,22 +49,21 @@ public class MonHocBUS {
         return check;
     }
 
-    public String getTenById(int mamonhoc) {
-        for (int i = 0; i < listMonHoc.size(); i++) {
-            if (listMonHoc.get(i).getMamonhoc() == mamonhoc) {
-                return listMonHoc.get(i).getTenmonhoc();
+    public MonHocDTO getById(int mamonhoc) {
+        for (MonHocDTO mh : listMonHoc) {
+            if (mh.getMamonhoc() == mamonhoc) {
+                return mh;
             }
         }
-        return "Không xác định";
+        return mhDAO.selectById(mamonhoc);
     }
 
-    public MonHocDTO getById(int mamonhoc) {
-        for (int i = 0; i < listMonHoc.size(); i++) {
-            if (listMonHoc.get(i).getMamonhoc() == mamonhoc) {
-                return listMonHoc.get(i);
-            }
+    public String getTenById(int mamonhoc) {
+        MonHocDTO mh = getById(mamonhoc);
+        if (mh != null) {
+            return mh.getTenmonhoc();
         }
-        return null;
+        return "Không xác định";
     }
 
     public ArrayList<MonHocDTO> search(String text, String type) {

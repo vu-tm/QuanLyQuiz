@@ -1,6 +1,8 @@
 package BUS;
 
+import DAO.CauHoiDAO;
 import DAO.DoKhoDAO;
+import DTO.CauHoiDTO;
 import DTO.DoKhoDTO;
 import java.util.ArrayList;
 
@@ -19,6 +21,9 @@ public class DoKhoBUS {
     }
 
     public boolean add(DoKhoDTO dk) {
+        if (dkDAO.checkTrungTen(dk.getTendokho(), -1)) {
+            return false;
+        }
         boolean check = dkDAO.insert(dk) > 0;
         if (check) {
             getAll();
@@ -27,6 +32,9 @@ public class DoKhoBUS {
     }
 
     public boolean update(DoKhoDTO dk) {
+        if (dkDAO.checkTrungTen(dk.getTendokho(), dk.getMadokho())) {
+            return false;
+        }
         boolean check = dkDAO.update(dk) > 0;
         if (check) {
             getAll();
@@ -67,20 +75,24 @@ public class DoKhoBUS {
     }
 
     public String getTenDoKho(int madokho) {
-        for (int i = 0; i < listDoKho.size(); i++) {
-            if (listDoKho.get(i).getMadokho() == madokho) {
-                return listDoKho.get(i).getTendokho();
+        for (DoKhoDTO dk : listDoKho) {
+            if (dk.getMadokho() == madokho) {
+                return dk.getTendokho();
             }
+        }
+        DoKhoDTO dk = dkDAO.selectById(madokho);
+        if (dk != null) {
+            return dk.getTendokho();
         }
         return "Không xác định";
     }
 
     public DoKhoDTO getById(int madokho) {
-        for (int i = 0; i < listDoKho.size(); i++) {
-            if (listDoKho.get(i).getMadokho() == madokho) {
-                return listDoKho.get(i);
+        for (DoKhoDTO dk : listDoKho) {
+            if (dk.getMadokho() == madokho) {
+                return dk;
             }
         }
-        return null;
+        return dkDAO.selectById(madokho);
     }
 }

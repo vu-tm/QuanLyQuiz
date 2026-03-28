@@ -1,5 +1,6 @@
 package BUS;
 
+import DAO.CauHoiDAO;
 import DAO.LoaiCauHoiDAO;
 import DTO.LoaiCauHoiDTO;
 import java.util.ArrayList;
@@ -32,7 +33,7 @@ public class LoaiCauHoiBUS {
                 return lch;
             }
         }
-        return null;
+        return loaiDAO.selectById(maloai);
     }
 
     public String getTenById(int maloai) {
@@ -40,6 +41,10 @@ public class LoaiCauHoiBUS {
             if (lch.getMaloai() == maloai) {
                 return lch.getTenloai();
             }
+        }
+        LoaiCauHoiDTO lch = loaiDAO.selectById(maloai);
+        if (lch != null) {
+            return lch.getTenloai();
         }
         return "Không xác định";
     }

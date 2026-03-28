@@ -75,7 +75,11 @@ public class DoKho extends JPanel implements ActionListener, ItemListener {
         }
 
         table.setAutoCreateRowSorter(true);
-        TableSorter.configureTableColumnSorter(table, 0, TableSorter.INTEGER_COMPARATOR);
+        TableSorter.configureTableColumnSorter(table, 0, (Object o1, Object o2) -> {
+            int id1 = Integer.parseInt(o1.toString().replace("DK-", ""));
+            int id2 = Integer.parseInt(o2.toString().replace("DK-", ""));
+            return Integer.compare(id1, id2);
+        });
 
         pnlBorder1 = new JPanel();
         pnlBorder1.setPreferredSize(new Dimension(0, 10));
@@ -199,7 +203,7 @@ public class DoKho extends JPanel implements ActionListener, ItemListener {
         tblModel.setRowCount(0);
         for (DoKhoDTO dk : danhSach) {
             tblModel.addRow(new Object[]{
-                dk.getMadokho(),
+                "DK-" + dk.getMadokho(),
                 dk.getTendokho()
             });
         }
@@ -218,7 +222,8 @@ public class DoKho extends JPanel implements ActionListener, ItemListener {
                 JOptionPane.showMessageDialog(this, "Vui lòng chọn độ khó!");
                 return;
             }
-            int madokho = (int) table.getValueAt(index, 0);
+            String maStr = table.getValueAt(index, 0).toString();
+            int madokho = Integer.parseInt(maStr.replace("DK-", ""));
             DoKhoDTO selected = bus.getById(madokho);
 
             if (source == mainFunction.btn.get("update")) {

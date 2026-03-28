@@ -54,7 +54,7 @@ public final class ChiTietBaiThiDialog extends JDialog implements ActionListener
         pnmain_top.setBackground(Color.WHITE);
 
         txtTenDe = new InputForm("Đề thi");
-        txtNguoiLam = new InputForm("Học sinh");
+        txtNguoiLam = new InputForm("Sinh viên");
         txtDiem = new InputForm("Điểm số");
         txtThoiGianVao = new InputForm("Thời gian vào thi");
         txtThoiGianLam = new InputForm("Thời gian làm bài (giây)");
@@ -84,16 +84,33 @@ public final class ChiTietBaiThiDialog extends JDialog implements ActionListener
         table.setRowHeight(35);
 
         scrollTable = new JScrollPane(table);
-        
+
         table.getColumnModel().getColumn(0).setPreferredWidth(50);
         table.getColumnModel().getColumn(1).setPreferredWidth(500);
         table.getColumnModel().getColumn(2).setPreferredWidth(250);
         table.getColumnModel().getColumn(3).setPreferredWidth(100);
 
-        DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
-        centerRenderer.setHorizontalAlignment(JLabel.CENTER);
-        table.getColumnModel().getColumn(0).setCellRenderer(centerRenderer);
-        table.getColumnModel().getColumn(3).setCellRenderer(centerRenderer);
+        table.getColumnModel().getColumn(3).setCellRenderer(new DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+                Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+                setHorizontalAlignment(JLabel.CENTER);
+
+                if (value != null && "Sai".equalsIgnoreCase(value.toString())) {
+                    c.setForeground(Color.RED);
+                    c.setFont(c.getFont().deriveFont(Font.BOLD));
+                } else {
+                    c.setFont(c.getFont().deriveFont(Font.PLAIN));
+
+                    if (isSelected) {
+                        c.setForeground(table.getSelectionForeground());
+                    } else {
+                        c.setForeground(Color.BLACK);
+                    }
+                }
+                return c;
+            }
+        });
 
         pnmain_bottom.add(scrollTable, BorderLayout.CENTER);
         pnmain.add(pnmain_bottom, BorderLayout.CENTER);
@@ -129,7 +146,7 @@ public final class ChiTietBaiThiDialog extends JDialog implements ActionListener
             String noiDungCH = cauHoiBUS.getById(ct.getMacauhoi()).getNoidung();
             String dapAnText = baithiBUS.getAnswerText(ct);
             String ketQua = baithiBUS.evaluateAnswer(ct);
-            
+
             tblModel.addRow(new Object[]{
                 i + 1, noiDungCH, dapAnText, ketQua
             });

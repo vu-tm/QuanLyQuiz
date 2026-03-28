@@ -75,4 +75,40 @@ public class KyThiDAO {
         }
         return result;
     }
+
+    public boolean checkTrungTen(String ten, int excludeId) {
+        String sql = "SELECT COUNT(*) FROM kythi WHERE LOWER(tenkythi) = ? AND makythi != ?";
+        try (Connection c = JDBCUtil.getConnection(); PreparedStatement ps = c.prepareStatement(sql)) {
+            ps.setString(1, ten.toLowerCase().trim());
+            ps.setInt(2, excludeId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1) > 0;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public KyThiDTO selectById(int id) {
+        KyThiDTO result = null;
+        try (Connection con = JDBCUtil.getConnection()) {
+            String sql = "SELECT * FROM kythi WHERE makythi = ?";
+            PreparedStatement pst = con.prepareStatement(sql);
+            pst.setInt(1, id);
+            ResultSet rs = pst.executeQuery();
+            if (rs.next()) {
+                result = new KyThiDTO();
+                result.setMakythi(rs.getInt("makythi"));
+                result.setTenkythi(rs.getString("tenkythi"));
+                result.setThoigianbatdau(rs.getTimestamp("thoigianbatdau"));
+                result.setThoigianketthuc(rs.getTimestamp("thoigianketthuc"));
+                result.setTrangthai(rs.getInt("trangthai"));
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+        return result;
+    }
 }

@@ -435,7 +435,7 @@ public class LopDialog extends JDialog implements ActionListener {
 
         if (lopBUS.update(lop)) {
             luuChiTietLop(lop.getMalop());
-            lopHocPanel.loadDataTable(lopBUS.getAll());
+            lopHocPanel.refreshData();
             JOptionPane.showMessageDialog(this, "Cập nhật thông tin thành công!");
             dispose();
         } else {

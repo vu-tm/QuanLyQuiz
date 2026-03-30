@@ -23,6 +23,15 @@ public class KyThiBUS {
             javax.swing.JOptionPane.showMessageDialog(null, "Tên kỳ thi đã tồn tại!");
             return false;
         }
+
+        if (kt.getThoigianbatdau() != null && kt.getThoigianketthuc() != null) {
+            long diff = kt.getThoigianketthuc().getTime() - kt.getThoigianbatdau().getTime();
+            long days = diff / (24 * 60 * 60 * 1000);
+            if (days > 31) {
+                return false;
+            }
+        }
+
         boolean check = kythiDAO.insert(kt) > 0;
         if (check) {
             getAll();

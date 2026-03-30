@@ -150,6 +150,14 @@ public class KyThiDialog extends JDialog {
             return false;
         }
 
+        long diffInMillies = Math.abs(ketThuc.getTime() - batDau.getTime());
+        long diffInDays = java.util.concurrent.TimeUnit.DAYS.convert(diffInMillies, java.util.concurrent.TimeUnit.MILLISECONDS);
+
+        if (diffInDays > 31) {
+            JOptionPane.showMessageDialog(null, "Thời gian kỳ thi không được quá 31 ngày!", "Lỗi!", JOptionPane.ERROR_MESSAGE);
+            return false;
+        }
+
         return true;
     }
 }

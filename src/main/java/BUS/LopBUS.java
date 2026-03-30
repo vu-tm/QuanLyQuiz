@@ -32,6 +32,13 @@ public class LopBUS {
     }
 
     public boolean add(LopDTO lop) {
+        for (LopDTO l : listLop) {
+            if (l.getGiangvien() == lop.getGiangvien()
+                    && l.getTenlop().equalsIgnoreCase(lop.getTenlop())
+                    && l.getMamonhoc() == lop.getMamonhoc()) {
+                return false;
+            }
+        }
         boolean check = lopDAO.insert(lop) > 0;
         if (check) {
             getAll();
@@ -40,6 +47,14 @@ public class LopBUS {
     }
 
     public boolean update(LopDTO lop) {
+        for (LopDTO l : listLop) {
+            if (l.getMalop() != lop.getMalop()
+                    && l.getGiangvien() == lop.getGiangvien()
+                    && l.getTenlop().equalsIgnoreCase(lop.getTenlop())
+                    && l.getMamonhoc() == lop.getMamonhoc()) {
+                return false;
+            }
+        }
         boolean check = lopDAO.update(lop) > 0;
         if (check) {
             getAll();

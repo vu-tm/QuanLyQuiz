@@ -48,6 +48,18 @@ public class MonHocDialog extends JDialog {
             soTinChi.setDisable();
         }
 
+        if (type.equals("view")) {
+            // Nếu chỉ xem, nhấn Enter ở bất cứ đâu sẽ đóng (Hủy)
+            helper.EnterKeyTraversal.setup(btnHuy);
+        } else {
+            // Nếu là thêm/sửa, thứ tự: Tên -> Số tín chỉ -> Nút Lưu
+            helper.EnterKeyTraversal.setup(
+                tenMonHoc.getTxtForm(), 
+                soTinChi.getTxtForm(), 
+                btnLuu
+            );
+        }
+
         this.setVisible(true);
     }
 

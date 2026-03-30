@@ -117,7 +117,35 @@ public class CauHoiDialog extends JDialog {
             }
         }
 
+        setupEnterTraversal();
+
         this.setVisible(true);
+    }
+
+    private void setupEnterTraversal() {
+        List<JComponent> components = new ArrayList<>();
+        
+        // 1. Thêm các ComboBox và TextArea chính
+        components.add(cmbLoaiCauHoi);
+        components.add(cmbDoKho);
+        components.add(cmbMonHoc);
+        
+        // Đối với JTextArea, phím Enter mặc định là xuống dòng. 
+        // Nếu bạn muốn Enter là chuyển focus, hãy thêm nó vào đây.
+        // components.add(txtaCauHoi); 
+
+        // 2. Thêm danh sách các ô nhập đáp án (đang hiển thị)
+        for (JTextField txt : txtAnswers) {
+            if (txt.isEditable() && txt.isVisible()) {
+                components.add(txt);
+            }
+        }
+
+        // 3. Thêm nút Lưu cuối cùng
+        components.add(btnLuu);
+
+        // Gọi helper để gắn sự kiện
+        helper.EnterKeyTraversal.setup(components.toArray(new JComponent[0]));
     }
 
     private JPanel createAttributesPanel() {

@@ -100,6 +100,17 @@ public class PhanCongDialog extends JDialog {
 
         this.add(pnlContent, BorderLayout.CENTER);
         this.add(pnlButtons, BorderLayout.SOUTH);
+
+        if (currentType.equals("view")) {
+            helper.EnterKeyTraversal.setup(btnHuy);
+        } else {
+            helper.EnterKeyTraversal.setup(
+                cbxNguoiDung.cbb, 
+                cbxMonHoc.cbb, 
+                btnLuu
+            );
+        }
+        
         this.setVisible(true);
     }
 

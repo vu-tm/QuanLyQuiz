@@ -125,6 +125,16 @@ public final class ChiTietBaiThiDialog extends JDialog implements ActionListener
 
         pnmain.add(pnmain_btn, BorderLayout.SOUTH);
 
+        helper.EnterKeyTraversal.setup(
+        txtTenDe, 
+        txtNguoiLam, 
+        txtDiem, 
+        txtThoiGianVao, 
+        txtThoiGianLam, 
+        txtSoCauDung, 
+        btnDong
+    );
+
         this.add(pnmain, BorderLayout.CENTER);
         this.setLocationRelativeTo(null);
     }

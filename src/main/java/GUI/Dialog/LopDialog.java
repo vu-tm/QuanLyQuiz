@@ -173,7 +173,24 @@ public class LopDialog extends JDialog implements ActionListener {
         this.add(pnlBtn, BorderLayout.SOUTH);
 
         loadSinhVien();
+
+        setupEnterTraversal();
     }
+
+    private void setupEnterTraversal() {
+    ArrayList<JComponent> components = new ArrayList<>();
+
+    // 1. Các ô nhập liệu bên trái
+    components.add(txtTenlop.getTxtForm());
+    components.add(txtNamhoc.getTxtForm());
+    components.add(txtHocky.getTxtForm());
+   
+    components.add(cbMonhoc.cbb); 
+    components.add(txtSearch);
+    components.add(btnConfirm);
+
+    helper.EnterKeyTraversal.setup(components.toArray(new JComponent[0]));
+}
 
     private void loadMonHoc() {
         ArrayList<String> items = new ArrayList<>();
@@ -312,12 +329,6 @@ public class LopDialog extends JDialog implements ActionListener {
             JOptionPane.showMessageDialog(this, "Năm học không được để trống!", "Cảnh báo", JOptionPane.WARNING_MESSAGE);
             return false;
         }
-        try {
-            Integer.parseInt(txtNamhoc.getText().trim());
-        } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(this, "Năm học phải là số nguyên!", "Cảnh báo", JOptionPane.WARNING_MESSAGE);
-            return false;
-        }
         if (Validation.isEmpty(txtHocky.getText().trim())) {
             JOptionPane.showMessageDialog(this, "Học kỳ không được để trống!", "Cảnh báo", JOptionPane.WARNING_MESSAGE);
             return false;
@@ -334,6 +345,21 @@ public class LopDialog extends JDialog implements ActionListener {
         }
         if (cbMonhoc.getValue() == null) {
             JOptionPane.showMessageDialog(this, "Vui lòng chọn môn học!", "Cảnh báo", JOptionPane.WARNING_MESSAGE);
+            return false;
+        }
+        int namhoc;
+        try {
+            namhoc = Integer.parseInt(txtNamhoc.getText().trim());
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this, "Năm học phải là số nguyên!", "Cảnh báo", JOptionPane.WARNING_MESSAGE);
+            return false;
+        }
+        int currentYear = java.time.LocalDate.now().getYear()-1;
+        if (namhoc < currentYear || namhoc > currentYear + 10) {
+            JOptionPane.showMessageDialog(this,
+                    "Năm học phải từ " + currentYear + " đến " + (currentYear + 10) + "!",
+                    "Cảnh báo",
+                    JOptionPane.WARNING_MESSAGE);
             return false;
         }
         return true;
@@ -413,7 +439,7 @@ public class LopDialog extends JDialog implements ActionListener {
 
         if (lopBUS.update(lop)) {
             luuChiTietLop(lop.getMalop());
-            lopHocPanel.loadDataTable(lopBUS.getAll());
+            lopHocPanel.loadDataTable(lopBUS.getByGiangVien(nguoiDungDangNhap.getManguoidung()));
             dispose();
         } else {
             JOptionPane.showMessageDialog(this, "Cập nhật lớp học thất bại!", "Lỗi", JOptionPane.ERROR_MESSAGE);

@@ -126,6 +126,21 @@ public class NguoiDungDAO {
         return false;
     }
 
+    public boolean checkExistUser(String username){
+        String sql = "SELECT * FROM nguoidung WHERE username=?";
+        try(Connection conn = JDBCUtil.getConnection();
+        PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, username);
+            ResultSet rs = ps.executeQuery();
+            if(rs.next()){
+                return true;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
     public int getNextId() {
         String sql = "SELECT MAX(id) FROM nguoidung";
         try (Connection con = JDBCUtil.getConnection(); 

@@ -58,6 +58,7 @@ public class LamBaiDialog extends JDialog {
 
         DeThiBUS dtBus = new DeThiBUS();
         this.dsCauHoi = dtBus.getDanhSachCauHoiByMade(deThi.getMade());
+        java.util.Collections.shuffle(this.dsCauHoi);
 
         initComponents();
         loadQuestion(0);
@@ -329,6 +330,7 @@ public class LamBaiDialog extends JDialog {
         } else { // Trắc nghiệm / Đúng sai
             pnlAnswers.setLayout(new GridLayout(0, 2, 20, 20));
             ArrayList<DapAnDTO> dsDapAn = daBus.getDapAnDeHienThi(q.getMacauhoi());
+            java.util.Collections.shuffle(dsDapAn); 
             String[] keys = {"A", "B", "C", "D"};
 
             for (int i = 0; i < dsDapAn.size(); i++) {

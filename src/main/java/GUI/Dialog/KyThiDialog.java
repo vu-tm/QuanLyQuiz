@@ -150,6 +150,14 @@ public class KyThiDialog extends JDialog {
             return false;
         }
 
+        long diffMs = ketThuc.getTime() - batDau.getTime();
+        long diffDays = diffMs / (1000 * 60 * 60 * 24);
+        if (diffDays > 31) {
+            JOptionPane.showMessageDialog(null, "Kỳ thi không được kéo dài quá 31 ngày!", "Cảnh báo", JOptionPane.WARNING_MESSAGE);
+            return false;
+        }
+
+
         return true;
     }
 }

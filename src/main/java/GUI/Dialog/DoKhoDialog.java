@@ -45,6 +45,15 @@ public class DoKhoDialog extends JDialog {
             tenDoKho.setDisable();
         }
 
+        if (type.equals("view")) {
+            helper.EnterKeyTraversal.setup(btnHuy);
+        } else {
+            helper.EnterKeyTraversal.setup(
+                tenDoKho.getTxtForm(), 
+                btnLuu
+            );
+        }
+
         this.setVisible(true);
     }
 

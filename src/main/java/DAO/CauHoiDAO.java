@@ -117,4 +117,26 @@ public class CauHoiDAO {
         }
         return ch;
     }
+
+    public int insertReturnId(CauHoiDTO ch) {
+        int lastId = -1;
+        String sql = "INSERT INTO cauhoi(noidung, madokho, maloai, mamonhoc, nguoitao, trangthai) VALUES(?,?,?,?,?,?)";
+        try (Connection c = config.JDBCUtil.getConnection(); java.sql.PreparedStatement ps = c.prepareStatement(sql, java.sql.Statement.RETURN_GENERATED_KEYS)) {
+            ps.setString(1, ch.getNoidung());
+            ps.setInt(2, ch.getMadokho());
+            ps.setInt(3, ch.getMaloai());
+            ps.setInt(4, ch.getMamonhoc());
+            ps.setInt(5, ch.getNguoitao());
+            ps.setInt(6, 1);
+            ps.executeUpdate();
+
+            java.sql.ResultSet rs = ps.getGeneratedKeys();
+            if (rs.next()) {
+                lastId = rs.getInt(1);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return lastId;
+    }
 }

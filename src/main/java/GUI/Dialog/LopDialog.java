@@ -78,6 +78,18 @@ public class LopDialog extends JDialog implements ActionListener {
 
         txtTenlop = new InputForm("Tên lớp");
         txtNamhoc = new InputForm("Năm học");
+        txtNamhoc.getTxtForm().addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyTyped(KeyEvent e) {
+                if (!Character.isDigit(e.getKeyChar())) {
+                    e.consume();
+                }
+            }
+        });
+        if (mode.equals("create")) {
+            int currentYear = java.util.Calendar.getInstance().get(java.util.Calendar.YEAR);
+            txtNamhoc.setText(String.valueOf(currentYear));
+        }
         txtHocky = new InputForm("Học kỳ");
 
         txtGiangvien = new InputForm("Giảng viên");
@@ -308,16 +320,18 @@ public class LopDialog extends JDialog implements ActionListener {
             JOptionPane.showMessageDialog(this, "Tên lớp không được để trống!", "Cảnh báo", JOptionPane.WARNING_MESSAGE);
             return false;
         }
-        if (Validation.isEmpty(txtNamhoc.getText().trim())) {
+        String strNamHoc = txtNamhoc.getText().trim();
+        if (Validation.isEmpty(strNamHoc)) {
             JOptionPane.showMessageDialog(this, "Năm học không được để trống!", "Cảnh báo", JOptionPane.WARNING_MESSAGE);
             return false;
         }
-        try {
-            Integer.parseInt(txtNamhoc.getText().trim());
-        } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(this, "Năm học phải là số nguyên!", "Cảnh báo", JOptionPane.WARNING_MESSAGE);
+        int namhoc = Integer.parseInt(strNamHoc);
+        int currentYear = java.util.Calendar.getInstance().get(java.util.Calendar.YEAR);
+        if (namhoc < 2000 || namhoc > (currentYear + 10)) {
+            JOptionPane.showMessageDialog(this, "Năm học từ 2000 đến " + (currentYear + 10), "Cảnh báo", JOptionPane.WARNING_MESSAGE);
             return false;
         }
+
         if (Validation.isEmpty(txtHocky.getText().trim())) {
             JOptionPane.showMessageDialog(this, "Học kỳ không được để trống!", "Cảnh báo", JOptionPane.WARNING_MESSAGE);
             return false;
@@ -371,9 +385,11 @@ public class LopDialog extends JDialog implements ActionListener {
             return;
         }
 
+        String tenLop = txtTenlop.getText().trim();
         int siSoThucTe = Integer.parseInt(txtSoSVDaChon.getText().trim());
+
         LopDTO newLop = new LopDTO();
-        newLop.setTenlop(txtTenlop.getText().trim());
+        newLop.setTenlop(tenLop);
         newLop.setSiso(siSoThucTe);
         newLop.setNamhoc(Integer.parseInt(txtNamhoc.getText().trim()));
         newLop.setHocky(Integer.parseInt(txtHocky.getText().trim()));
@@ -385,10 +401,14 @@ public class LopDialog extends JDialog implements ActionListener {
             ArrayList<LopDTO> all = lopBUS.getAll();
             LopDTO created = all.get(0);
             luuChiTietLop(created.getMalop());
+
             lopHocPanel.refreshData();
+            JOptionPane.showMessageDialog(this, "Thêm lớp học thành công!");
             dispose();
         } else {
-            JOptionPane.showMessageDialog(this, "Thêm lớp học thất bại!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this,
+                    "Tên lớp '" + tenLop + "' đã tồn tại cho môn học này!\nVui lòng chọn tên khác.",
+                    "Lỗi trùng lặp", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -403,8 +423,10 @@ public class LopDialog extends JDialog implements ActionListener {
             return;
         }
 
+        String tenLopMoi = txtTenlop.getText().trim();
         int siSoMoi = Integer.parseInt(txtSoSVDaChon.getText().trim());
-        lop.setTenlop(txtTenlop.getText().trim());
+
+        lop.setTenlop(tenLopMoi);
         lop.setSiso(siSoMoi);
         lop.setNamhoc(Integer.parseInt(txtNamhoc.getText().trim()));
         lop.setHocky(Integer.parseInt(txtHocky.getText().trim()));
@@ -414,9 +436,12 @@ public class LopDialog extends JDialog implements ActionListener {
         if (lopBUS.update(lop)) {
             luuChiTietLop(lop.getMalop());
             lopHocPanel.loadDataTable(lopBUS.getAll());
+            JOptionPane.showMessageDialog(this, "Cập nhật thông tin thành công!");
             dispose();
         } else {
-            JOptionPane.showMessageDialog(this, "Cập nhật lớp học thất bại!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this,
+                    "Tên lớp '" + tenLopMoi + "' đã bị trùng với một lớp khác của môn học này!",
+                    "Lỗi trùng lặp", JOptionPane.ERROR_MESSAGE);
         }
     }
 

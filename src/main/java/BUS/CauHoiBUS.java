@@ -88,4 +88,15 @@ public class CauHoiBUS {
         }
         return result;
     }
+
+    public int addReturnId(CauHoiDTO ch) {
+        if (dao.checkTrungNoiDung(ch.getNoidung(), -1)) {
+            return -1;
+        }
+        int id = dao.insertReturnId(ch);
+        if (id != -1) {
+            getAll();
+        }
+        return id;
+    }
 }

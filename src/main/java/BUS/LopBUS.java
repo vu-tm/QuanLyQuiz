@@ -32,6 +32,9 @@ public class LopBUS {
     }
 
     public boolean add(LopDTO lop) {
+        if (lopDAO.checkTrungTen(lop.getTenlop(), lop.getMamonhoc(), -1)) {
+            return false;
+        }
         boolean check = lopDAO.insert(lop) > 0;
         if (check) {
             getAll();
@@ -40,6 +43,9 @@ public class LopBUS {
     }
 
     public boolean update(LopDTO lop) {
+        if (lopDAO.checkTrungTen(lop.getTenlop(), lop.getMamonhoc(), lop.getMalop())) {
+            return false;
+        }
         boolean check = lopDAO.update(lop) > 0;
         if (check) {
             getAll();

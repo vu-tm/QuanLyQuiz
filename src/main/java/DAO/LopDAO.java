@@ -4,6 +4,7 @@ import DTO.LopDTO;
 import config.JDBCUtil;
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.Set;
 
 public class LopDAO {
 
@@ -170,5 +171,21 @@ public class LopDAO {
             e.printStackTrace();
         }
         return ketQua;
+    }
+
+    public boolean checkTrungTen(String tenLop, int maMonHoc, int excludeId) {
+        String sql = "SELECT COUNT(*) FROM lop WHERE LOWER(tenlop) = ? AND mamonhoc = ? AND trangthai = 1 AND malop != ?";
+        try (Connection con = JDBCUtil.getConnection(); PreparedStatement pst = con.prepareStatement(sql)) {
+            pst.setString(1, tenLop.toLowerCase().trim());
+            pst.setInt(2, maMonHoc);
+            pst.setInt(3, excludeId);
+            ResultSet rs = pst.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1) > 0;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 }

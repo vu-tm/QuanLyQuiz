@@ -7,9 +7,10 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
-public class ThongKeBUS {
+public class HocThuoc {
 
     private static CauHoiBUS cauHoiBUS = new CauHoiBUS();
     private static NguoiDungBUS nguoiDungBUS = new NguoiDungBUS();
@@ -33,6 +34,7 @@ public class ThongKeBUS {
         int maSinhVien = nhomQuyenBUS.getMaNhomQuyenByTen("sinh viên");
         ArrayList<NguoiDungDTO> listND = nguoiDungBUS.getAll();
         for (NguoiDungDTO nd : listND) {
+            // Sinh viên & đang hoạt động
             if (nd.getManhomquyen() == maSinhVien && nd.getTrangthai() == 1) {
                 count++;
             }
@@ -40,6 +42,10 @@ public class ThongKeBUS {
         return count;
     }
 
+    /*
+    put: mở map bỏ vào
+    get: mở map lấy ra
+     */
     // THỐNG KÊ CÂU HỎI
     public static ArrayList<ThongKeCauHoiDTO> getThongKeCauHoi() {
         ArrayList<ThongKeCauHoiDTO> result = new ArrayList<>();
@@ -47,25 +53,37 @@ public class ThongKeBUS {
         ArrayList<DapAnDTO> listDA = dapAnBUS.getAll();
         ArrayList<ChiTietBaiThiDTO> listCTBT = chiTietBaiThiDAO.selectAll();
 
-        Map<Integer, DapAnDTO> mapDapAnDung = new HashMap<>();
-        for (DapAnDTO da : listDA) {
+        /*
+        CauHoiDTO: {macauhoi, noidung, madokho, maloai, mamonhoc, nguoitao, trangthai}
+        DapAnDTO: {madapan, macauhoi, noidungtl, ladapan} 
+        ChiTietBaiThiDTO: {mabaithi, macauhoi, dapanchon, noidungdienkhuyet}
+        --
+        mapDapAnDung: [key:macauhoi, value:DapAnDTO{madapan, macauhoi, noidungtl, ladapan} ]
+        mapChiTietTheoCauHoi: [key:macauhoi, value:ChiTietBaiThiDTO{mabaithi, macauhoi, dapanchon, noidungdienkhuyet}]
+         */
+        // Tạo map tra cứu đáp án đúng của từng câu hỏi (key: maCauHoi, value: Đối tượng đáp án đúng của câu hỏi đó)
+        Map<Integer, DapAnDTO> mapDapAnDung = new HashMap<>(); // mapDapAnDung = {} 
+        for (DapAnDTO da : listDA) { // da là nguyên cái DapAnDTO{...}
             if (da.getLadapan()) {
-                mapDapAnDung.put(da.getMacauhoi(), da);
+                mapDapAnDung.put(da.getMacauhoi(), da); // Thế là có map key câu hỏi, value đáp án
             }
         }
 
+        // Tạo map gom chi tiết bài thi theo từng câu hỏi (key: maCauHoi, value: Đối tượng chi tiết chứa lượt trả lời)
         Map<Integer, ArrayList<ChiTietBaiThiDTO>> mapChiTietTheoCauHoi = new HashMap<>();
-        for (ChiTietBaiThiDTO ct : listCTBT) {
-            int maCH_HienTai = ct.getMacauhoi();
+        for (ChiTietBaiThiDTO ct : listCTBT) { // Duyệt từng câu trả lời của sv cho từng bài
+            int maCH_HienTai = ct.getMacauhoi(); // Mã câu hỏi sv vừa trả lời
 
+            // Lấy danh sách của câu hỏi, chưa thì null
             ArrayList<ChiTietBaiThiDTO> danhSachNay = mapChiTietTheoCauHoi.get(maCH_HienTai);
 
+            // Tạo ds cho câu hỏi đấy, đưa vào map với key là maCauHoi
             if (danhSachNay == null) {
                 danhSachNay = new ArrayList<>();
-                mapChiTietTheoCauHoi.put(maCH_HienTai, danhSachNay);
+                mapChiTietTheoCauHoi.put(maCH_HienTai, danhSachNay); // lưu danh sách vào map
             }
 
-            danhSachNay.add(ct);
+            danhSachNay.add(ct); // thêm value cho danh sách câu hỏi
         }
 
         int stt = 1;
@@ -112,45 +130,61 @@ public class ThongKeBUS {
 
     // THỐNG KÊ SINH VIÊN
     public static ArrayList<ThongKeSinhVienDTO> getThongKeSinhVien() {
-        ArrayList<ThongKeSinhVienDTO> result = new ArrayList<>();
-        ArrayList<NguoiDungDTO> listND = nguoiDungBUS.getAll();
-        ArrayList<BaiThiDTO> listBT = baiThiBUS.getAll();
+        ArrayList<ThongKeSinhVienDTO> result = new ArrayList<>();   // arr chứa thống kê sinh viên final
+        ArrayList<NguoiDungDTO> listND = nguoiDungBUS.getAll();     // arr chứa toàn bộ người dùng
+        ArrayList<BaiThiDTO> listBT = baiThiBUS.getAll();        // arr chứa toàn bộ bài thi
         int maSinhVien = nhomQuyenBUS.getMaNhomQuyenByTen("sinh viên");
 
-        Map<Integer, Integer> mapSoLanThi = new HashMap<>();
-        for (BaiThiDTO bt : listBT) {
-            int manguoidung = bt.getManguoidung();
+        Map<Integer, Integer> mapSoLanThi = new HashMap<>(); // key = manguoidung, value=solanthi
+        for (BaiThiDTO bt : listBT) { // Duyệt qua tất cả bài thi
+            int manguoidung = bt.getManguoidung(); // mã ng dùng của bài thi hiện tại
+            /* đếm số lần thi
+            Mới vào sẽ mặc định tất cả là 0. 
+            Duyệt bài đầu tiên chắc chắn là 0, rồi +1 thành 1 vì bài đó đã đc duyệt
+            Nếu có rồi thì lấy số lần thi đang lưu hiện tại
+             */
             int soLanThiHienTai = mapSoLanThi.getOrDefault(manguoidung, 0);
             mapSoLanThi.put(manguoidung, soLanThiHienTai + 1);
         }
+        // -> mapSoLanThi trả về người dùng thi mấy lần
 
         int stt = 1;
         for (NguoiDungDTO nd : listND) {
-            if (nd.getManhomquyen() == maSinhVien && nd.getTrangthai() == 1) {
+            if (nd.getManhomquyen() == maSinhVien && nd.getTrangthai() == 1) { // lọc ra sinh viên và hoạt động
                 int soDe = mapSoLanThi.getOrDefault(nd.getManguoidung(), 0);
                 result.add(new ThongKeSinhVienDTO(stt++, nd.getManguoidung(), nd.getHoten(), soDe));
             }
         }
-//        result.sort((o1, o2) -> Integer.compare(o2.getSoDedalLam(), o1.getSoDedalLam()));
         return result;
     }
 
     // CÁC HÀM THỐNG KÊ ĐIỂM THI
     // 1. Thống kê từ ngày đến ngày
     public static ArrayList<ThongKeTungNgayTrongThangDTO> getThongKeDiemThiTuNgayDenNgay(Date start, Date end) {
-        ArrayList<ThongKeTungNgayTrongThangDTO> result = new ArrayList<>();
-        ArrayList<BaiThiDTO> listBT = baiThiBUS.getAll();
+        ArrayList<ThongKeTungNgayTrongThangDTO> result = new ArrayList<>(); // arr chứa kết quả thống kê
+        ArrayList<BaiThiDTO> listBT = baiThiBUS.getAll();                   // arr chứa bài thi
 
+        // Đổi Date sang LocalDate để thao tác +-*/ với ngày
         LocalDate from = new java.sql.Date(start.getTime()).toLocalDate();
         LocalDate to = new java.sql.Date(end.getTime()).toLocalDate();
+
+        /** Bắt đầu từ ngày from đến ngày hiện tại
+            from là ngày bắt đầu
+            to là ngày kết thúc
+            isAfter là phía sau -> ngày bắt đầu có nằm sau ngày kết thúc không ? tiếp tục : dừng lại
+         */
         for (LocalDate date = from; !date.isAfter(to); date = date.plusDays(1)) {
-            double max = 0, min = Double.MAX_VALUE, tong = 0;
-            int count = 0;
+            double max = 0, min = Double.MAX_VALUE, tong = 0;       // điểm
+            int count = 0;                                          // số lượng bài thi
 
             for (BaiThiDTO bt : listBT) {
                 if (bt.getThoigianvaothi() == null) {
                     continue;
                 }
+                /* Lấy ngày thi dựa vào thời gian vào thi   VD: 2024-03-25 14:30:00
+                .toLocalDateTime(): Chuyển Date thành LocalDateTime
+                .toLocalDate(): Lấy phần ngày bỏ phần time
+                 */
                 LocalDate ngay = bt.getThoigianvaothi().toLocalDateTime().toLocalDate();
 
                 if (ngay.isEqual(date)) {
@@ -165,6 +199,8 @@ public class ThongKeBUS {
                     count++;
                 }
             }
+            // Chuyển LocalDate thành Date để lưu vô ThongKeTungNgayTrongThangDTO
+            // Vì đầu vào là Date nên cần chuyển sang Date
             Date d = java.sql.Date.valueOf(date);
 
             result.add(new ThongKeTungNgayTrongThangDTO(d,
@@ -209,6 +245,7 @@ public class ThongKeBUS {
                     continue;
                 }
 
+                // getYear() - getMonthValue() là của LocalDate
                 LocalDate ngay = bt.getThoigianvaothi().toLocalDateTime().toLocalDate();
                 if (ngay.getYear() == nam && ngay.getMonthValue() == m) {
                     double diem = bt.getDiemthi();

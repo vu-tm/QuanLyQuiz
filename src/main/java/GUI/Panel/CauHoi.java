@@ -1,11 +1,13 @@
 package GUI.Panel;
 
 import BUS.CauHoiBUS;
+import BUS.DapAnBUS;
 import BUS.DoKhoBUS;
 import BUS.LoaiCauHoiBUS;
 import BUS.MonHocBUS;
 import BUS.NguoiDungBUS;
 import DTO.CauHoiDTO;
+import DTO.DapAnDTO;
 import GUI.Component.IntegratedSearch;
 import GUI.Component.MainFunction;
 import GUI.Component.PanelBorderRadius;
@@ -278,6 +280,8 @@ public class CauHoi extends JPanel implements ActionListener, ItemListener {
                 org.apache.poi.ss.usermodel.DataFormatter formatter = new org.apache.poi.ss.usermodel.DataFormatter();
 
                 int countSuccess = 0, countError = 0;
+                DapAnBUS daBUS = new DapAnBUS();
+
                 for (int row = 1; row <= excelSheet.getLastRowNum(); row++) {
                     XSSFRow excelRow = excelSheet.getRow(row);
                     if (excelRow == null) {
@@ -294,6 +298,7 @@ public class CauHoi extends JPanel implements ActionListener, ItemListener {
                             continue;
                         }
 
+                        // Lấy ID mapping
                         int madokho = -1;
                         for (var dk : doKhoBUS.getAll()) {
                             if (dk.getTendokho().equalsIgnoreCase(tenDoKho)) {
@@ -301,15 +306,13 @@ public class CauHoi extends JPanel implements ActionListener, ItemListener {
                                 break;
                             }
                         }
-
                         int maloai = -1;
                         for (var l : loaiCauHoiBUS.getAll()) {
-                            if (l.getTenloai().equalsIgnoreCase(tenLoai)) {
+                            if (l.getTenloai().equalsIgnoreCase(tenLoai) || l.getTenloai().replace("/", " ").equalsIgnoreCase(tenLoai)) {
                                 maloai = l.getMaloai();
                                 break;
                             }
                         }
-
                         int mamonhoc = -1;
                         for (var mh : monHocBUS.getAll()) {
                             if (mh.getTenmonhoc().equalsIgnoreCase(tenMonHoc)) {
@@ -317,7 +320,12 @@ public class CauHoi extends JPanel implements ActionListener, ItemListener {
                                 break;
                             }
                         }
-
+                        if (madokho == -1 || maloai == -1 || mamonhoc == -1) {
+                            System.out.println("Lỗi mapping tại dòng " + row + ":");
+                            System.out.println("- Độ khó: " + tenDoKho + " -> " + (madokho != -1 ? "OK" : "FAILED"));
+                            System.out.println("- Loại: " + tenLoai + " -> " + (maloai != -1 ? "OK" : "FAILED"));
+                            System.out.println("- Môn học: " + tenMonHoc + " -> " + (mamonhoc != -1 ? "OK" : "FAILED"));
+                        }
                         if (madokho != -1 && maloai != -1 && mamonhoc != -1) {
                             CauHoiDTO ch = new CauHoiDTO();
                             ch.setNoidung(noidung);
@@ -326,7 +334,39 @@ public class CauHoi extends JPanel implements ActionListener, ItemListener {
                             ch.setMamonhoc(mamonhoc);
                             ch.setNguoitao(mainFrame.getNguoiDung().getManguoidung());
                             ch.setTrangthai(1);
-                            if (bus.add(ch)) {
+
+                            // Thêm câu hỏi và lấy ID vừa tạo
+                            int generatedId = bus.addReturnId(ch);
+
+                            if (generatedId != -1) {
+                                String loaiLower = tenLoai.toLowerCase();
+
+                                // XỬ LÝ ĐÁP ÁN THEO TỪNG LOẠI
+                                if (loaiLower.contains("trắc")) {
+                                    // 1. Loại Trắc nghiệm: Đọc A, B, C, D (Cột 4-7) và Key (Cột 8)
+                                    String correctChar = formatter.formatCellValue(excelRow.getCell(8)).trim().toUpperCase();
+                                    for (int i = 0; i < 4; i++) {
+                                        String textDA = formatter.formatCellValue(excelRow.getCell(4 + i)).trim();
+                                        if (!textDA.isEmpty()) {
+                                            char label = (char) ('A' + i);
+                                            daBUS.add(new DapAnDTO(0, generatedId, textDA, String.valueOf(label).equals(correctChar)));
+                                        }
+                                    }
+
+                                } else if (loaiLower.contains("đúng")) {
+                                    // 2. Loại Đúng/Sai: Tự tạo 2 record, check Cột 8 xem cái nào đúng
+                                    String correctText = formatter.formatCellValue(excelRow.getCell(8)).trim();
+                                    daBUS.add(new DapAnDTO(0, generatedId, "Đúng", correctText.equalsIgnoreCase("Đúng")));
+                                    daBUS.add(new DapAnDTO(0, generatedId, "Sai", correctText.equalsIgnoreCase("Sai")));
+
+                                } else if (loaiLower.contains("điền")) {
+                                    // 3. Loại Điền khuyết: Lấy nội dung ở Cột 4 làm đáp án đúng
+                                    String fillText = formatter.formatCellValue(excelRow.getCell(4)).trim();
+                                    if (!fillText.isEmpty()) {
+                                        daBUS.add(new DapAnDTO(0, generatedId, fillText, true));
+                                    }
+                                }
+
                                 countSuccess++;
                             } else {
                                 countError++;
@@ -338,7 +378,7 @@ public class CauHoi extends JPanel implements ActionListener, ItemListener {
                         countError++;
                     }
                 }
-                JOptionPane.showMessageDialog(this, "Nhập thành công " + countSuccess + " dòng. Lỗi " + countError + " dòng.");
+                JOptionPane.showMessageDialog(this, "Nhập thành công " + countSuccess + " câu hỏi. Lỗi " + countError + " dòng.");
                 listHienTai = bus.getAll();
                 loadDataTable(listHienTai);
                 excelJTableImport.close();

@@ -33,10 +33,12 @@ public final class ChiTietBaiThiDialog extends JDialog implements ActionListener
     private CauHoiBUS cauHoiBUS = new CauHoiBUS();
 
     private ButtonCustom btnDong;
+    private boolean isAdmin;
 
-    public ChiTietBaiThiDialog(JFrame owner, String title, boolean modal, BaiThiDTO baithiDTO) {
+    public ChiTietBaiThiDialog(JFrame owner, String title, boolean modal, BaiThiDTO baithiDTO, boolean isAdmin) {
         super(owner, title, modal);
         this.baithi = baithiDTO;
+        this.isAdmin = isAdmin;
         initComponent();
         fillData();
         loadDataTable();
@@ -44,7 +46,7 @@ public final class ChiTietBaiThiDialog extends JDialog implements ActionListener
     }
 
     public void initComponent() {
-        this.setSize(new Dimension(1000, 650));
+        this.setSize(new Dimension(1100, 650));
         this.setLayout(new BorderLayout(0, 0));
 
         pnmain = new JPanel(new BorderLayout());
@@ -77,7 +79,11 @@ public final class ChiTietBaiThiDialog extends JDialog implements ActionListener
                 return false;
             }
         };
-        tblModel.setColumnIdentifiers(new String[]{"STT", "Nội dung câu hỏi", "Đáp án đã chọn", "Kết quả"});
+        if (isAdmin) {
+            tblModel.setColumnIdentifiers(new String[]{"STT", "Nội dung câu hỏi", "Đáp án đã chọn", "Đáp án đúng", "Kết quả"});
+        } else {
+            tblModel.setColumnIdentifiers(new String[]{"STT", "Nội dung câu hỏi", "Đáp án đã chọn", "Kết quả"});
+        }
 
         table = new JTable(tblModel);
         table.setFocusable(false);
@@ -88,9 +94,15 @@ public final class ChiTietBaiThiDialog extends JDialog implements ActionListener
         table.getColumnModel().getColumn(0).setPreferredWidth(50);
         table.getColumnModel().getColumn(1).setPreferredWidth(500);
         table.getColumnModel().getColumn(2).setPreferredWidth(250);
-        table.getColumnModel().getColumn(3).setPreferredWidth(100);
+        if (isAdmin) {
+            table.getColumnModel().getColumn(3).setPreferredWidth(200); // Cột Đáp án đúng
+            table.getColumnModel().getColumn(4).setPreferredWidth(100); // Cột Kết quả
+        } else {
+            table.getColumnModel().getColumn(3).setPreferredWidth(100); // Cột Kết quả
+        }
 
-        table.getColumnModel().getColumn(3).setCellRenderer(new DefaultTableCellRenderer() {
+        int indexKetQua = isAdmin ? 4 : 3;
+        table.getColumnModel().getColumn(indexKetQua).setCellRenderer(new DefaultTableCellRenderer() {
             @Override
             public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
                 Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
@@ -101,7 +113,6 @@ public final class ChiTietBaiThiDialog extends JDialog implements ActionListener
                     c.setFont(c.getFont().deriveFont(Font.BOLD));
                 } else {
                     c.setFont(c.getFont().deriveFont(Font.PLAIN));
-
                     if (isSelected) {
                         c.setForeground(table.getSelectionForeground());
                     } else {
@@ -141,15 +152,30 @@ public final class ChiTietBaiThiDialog extends JDialog implements ActionListener
     public void loadDataTable() {
         tblModel.setRowCount(0);
         ArrayList<ChiTietBaiThiDTO> listCT = baithiBUS.getChiTietByMaBaiThi(baithi.getMabaithi());
+
         for (int i = 0; i < listCT.size(); i++) {
             ChiTietBaiThiDTO ct = listCT.get(i);
             String noiDungCH = cauHoiBUS.getById(ct.getMacauhoi()).getNoidung();
             String dapAnText = baithiBUS.getAnswerText(ct);
             String ketQua = baithiBUS.evaluateAnswer(ct);
 
-            tblModel.addRow(new Object[]{
-                i + 1, noiDungCH, dapAnText, ketQua
-            });
+            if (isAdmin) {
+                String hienThiDapAnDung = "";
+                if ("Sai".equalsIgnoreCase(ketQua) || "Chưa làm".equalsIgnoreCase(ketQua)) {
+                    hienThiDapAnDung = baithiBUS.getCorrectAnswerText(ct.getMacauhoi());
+                } else {
+                    hienThiDapAnDung = "-";
+                }
+
+                tblModel.addRow(new Object[]{
+                    i + 1, noiDungCH, dapAnText, hienThiDapAnDung, ketQua
+                });
+            } else {
+                // Đối với sinh viên
+                tblModel.addRow(new Object[]{
+                    i + 1, noiDungCH, dapAnText, ketQua
+                });
+            }
         }
     }
 

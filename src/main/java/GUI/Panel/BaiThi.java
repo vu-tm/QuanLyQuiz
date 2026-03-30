@@ -188,8 +188,9 @@ public class BaiThi extends JPanel implements ActionListener, ItemListener {
             }
             int maBT = (int) table.getValueAt(index, 0);
             BaiThiDTO selected = btBUS.getById(maBT);
+            boolean isAdmin = (mainFrame.getNguoiDung().getManhomquyen() == 1);
             JFrame owner = (JFrame) SwingUtilities.getWindowAncestor(this);
-            new ChiTietBaiThiDialog(owner, "Chi tiết kết quả bài thi", true, selected);
+            new ChiTietBaiThiDialog(owner, "Chi tiết kết quả bài thi", true, selected, isAdmin);
         } else if (source == mainFunction.btn.get("delete")) {
             if (index == -1) {
                 JOptionPane.showMessageDialog(this, "Vui lòng chọn kết quả bài thi cần xóa!");

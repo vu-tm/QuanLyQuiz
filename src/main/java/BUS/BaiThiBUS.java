@@ -224,4 +224,21 @@ public class BaiThiBUS {
     public boolean checkDaLam(int userId, int made) {
         return bDao.checkDaLam(userId, made);
     }
+
+    public String getCorrectAnswerText(int macauhoi) {
+        DapAnBUS dapAnBUS = new DapAnBUS();
+        ArrayList<DapAnDTO> listDung = dapAnBUS.getDapAnDungByCauHoi(macauhoi);
+        if (listDung.isEmpty()) {
+            return "N/A";
+        }
+
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < listDung.size(); i++) {
+            sb.append(listDung.get(i).getNoidungtl());
+            if (i < listDung.size() - 1) {
+                sb.append(" | ");
+            }
+        }
+        return sb.toString();
+    }
 }

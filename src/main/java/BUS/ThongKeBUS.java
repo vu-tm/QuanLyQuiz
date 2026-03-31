@@ -3,35 +3,45 @@ package BUS;
 import DAO.*;
 import DTO.*;
 import DTO.ThongKe.*;
+
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class ThongKeBUS {
 
-    private static CauHoiBUS cauHoiBUS = new CauHoiBUS();
-    private static NguoiDungBUS nguoiDungBUS = new NguoiDungBUS();
-    private static DapAnBUS dapAnBUS = new DapAnBUS();
-    private static DeThiBUS deThiBUS = new DeThiBUS();
-    private static NhomQuyenBUS nhomQuyenBUS = new NhomQuyenBUS();
-    private static BaiThiBUS baiThiBUS = new BaiThiBUS();
-    private static ChiTietBaiThiDAO chiTietBaiThiDAO = ChiTietBaiThiDAO.getInstance();
+    private static final CauHoiDAO cauHoiDAO = CauHoiDAO.getInstance();
+    private static final NguoiDungDAO nguoiDungDAO = NguoiDungDAO.getInstance();
+    private static final DapAnDAO dapAnDAO = DapAnDAO.getInstance();
+    private static final DeThiDAO deThiDAO = DeThiDAO.getInstance();
+    private static final NhomQuyenDAO nhomQuyenDAO = NhomQuyenDAO.getInstance();
+    private static final BaiThiDAO baiThiDAO = BaiThiDAO.getInstance();
+    private static final ChiTietBaiThiDAO chiTietBaiThiDAO = ChiTietBaiThiDAO.getInstance();
 
     // TỔNG QUAN 
     public static int getTongSoDeThi() {
-        return deThiBUS.getAll().size();
+        return deThiDAO.selectAll().size();
     }
 
     public static int getTongSoCauHoi() {
-        return cauHoiBUS.getAll().size();
+        return cauHoiDAO.selectAll().size();
     }
 
     public static int getTongSoSinhVien() {
         int count = 0;
-        int maSinhVien = nhomQuyenBUS.getMaNhomQuyenByTen("sinh viên");
-        ArrayList<NguoiDungDTO> listND = nguoiDungBUS.getAll();
+        int maSinhVien = -1;
+        ArrayList<NhomQuyenDTO> listNQ = nhomQuyenDAO.selectAll();
+        for (NhomQuyenDTO nq : listNQ) {
+            if (nq.getTennhomquyen().equalsIgnoreCase("sinh viên")) {
+                maSinhVien = nq.getManhomquyen();
+                break;
+            }
+        }
+
+        ArrayList<NguoiDungDTO> listND = nguoiDungDAO.selectAll();
         for (NguoiDungDTO nd : listND) {
             if (nd.getManhomquyen() == maSinhVien && nd.getTrangthai() == 1) {
                 count++;
@@ -43,8 +53,8 @@ public class ThongKeBUS {
     // THỐNG KÊ CÂU HỎI
     public static ArrayList<ThongKeCauHoiDTO> getThongKeCauHoi() {
         ArrayList<ThongKeCauHoiDTO> result = new ArrayList<>();
-        ArrayList<CauHoiDTO> listCH = cauHoiBUS.getAll();
-        ArrayList<DapAnDTO> listDA = dapAnBUS.getAll();
+        ArrayList<CauHoiDTO> listCH = cauHoiDAO.selectAll();
+        ArrayList<DapAnDTO> listDA = dapAnDAO.selectAll();
         ArrayList<ChiTietBaiThiDTO> listCTBT = chiTietBaiThiDAO.selectAll();
 
         Map<Integer, DapAnDTO> mapDapAnDung = new HashMap<>();
@@ -54,11 +64,11 @@ public class ThongKeBUS {
             }
         }
 
-        Map<Integer, ArrayList<ChiTietBaiThiDTO>> mapChiTietTheoCauHoi = new HashMap<>();
+        Map<Integer, List<ChiTietBaiThiDTO>> mapChiTietTheoCauHoi = new HashMap<>();
         for (ChiTietBaiThiDTO ct : listCTBT) {
             int maCH_HienTai = ct.getMacauhoi();
 
-            ArrayList<ChiTietBaiThiDTO> danhSachNay = mapChiTietTheoCauHoi.get(maCH_HienTai);
+            List<ChiTietBaiThiDTO> danhSachNay = mapChiTietTheoCauHoi.get(maCH_HienTai);
 
             if (danhSachNay == null) {
                 danhSachNay = new ArrayList<>();
@@ -77,7 +87,7 @@ public class ThongKeBUS {
             int maCH = ch.getMacauhoi();
             int loaiCH = ch.getMaloai();
             int tongLan = 0, soDung = 0;
-            ArrayList<ChiTietBaiThiDTO> dsTraLoi = mapChiTietTheoCauHoi.get(maCH);
+            List<ChiTietBaiThiDTO> dsTraLoi = mapChiTietTheoCauHoi.get(maCH);
             DapAnDTO daDung = mapDapAnDung.get(maCH);
 
             if (dsTraLoi != null && daDung != null) {
@@ -113,9 +123,16 @@ public class ThongKeBUS {
     // THỐNG KÊ SINH VIÊN
     public static ArrayList<ThongKeSinhVienDTO> getThongKeSinhVien() {
         ArrayList<ThongKeSinhVienDTO> result = new ArrayList<>();
-        ArrayList<NguoiDungDTO> listND = nguoiDungBUS.getAll();
-        ArrayList<BaiThiDTO> listBT = baiThiBUS.getAll();
-        int maSinhVien = nhomQuyenBUS.getMaNhomQuyenByTen("sinh viên");
+        ArrayList<NguoiDungDTO> listND = nguoiDungDAO.selectAll();
+        ArrayList<BaiThiDTO> listBT = baiThiDAO.selectAll();
+
+        int maSinhVien = -1;
+        for (NhomQuyenDTO nq : nhomQuyenDAO.selectAll()) {
+            if (nq.getTennhomquyen().equalsIgnoreCase("sinh viên")) {
+                maSinhVien = nq.getManhomquyen();
+                break;
+            }
+        }
 
         Map<Integer, Integer> mapSoLanThi = new HashMap<>();
         for (BaiThiDTO bt : listBT) {
@@ -139,7 +156,7 @@ public class ThongKeBUS {
     // 1. Thống kê từ ngày đến ngày
     public static ArrayList<ThongKeTungNgayTrongThangDTO> getThongKeDiemThiTuNgayDenNgay(Date start, Date end) {
         ArrayList<ThongKeTungNgayTrongThangDTO> result = new ArrayList<>();
-        ArrayList<BaiThiDTO> listBT = baiThiBUS.getAll();
+        ArrayList<BaiThiDTO> listBT = baiThiDAO.selectAll();
 
         LocalDate from = new java.sql.Date(start.getTime()).toLocalDate();
         LocalDate to = new java.sql.Date(end.getTime()).toLocalDate();
@@ -151,9 +168,9 @@ public class ThongKeBUS {
                 if (bt.getThoigianvaothi() == null) {
                     continue;
                 }
-                LocalDate ngay = bt.getThoigianvaothi().toLocalDateTime().toLocalDate();
+                LocalDate ngayThi = bt.getThoigianvaothi().toLocalDateTime().toLocalDate();
 
-                if (ngay.isEqual(date)) {
+                if (ngayThi.isEqual(date)) {
                     double diem = bt.getDiemthi();
                     if (diem > max) {
                         max = diem;
@@ -199,7 +216,7 @@ public class ThongKeBUS {
     // 4. Thống kê từng tháng trong năm
     public static ArrayList<ThongKeTheoThangDTO> getThongKeDiemThiTungThang(int nam) {
         ArrayList<ThongKeTheoThangDTO> result = new ArrayList<>();
-        ArrayList<BaiThiDTO> listBT = baiThiBUS.getAll();
+        ArrayList<BaiThiDTO> listBT = baiThiDAO.selectAll();
 
         for (int m = 1; m <= 12; m++) {
             double max = 0, min = Double.MAX_VALUE, tong = 0;
@@ -233,7 +250,7 @@ public class ThongKeBUS {
     // 5. Thống kê theo năm
     public static ArrayList<ThongKeDiemThiDTO> getThongKeDiemThiTheoNam(int namBD, int namKT) {
         ArrayList<ThongKeDiemThiDTO> result = new ArrayList<>();
-        ArrayList<BaiThiDTO> listBT = baiThiBUS.getAll();
+        ArrayList<BaiThiDTO> listBT = baiThiDAO.selectAll();
 
         for (int nam = namBD; nam <= namKT; nam++) {
             double max = 0, min = Double.MAX_VALUE, tong = 0;

@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Mar 28, 2026 at 12:40 PM
+-- Generation Time: Jun 26, 2026 at 04:44 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.0.30
 
@@ -72,7 +72,7 @@ INSERT INTO `baithi` (`mabaithi`, `made`, `manguoidung`, `diemthi`, `thoigianvao
 
 CREATE TABLE `cauhoi` (
   `macauhoi` int(11) NOT NULL,
-  `noidung` varchar(500) NOT NULL,
+  `noidung` text DEFAULT NULL,
   `madokho` int(11) NOT NULL,
   `maloai` int(11) NOT NULL,
   `mamonhoc` int(11) NOT NULL,
@@ -833,7 +833,8 @@ CREATE TABLE `monhoc` (
 INSERT INTO `monhoc` (`mamonhoc`, `tenmonhoc`, `sotinchi`, `trangthai`) VALUES
 (1, 'Lập trình Java', 3, 1),
 (2, 'Hệ điều hành', 3, 1),
-(3, 'Lập trình web và ứng dụng', 2, 1);
+(3, 'Lập trình web và ứng dụng', 2, 1),
+(4, 'Lịch sử đảng', NULL, 1);
 
 -- --------------------------------------------------------
 
@@ -1102,7 +1103,7 @@ ALTER TABLE `lop`
 -- AUTO_INCREMENT for table `monhoc`
 --
 ALTER TABLE `monhoc`
-  MODIFY `mamonhoc` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `mamonhoc` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `nguoidung`

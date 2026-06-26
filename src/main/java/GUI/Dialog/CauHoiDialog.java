@@ -114,6 +114,9 @@ public class CauHoiDialog extends JDialog {
         } else {
             if (cmbLoaiCauHoi.getItemCount() > 0) {
                 updateAnswerUIByTen(cmbLoaiCauHoi.getItemAt(0).getTenloai());
+                if (!rdAnswers.isEmpty()) {
+                    rdAnswers.get(0).setSelected(true);
+                }
             }
         }
 
@@ -250,9 +253,6 @@ public class CauHoiDialog extends JDialog {
             pnlAnswers.add(txt, gbc);
             gbc.gridy++;
         }
-        if (!rdAnswers.isEmpty()) {
-            rdAnswers.get(0).setSelected(true);
-        }
     }
 
     private void renderTrueFalse(GridBagConstraints gbc) {
@@ -355,7 +355,13 @@ public class CauHoiDialog extends JDialog {
         }
         updateAnswerUIByTen(((LoaiCauHoiDTO) cmbLoaiCauHoi.getSelectedItem()).getTenloai());
 
-        ArrayList<DapAnDTO> listDA = busDapAn.getDapAnDeHienThi(currentDTO.getMacauhoi());
+        ArrayList<DapAnDTO> listDA = busDapAn.getDapAnDayDu(currentDTO.getMacauhoi());
+        System.out.println("=== Load đáp án cho câu hỏi ID: " + currentDTO.getMacauhoi());
+        System.out.println("  Số đáp án: " + listDA.size());
+        for (int i = 0; i < listDA.size(); i++) {
+            System.out.println("  DA[" + i + "]: " + listDA.get(i).getNoidungtl() + " | ladapan=" + listDA.get(i).getLadapan());
+        }
+        System.out.println("  Số radio: " + rdAnswers.size());
         for (int i = 0; i < listDA.size() && i < txtAnswers.size(); i++) {
             txtAnswers.get(i).setText(listDA.get(i).getNoidungtl());
             if (listDA.get(i).getLadapan()) {

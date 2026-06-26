@@ -8,6 +8,9 @@ import BUS.MonHocBUS;
 import BUS.NguoiDungBUS;
 import DTO.CauHoiDTO;
 import DTO.DapAnDTO;
+import DTO.DoKhoDTO;
+import DTO.LoaiCauHoiDTO;
+import DTO.MonHocDTO;
 import GUI.Component.IntegratedSearch;
 import GUI.Component.MainFunction;
 import GUI.Component.PanelBorderRadius;
@@ -28,9 +31,13 @@ import javax.swing.table.TableCellRenderer;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.apache.poi.xwpf.usermodel.XWPFDocument;
+import org.apache.poi.xwpf.usermodel.XWPFParagraph;
+import org.apache.poi.xwpf.usermodel.XWPFRun;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
+// cauhoi-level0, cautraloi-level1 (word)
 public class CauHoi extends JPanel implements ActionListener, ItemListener {
-
     PanelBorderRadius pnlMain, functionBar;
     private GUI.Main mainFrame;
     JPanel pnlBorder1, pnlBorder2, pnlBorder3, pnlBorder4, contentCenter;
@@ -137,7 +144,7 @@ public class CauHoi extends JPanel implements ActionListener, ItemListener {
         functionBar.setBorder(new EmptyBorder(10, 10, 10, 10));
         functionBar.setBackground(Color.WHITE);
 
-        String[] action = {"create", "update", "delete", "detail", "import", "export"};
+        String[] action = {"create", "update", "delete", "detail", "import", "export", "importword"};
         mainFunction = new MainFunction(mainFrame.getNguoiDung().getManhomquyen(), "1", action);
         for (String ac : action) {
             mainFunction.btn.get(ac).addActionListener(this);
@@ -264,7 +271,147 @@ public class CauHoi extends JPanel implements ActionListener, ItemListener {
             importExcel();
         } else if (source == mainFunction.btn.get("export")) {
             exportExcel();
+        } else if (source == mainFunction.btn.get("importword")) {
+            importWord();
         }
+    }
+
+    public void importWord() {
+        // 1. Chọn file
+        JFileChooser jf = new JFileChooser();
+        jf.setFileFilter(new FileNameExtensionFilter("Word Documents (.docx)", "docx"));
+        int result = jf.showOpenDialog(this);
+        if (result != JFileChooser.APPROVE_OPTION) {
+            return;
+        }
+        File file = jf.getSelectedFile();
+
+        // 2. Tạo Form chọn cấu hình Import (Môn, Độ khó, Loại)
+        JPanel pnlConfig = new JPanel(new GridLayout(3, 2, 10, 10));
+        pnlConfig.setBorder(new EmptyBorder(10, 10, 10, 10));
+
+        JComboBox<MonHocDTO> cbMonHoc = new JComboBox<>(new DefaultComboBoxModel<>(monHocBUS.getAll().toArray(new MonHocDTO[0])));
+        JComboBox<DoKhoDTO> cbDoKho = new JComboBox<>(new DefaultComboBoxModel<>(doKhoBUS.getAll().toArray(new DoKhoDTO[0])));
+        JComboBox<LoaiCauHoiDTO> cbLoai = new JComboBox<>(new DefaultComboBoxModel<>(loaiCauHoiBUS.getAll().toArray(new LoaiCauHoiDTO[0])));
+
+        // Renderer để hiển thị tên thay vì Object
+        cbMonHoc.setRenderer((list, value, index, isSelected, cellHasFocus) -> new JLabel(value.getTenmonhoc()));
+        cbDoKho.setRenderer((list, value, index, isSelected, cellHasFocus) -> new JLabel(value.getTendokho()));
+        cbLoai.setRenderer((list, value, index, isSelected, cellHasFocus) -> new JLabel(value.getTenloai()));
+
+        pnlConfig.add(new JLabel("Chọn môn học:"));
+        pnlConfig.add(cbMonHoc);
+        pnlConfig.add(new JLabel("Chọn độ khó:"));
+        pnlConfig.add(cbDoKho);
+        pnlConfig.add(new JLabel("Chọn loại CH:"));
+        pnlConfig.add(cbLoai);
+
+        int configResult = JOptionPane.showConfirmDialog(this, pnlConfig, "Cấu hình thông tin nhập câu hỏi", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+
+        if (configResult != JOptionPane.OK_OPTION) {
+            return;
+        }
+
+        // Lấy giá trị đã chọn từ ComboBox
+        int selectedMonHoc = ((MonHocDTO) cbMonHoc.getSelectedItem()).getMamonhoc();
+        int selectedDoKho = ((DoKhoDTO) cbDoKho.getSelectedItem()).getMadokho();
+        int selectedLoai = ((LoaiCauHoiDTO) cbLoai.getSelectedItem()).getMaloai();
+
+        // 3. Tiến hành đọc file và lưu
+        try (FileInputStream fis = new FileInputStream(file); XWPFDocument document = new XWPFDocument(fis)) {
+            DapAnBUS daBUS = new DapAnBUS();
+            CauHoiDTO currentCH = null;
+            ArrayList<DapAnDTO> currentListDA = new ArrayList<>();
+            int countSuccess = 0;
+
+            for (XWPFParagraph para : document.getParagraphs()) {
+                String text = para.getText().trim();
+                if (text.isEmpty()) {
+                    continue;
+                }
+
+                org.openxmlformats.schemas.wordprocessingml.x2006.main.CTNumPr numPr = null;
+                if (para.getCTP().getPPr() != null) {
+                    numPr = para.getCTP().getPPr().getNumPr();
+                }
+
+                boolean isList = (numPr != null && numPr.getNumId() != null && numPr.getNumId().getVal().intValue() > 0);
+                int listLevel = isList && numPr.getIlvl() != null ? numPr.getIlvl().getVal().intValue() : -1;
+
+                if (isList && listLevel == 0) {
+                    // Lưu câu trước đó nếu có
+                    if (currentCH != null && !currentListDA.isEmpty()) {
+                        if (saveToDatabase(currentCH, currentListDA, daBUS)) {
+                            countSuccess++;
+                        }
+                    }
+                    // Tạo câu mới với thông tin đã CHỌN từ Dialog
+                    currentCH = new CauHoiDTO();
+                    currentCH.setNoidung(text);
+                    currentCH.setMamonhoc(selectedMonHoc);
+                    currentCH.setMadokho(selectedDoKho);
+                    currentCH.setMaloai(selectedLoai);
+                    currentCH.setNguoitao(mainFrame.getNguoiDung().getManguoidung());
+                    currentCH.setTrangthai(1);
+                    currentListDA = new ArrayList<>();
+                } else if (isList && listLevel == 1) {
+                    if (currentCH == null) {
+                        continue;
+                    }
+                    // Kiểm tra in đậm để xác định đáp án đúng
+                    boolean isCorrect = false;
+                    for (XWPFRun run : para.getRuns()) {
+                        if (run.isBold()) {
+                            isCorrect = true;
+                            break;
+                        }
+                    }
+                    currentListDA.add(new DapAnDTO(0, 0, text, isCorrect));
+                } else if (!isList && currentCH != null && currentListDA.isEmpty()) {
+                    currentCH.setNoidung(currentCH.getNoidung() + " " + text);
+                }
+            }
+
+            // Lưu câu cuối
+            if (currentCH != null && !currentListDA.isEmpty()) {
+                if (saveToDatabase(currentCH, currentListDA, daBUS)) {
+                    countSuccess++;
+                }
+            }
+
+            JOptionPane.showMessageDialog(this, "Nhập thành công " + countSuccess + " câu hỏi!", "Hoàn tất", JOptionPane.INFORMATION_MESSAGE);
+            loadDataTable(bus.getAll());
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Lỗi đọc file Word: " + ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    /**
+     * Kiểm tra paragraph có thực sự in đậm không.
+     * Với list bullet, runs có thể inherit bold từ style → cần kiểm tra rPr trực tiếp.
+     */
+    private boolean isParagraphBold(XWPFParagraph para) {
+        String styleId = para.getStyle();
+        return styleId != null && styleId.toLowerCase().contains("heading");
+    }
+
+// Hàm hỗ trợ lưu câu hỏi và danh sách đáp án
+    private boolean saveToDatabase(CauHoiDTO ch, ArrayList<DapAnDTO> listDA, DapAnBUS daBUS) {
+        if (ch.getNoidung().isEmpty() || listDA.isEmpty()) {
+            return false;
+        }
+
+        int generatedId = bus.addReturnId(ch);
+        if (generatedId != -1) {
+            for (DapAnDTO da : listDA) {
+                da.setMacauhoi(generatedId);
+                daBUS.add(da);
+            }
+            return true;
+        }
+        return false;
     }
 
     public void importExcel() {

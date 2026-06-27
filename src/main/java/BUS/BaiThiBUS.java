@@ -86,7 +86,19 @@ public class BaiThiBUS {
         return ctDao.insert(ct);
     }
 
+    public int deleteByUserAndDe(int userId, int made) {
+        return bDao.deleteByUserAndDe(userId, made);
+    }
+
     public double gradeAndSave(DeThiDTO deThi, int userId, ArrayList<String> answers, int timeSpent) {
+        // Kiểm tra xem đã làm bài chưa
+        if (checkDaLam(userId, deThi.getMade())) {
+            // Nếu đã làm, xóa bài cũ
+            bDao.deleteByUserAndDe(userId, deThi.getMade());
+            // Xóa trong list hiện tại nếu có
+            listBaiThi.removeIf(bt -> bt.getManguoidung() == userId && bt.getMade() == deThi.getMade());
+        }
+
         DeThiBUS deThiBUS = new DeThiBUS();
         DapAnBUS dapAnBUS = new DapAnBUS();
         ArrayList<CauHoiDTO> dsCauHoi = deThiBUS.getDanhSachCauHoiByMade(deThi.getMade());

@@ -223,11 +223,6 @@ public class LamBai extends JPanel implements ActionListener {
             int modelRow = table.convertRowIndexToModel(index);
             String trangThai = tblModel.getValueAt(modelRow, 6).toString();
 
-            if (trangThai.equals("Đã hoàn thành")) {
-                JOptionPane.showMessageDialog(this, "Bạn đã hoàn thành bài thi này rồi, không thể thi lại!", "Thông báo", JOptionPane.WARNING_MESSAGE);
-                return;
-            }
-
             if (trangThai.equals("Hết hạn")) {
                 JOptionPane.showMessageDialog(this, "Kỳ thi này đã kết thúc, bạn không thể vào thi!", "Thông báo", JOptionPane.WARNING_MESSAGE);
                 return;
@@ -240,7 +235,24 @@ public class LamBai extends JPanel implements ActionListener {
 
             int made = (int) tblModel.getValueAt(modelRow, 0);
             DeThiDTO selectedDeThi = deThiBUS.getById(made);
+            int userId = user.getManguoidung();
 
+            // Kiểm tra đã làm bài chưa
+            if (baiThiBUS.checkDaLam(userId, made)) {
+                int confirmLai = JOptionPane.showConfirmDialog(this,
+                        "Bạn đã làm bài thi này rồi!\n"
+                        + "Điểm cũ sẽ bị xóa và thay thế bằng kết quả mới.\n\n"
+                        + "Bạn có muốn làm lại?",
+                        "Xác nhận làm lại",
+                        JOptionPane.YES_NO_OPTION,
+                        JOptionPane.QUESTION_MESSAGE);
+
+                if (confirmLai != JOptionPane.YES_OPTION) {
+                    return; // Không làm lại thì thoát
+                }
+            }
+
+            // Tiếp tục xác nhận vào thi
             int confirm = JOptionPane.showConfirmDialog(this,
                     "Bạn có chắc chắn muốn bắt đầu làm bài: " + selectedDeThi.getTende() + "?\n"
                     + "Thời gian làm bài: " + selectedDeThi.getThoigianthi() + " phút.",
@@ -249,16 +261,12 @@ public class LamBai extends JPanel implements ActionListener {
             if (confirm == JOptionPane.YES_OPTION) {
                 LamBaiDialog dialog = new LamBaiDialog(mainFrame, selectedDeThi, user);
                 dialog.setVisible(true);
-                loadData();
+                loadData(); // Tải lại dữ liệu sau khi làm bài
             }
         }
     }
 
     private String calculateTrangThai(int maKyThi, int made) {
-        if (baiThiBUS.checkDaLam(user.getManguoidung(), made)) {
-            return "Đã hoàn thành";
-        }
-
         DTO.KyThiDTO kt = kyThiBUS.getById(maKyThi);
         if (kt == null || kt.getTrangthai() == 0) {
             return "Hết hạn";

@@ -156,4 +156,50 @@ public class BaiThiDAO {
         }
         return result;
     }
+
+    public int deleteByUserAndDe(int userId, int made) {
+        int result = 0;
+        Connection con = null;
+        try {
+            con = JDBCUtil.getConnection();
+            con.setAutoCommit(false); // Bắt đầu transaction
+
+            // Xóa chi tiết bài thi
+            String sqlChiTiet = "DELETE ct FROM chitietbaithi ct "
+                    + "INNER JOIN baithi b ON ct.mabaithi = b.mabaithi "
+                    + "WHERE b.manguoidung = ? AND b.made = ?";
+            PreparedStatement pstChiTiet = con.prepareStatement(sqlChiTiet);
+            pstChiTiet.setInt(1, userId);
+            pstChiTiet.setInt(2, made);
+            pstChiTiet.executeUpdate();
+
+            // Xóa bài thi
+            String sql = "DELETE FROM baithi WHERE manguoidung = ? AND made = ?";
+            PreparedStatement pst = con.prepareStatement(sql);
+            pst.setInt(1, userId);
+            pst.setInt(2, made);
+            result = pst.executeUpdate();
+
+            con.commit(); // Commit transaction
+        } catch (SQLException ex) {
+            if (con != null) {
+                try {
+                    con.rollback(); // Rollback nếu có lỗi
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+            ex.printStackTrace();
+        } finally {
+            if (con != null) {
+                try {
+                    con.setAutoCommit(true);
+                    con.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return result;
+    }
 }

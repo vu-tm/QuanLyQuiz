@@ -160,9 +160,9 @@ public class LamBaiDialog extends JDialog {
         pnl.setOpaque(false);
 
         JPanel qCard = makeCard();
-        qCard.setLayout(new BorderLayout(0, 15));
-        qCard.setBorder(new EmptyBorder(25, 30, 25, 30));
-
+        qCard.setLayout(new BorderLayout(0, 8));
+        qCard.setBorder(new EmptyBorder(12, 20, 12, 20));
+        qCard.setMaximumSize(new Dimension(Integer.MAX_VALUE, 140));
         lblQLabel = new JLabel("Câu 1 / " + dsCauHoi.size());
         lblQLabel.setFont(new Font("Segoe UI", Font.BOLD, 14));
         lblQLabel.setForeground(C_BLUE);
@@ -176,16 +176,24 @@ public class LamBaiDialog extends JDialog {
         txtQuestion.setBackground(C_WHITE);
 
         qCard.add(lblQLabel, BorderLayout.NORTH);
+        JScrollPane scrollQuestion = new JScrollPane(txtQuestion);
+        scrollQuestion.setBorder(null);
+        scrollQuestion.setOpaque(false);
+        scrollQuestion.getViewport().setOpaque(false);
+        scrollQuestion.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        scrollQuestion.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
         qCard.add(txtQuestion, BorderLayout.CENTER);
 
         pnlAnswers = new JPanel(new GridLayout(0, 2, 20, 20));
         pnlAnswers.setOpaque(false);
 
+        pnlAnswers.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
+        
         pnlAnswerBar = buildAnswerBar();
         JPanel navRow = buildNavRow();
 
         pnl.add(qCard);
-        pnl.add(Box.createVerticalStrut(20));
+        pnl.add(Box.createVerticalStrut(15));
         pnl.add(pnlAnswers);
         pnl.add(Box.createVerticalGlue());
         pnl.add(pnlAnswerBar);

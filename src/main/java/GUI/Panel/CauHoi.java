@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -38,6 +39,7 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 
 // cauhoi-level0, cautraloi-level1 (word)
 public class CauHoi extends JPanel implements ActionListener, ItemListener {
+
     PanelBorderRadius pnlMain, functionBar;
     private GUI.Main mainFrame;
     JPanel pnlBorder1, pnlBorder2, pnlBorder3, pnlBorder4, contentCenter;
@@ -83,8 +85,6 @@ public class CauHoi extends JPanel implements ActionListener, ItemListener {
         table.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 13));
         table.getTableHeader().setPreferredSize(new Dimension(0, 40));
         table.setFocusable(false);
-
-        // Tăng chiều cao hàng mặc định để nhìn thoáng hơn
         table.setRowHeight(40);
         scrollTable.setViewportView(table);
 
@@ -358,14 +358,7 @@ public class CauHoi extends JPanel implements ActionListener, ItemListener {
                     if (currentCH == null) {
                         continue;
                     }
-                    // Kiểm tra in đậm để xác định đáp án đúng
-                    boolean isCorrect = false;
-                    for (XWPFRun run : para.getRuns()) {
-                        if (run.isBold()) {
-                            isCorrect = true;
-                            break;
-                        }
-                    }
+                    boolean isCorrect = isAnswerCorrect(para);
                     currentListDA.add(new DapAnDTO(0, 0, text, isCorrect));
                 } else if (!isList && currentCH != null && currentListDA.isEmpty()) {
                     currentCH.setNoidung(currentCH.getNoidung() + " " + text);
@@ -388,16 +381,33 @@ public class CauHoi extends JPanel implements ActionListener, ItemListener {
         }
     }
 
-    /**
-     * Kiểm tra paragraph có thực sự in đậm không.
-     * Với list bullet, runs có thể inherit bold từ style → cần kiểm tra rPr trực tiếp.
-     */
-    private boolean isParagraphBold(XWPFParagraph para) {
-        String styleId = para.getStyle();
-        return styleId != null && styleId.toLowerCase().contains("heading");
+    private boolean isAnswerCorrect(XWPFParagraph para) {
+        // Trường hợp 1: style Heading1
+        if ("Heading1".equals(para.getStyle())) {
+            return true;
+        }
+
+        // Trường hợp 2: kiểm tra in đậm
+        List<XWPFRun> runs = para.getRuns();
+        if (runs == null || runs.isEmpty()) {
+            return false;
+        }
+
+        boolean hasText = false;
+        for (XWPFRun run : runs) {
+            String runText = run.getText(0);
+            if (runText != null && !runText.trim().isEmpty()) {
+                hasText = true;
+                if (!run.isBold()) {
+                    return false;
+                }
+            }
+        }
+
+        return hasText;
     }
 
-// Hàm hỗ trợ lưu câu hỏi và danh sách đáp án
+    // Hàm hỗ trợ lưu câu hỏi và danh sách đáp án
     private boolean saveToDatabase(CauHoiDTO ch, ArrayList<DapAnDTO> listDA, DapAnBUS daBUS) {
         if (ch.getNoidung().isEmpty() || listDA.isEmpty()) {
             return false;

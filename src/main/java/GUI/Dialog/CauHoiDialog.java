@@ -356,15 +356,6 @@ public class CauHoiDialog extends JDialog {
         updateAnswerUIByTen(((LoaiCauHoiDTO) cmbLoaiCauHoi.getSelectedItem()).getTenloai());
 
         ArrayList<DapAnDTO> listDA = busDapAn.getDapAnDayDu(currentDTO.getMacauhoi());
-        System.out.println("=== Load đáp án cho câu hỏi ID: " + currentDTO.getMacauhoi());
-        for (DapAnDTO da : listDA) {
-            System.out.println("DEBUG: Nội dung: " + da.getNoidungtl() + " | ladapan trong DB/DTO: " + da.getLadapan());
-        }
-        System.out.println("  Số đáp án: " + listDA.size());
-        for (int i = 0; i < listDA.size(); i++) {
-            System.out.println("  DA[" + i + "]: " + listDA.get(i).getNoidungtl() + " | ladapan=" + listDA.get(i).getLadapan());
-        }
-        System.out.println("  Số radio: " + rdAnswers.size());
         for (int i = 0; i < listDA.size() && i < txtAnswers.size(); i++) {
             txtAnswers.get(i).setText(listDA.get(i).getNoidungtl());
             if (listDA.get(i).getLadapan()) {
@@ -391,7 +382,6 @@ public class CauHoiDialog extends JDialog {
                 ch.setNguoitao(mainFrame.getNguoiDung().getManguoidung());
             }
 
-            // Thực hiện lưu
             boolean success = (currentDTO == null) ? busCauHoi.add(ch) : busCauHoi.update(ch);
 
             if (success) {

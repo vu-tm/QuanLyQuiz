@@ -191,6 +191,18 @@ public class CauHoi extends JPanel implements ActionListener, ItemListener {
         pnlMain.setBackground(Color.WHITE);
         pnlMain.add(scrollTable, BorderLayout.CENTER);
         contentCenter.add(pnlMain, BorderLayout.CENTER);
+
+        table.getColumnModel().getColumn(1).addPropertyChangeListener(evt -> {
+            if ("width".equals(evt.getPropertyName())) {
+                SwingUtilities.invokeLater(this::adjustRowHeights);
+            }
+        });
+
+        addHierarchyListener(e -> {
+            if ((e.getChangeFlags() & HierarchyEvent.SHOWING_CHANGED) != 0 && isShowing()) {
+                SwingUtilities.invokeLater(this::adjustRowHeights);
+            }
+        });
     }
 
     class MultiLineTableCellRenderer extends JTextArea implements TableCellRenderer {
@@ -219,13 +231,27 @@ public class CauHoi extends JPanel implements ActionListener, ItemListener {
             setText(value != null ? value.toString() : "");
 
             int width = table.getColumnModel().getColumn(column).getWidth();
-            setSize(new Dimension(width, getPreferredSize().height));
-
-            if (table.getRowHeight(row) != getPreferredSize().height) {
-                table.setRowHeight(row, Math.max(40, getPreferredSize().height));
+            if (width > 0) {
+                setSize(new Dimension(width, Short.MAX_VALUE));
             }
-
             return this;
+        }
+    }
+
+    private void adjustRowHeights() {
+        if (!table.isShowing()) return;
+
+        for (int row = 0; row < table.getRowCount(); row++) {
+            int maxHeight = 40;
+            TableCellRenderer renderer = table.getCellRenderer(row, 1);
+            Component comp = table.prepareRenderer(renderer, row, 1);
+            int width = table.getColumnModel().getColumn(1).getWidth();
+            comp.setSize(width, Short.MAX_VALUE);
+            maxHeight = Math.max(maxHeight, comp.getPreferredSize().height);
+
+            if (table.getRowHeight(row) != maxHeight) {
+                table.setRowHeight(row, maxHeight);
+            }
         }
     }
 
@@ -249,6 +275,7 @@ public class CauHoi extends JPanel implements ActionListener, ItemListener {
                 ndBUS.getHotenById(ch.getNguoitao())
             });
         }
+        SwingUtilities.invokeLater(this::adjustRowHeights);
     }
 
     @Override

@@ -30,6 +30,7 @@ public class LamBaiDialog extends JDialog {
     private static final Color C_BORDER = new Color(207, 216, 220);
     private static final Color C_TEXT = new Color(26, 35, 50);
     private static final Color C_TEXT2 = new Color(84, 110, 122);
+    private static final int NAV_PAGE_SIZE = 30;
 
     private final DeThiDTO deThi;
     private final NguoiDungDTO user;
@@ -48,6 +49,13 @@ public class LamBaiDialog extends JDialog {
     private JButton btnPrev, btnNext;
     private JLabel lblProgress;
     private JTextField txtFillInput;
+
+    // --- Phân trang khung câu hỏi bên phải ---
+    private JPanel pnlNavGrid;
+    private JPanel pnlNavPager;
+    private JLabel lblNavPage;
+    private JButton btnNavPrevPage, btnNavNextPage;
+    private int currentNavPage = 0;
 
     public LamBaiDialog(JFrame parent, DeThiDTO deThi, NguoiDungDTO user) {
         super(parent, "Phần mềm thi trắc nghiệm", true);
@@ -357,6 +365,12 @@ public class LamBaiDialog extends JDialog {
         }
 
         if (btnNavs != null) {
+            // Nếu câu hiện tại không thuộc trang đang hiển thị -> tự động chuyển trang
+            int newPage = index / NAV_PAGE_SIZE;
+            if (newPage != currentNavPage) {
+                currentNavPage = newPage;
+                refreshNavGrid();
+            }
             for (int i = 0; i < btnNavs.length; i++) {
                 styleNavNum(btnNavs[i], i, index);
             }
@@ -530,9 +544,10 @@ public class LamBaiDialog extends JDialog {
         card.setLayout(new BorderLayout());
         card.setBorder(new EmptyBorder(16, 14, 16, 14));
 
-        JPanel topPart = new JPanel();
-        topPart.setLayout(new BoxLayout(topPart, BoxLayout.Y_AXIS));
-        topPart.setOpaque(false);
+        // ---- Khối CỐ ĐỊNH phía trên: tiêu đề + thống kê ----
+        JPanel topFixed = new JPanel();
+        topFixed.setLayout(new BoxLayout(topFixed, BoxLayout.Y_AXIS));
+        topFixed.setOpaque(false);
 
         JLabel title = new JLabel("BẢNG CÂU HỎI");
         title.setFont(new Font("Segoe UI", Font.BOLD, 12));
@@ -549,49 +564,154 @@ public class LamBaiDialog extends JDialog {
         stats.add(makeStatCard(lblStatLeft, "Còn lại"));
         stats.add(makeStatCard(lblTotal, "Tổng"));
 
-        JPanel grid = new JPanel(new GridLayout(0, 4, 8, 8));
-        grid.setOpaque(false);
+        topFixed.add(title);
+        topFixed.add(Box.createVerticalStrut(12));
+        topFixed.add(stats);
+        topFixed.add(Box.createVerticalStrut(15));
+        topFixed.add(new JSeparator());
+        topFixed.add(Box.createVerticalStrut(10));
+
+        // ---- Khối GIỮA (có thể cuộn nếu thiếu chỗ): lưới số câu hỏi của trang hiện tại ----
+        pnlNavGrid = new JPanel(new GridLayout(0, 4, 8, 8));
+        pnlNavGrid.setOpaque(false);
+        pnlNavGrid.setBorder(new EmptyBorder(0, 0, 4, 4));
+
         btnNavs = new JButton[dsCauHoi.size()];
         for (int i = 0; i < dsCauHoi.size(); i++) {
             btnNavs[i] = makeNavNum(i + 1);
             final int idx = i;
-            btnNavs[i].addActionListener(e -> loadQuestion(idx));
-            grid.add(btnNavs[i]);
+            btnNavs[i].addActionListener(e -> {
+                currentNavPage = idx / NAV_PAGE_SIZE;
+                loadQuestion(idx);
+            });
         }
 
-        JPanel gridWrapper = new JPanel(new BorderLayout());
-        gridWrapper.setOpaque(false);
-        gridWrapper.add(grid, BorderLayout.NORTH);
+        JScrollPane navScroll = new JScrollPane(pnlNavGrid);
+        navScroll.setBorder(null);
+        navScroll.setOpaque(false);
+        navScroll.getViewport().setOpaque(false);
+        navScroll.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        navScroll.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
+        navScroll.getVerticalScrollBar().setUnitIncrement(16);
 
-        topPart.add(title);
-        topPart.add(Box.createVerticalStrut(12));
-        topPart.add(stats);
-        topPart.add(Box.createVerticalStrut(15));
-        topPart.add(new JSeparator());
-        topPart.add(Box.createVerticalStrut(15));
-        topPart.add(gridWrapper);
+        // Hiển thị trang đầu tiên (chứa câu 1)
+        refreshNavGrid();
 
-        JPanel botPart = new JPanel();
-        botPart.setLayout(new BoxLayout(botPart, BoxLayout.Y_AXIS));
-        botPart.setOpaque(false);
-        botPart.add(new JSeparator());
-        botPart.add(Box.createVerticalStrut(12));
-        botPart.add(makeLegendItem(C_BLUE, C_BLUE_LIGHT, "Đã trả lời"));
-        botPart.add(Box.createVerticalStrut(6));
-        botPart.add(makeLegendItem(C_BLUE, C_BLUE, "Câu hiện tại"));
-        botPart.add(Box.createVerticalStrut(6));
-        botPart.add(makeLegendItem(C_BORDER, C_WHITE, "Chưa làm"));
+        // ---- Khối CỐ ĐỊNH phía dưới: phân trang + chú thích (luôn hiện, không bao giờ bị che) ----
+        JPanel botFixed = new JPanel();
+        botFixed.setLayout(new BoxLayout(botFixed, BoxLayout.Y_AXIS));
+        botFixed.setOpaque(false);
+        botFixed.add(buildNavPager());
+        botFixed.add(Box.createVerticalStrut(12));
+        botFixed.add(new JSeparator());
+        botFixed.add(Box.createVerticalStrut(12));
+        botFixed.add(makeLegendItem(C_BLUE, C_BLUE_LIGHT, "Đã trả lời"));
+        botFixed.add(Box.createVerticalStrut(6));
+        botFixed.add(makeLegendItem(C_BLUE, C_BLUE, "Câu hiện tại"));
+        botFixed.add(Box.createVerticalStrut(6));
+        botFixed.add(makeLegendItem(C_BORDER, C_WHITE, "Chưa làm"));
 
-        card.add(topPart, BorderLayout.CENTER);
-        card.add(botPart, BorderLayout.SOUTH);
+        card.add(topFixed, BorderLayout.NORTH);
+        card.add(navScroll, BorderLayout.CENTER);
+        card.add(botFixed, BorderLayout.SOUTH);
 
         return card;
     }
 
+    /**
+     * Panel điều hướng trang (Trang trước / Trang X/Y / Trang sau) cho khung câu hỏi bên phải.
+     * Chỉ hiển thị khi tổng số câu vượt quá NAV_PAGE_SIZE (30).
+     */
+    private JPanel buildNavPager() {
+        pnlNavPager = new JPanel(new BorderLayout());
+        pnlNavPager.setOpaque(false);
+        pnlNavPager.setBorder(new EmptyBorder(10, 0, 0, 0));
+
+        btnNavPrevPage = new JButton("<");
+        btnNavNextPage = new JButton(">");
+        JButton[] pagerBtns = {btnNavPrevPage, btnNavNextPage};
+        for (JButton b : pagerBtns) {
+            b.setFont(new Font("Segoe UI", Font.BOLD, 13));
+            b.setFocusPainted(false);
+            b.setFocusable(false);
+            b.setPreferredSize(new Dimension(36, 32));
+            b.setBackground(C_WHITE);
+            b.setForeground(C_BLUE);
+            b.setBorder(BorderFactory.createLineBorder(new Color(176, 208, 245)));
+            b.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        }
+
+        lblNavPage = new JLabel("", JLabel.CENTER);
+        lblNavPage.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        lblNavPage.setForeground(C_TEXT2);
+
+        btnNavPrevPage.addActionListener(e -> {
+            if (currentNavPage > 0) {
+                currentNavPage--;
+                refreshNavGrid();
+            }
+        });
+        btnNavNextPage.addActionListener(e -> {
+            int totalPages = totalNavPages();
+            if (currentNavPage < totalPages - 1) {
+                currentNavPage++;
+                refreshNavGrid();
+            }
+        });
+
+        pnlNavPager.add(btnNavPrevPage, BorderLayout.WEST);
+        pnlNavPager.add(lblNavPage, BorderLayout.CENTER);
+        pnlNavPager.add(btnNavNextPage, BorderLayout.EAST);
+
+        pnlNavPager.setVisible(totalNavPages() > 1);
+
+        return pnlNavPager;
+    }
+
+    private int totalNavPages() {
+        return (dsCauHoi.size() + NAV_PAGE_SIZE - 1) / NAV_PAGE_SIZE;
+    }
+
+    /**
+     * Vẽ lại khung lưới câu hỏi chỉ với các câu thuộc trang currentNavPage.
+     */
+    private void refreshNavGrid() {
+        pnlNavGrid.removeAll();
+        int start = currentNavPage * NAV_PAGE_SIZE;
+        int end = Math.min(start + NAV_PAGE_SIZE, dsCauHoi.size());
+        for (int i = start; i < end; i++) {
+            pnlNavGrid.add(btnNavs[i]);
+        }
+        pnlNavGrid.revalidate();
+        pnlNavGrid.repaint();
+        updateNavPagerLabel();
+    }
+
+    private void updateNavPagerLabel() {
+        if (lblNavPage == null) {
+            return;
+        }
+        int totalPages = totalNavPages();
+        lblNavPage.setText("Trang " + (currentNavPage + 1) + "/" + totalPages);
+        if (btnNavPrevPage != null) {
+            btnNavPrevPage.setEnabled(currentNavPage > 0);
+        }
+        if (btnNavNextPage != null) {
+            btnNavNextPage.setEnabled(currentNavPage < totalPages - 1);
+        }
+        if (pnlNavPager != null) {
+            pnlNavPager.setVisible(totalPages > 1);
+        }
+    }
+
     private JButton makeNavNum(int num) {
         JButton btn = new JButton(String.valueOf(num));
-        btn.setFont(new Font("Segoe UI", Font.BOLD, 13));
-        btn.setPreferredSize(new Dimension(42, 42));
+        // Số câu >= 100 có 3 chữ số nên dùng chữ nhỏ hơn để không bị Swing rút gọn thành "..."
+        int fontSize = (num >= 100) ? 12 : 13;
+        btn.setFont(new Font("Segoe UI", Font.BOLD, fontSize));
+        btn.setMargin(new Insets(0, 0, 0, 0)); // bỏ margin mặc định vốn chiếm hết chỗ chữ
+        btn.setHorizontalAlignment(SwingConstants.CENTER);
+        btn.setPreferredSize(new Dimension(46, 42));
         btn.setFocusPainted(false);
         btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
         return btn;

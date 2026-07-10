@@ -22,6 +22,7 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.*;
@@ -32,13 +33,32 @@ import javax.swing.table.TableCellRenderer;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.apache.poi.xwpf.usermodel.XWPFAbstractNum;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
+import org.apache.poi.xwpf.usermodel.XWPFNum;
+import org.apache.poi.xwpf.usermodel.XWPFNumbering;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 import org.apache.poi.xwpf.usermodel.XWPFRun;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTLvl;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTNumPr;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTPPr;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
-// cauhoi-level0, cautraloi-level1 (word)
 public class CauHoi extends JPanel implements ActionListener, ItemListener {
+
+    private static final java.util.regex.Pattern QUESTION_START =
+            java.util.regex.Pattern.compile("^(Câu\\s*)?\\d+[\\.\\)\\:]\\s*\\S.*", java.util.regex.Pattern.CASE_INSENSITIVE);
+
+    private static final java.util.regex.Pattern ANSWER_START =
+            java.util.regex.Pattern.compile("^([A-Da-d])[\\.\\)]\\s*\\S.*");
+
+    private static final java.util.regex.Pattern ANSWER_KEY_LINE =
+            java.util.regex.Pattern.compile("^(Đáp\\s*án|Dap\\s*an|Answer)\\s*[:\\-]?\\s*([A-Da-d])\\b",
+                    java.util.regex.Pattern.CASE_INSENSITIVE);
+
+    private static final java.util.regex.Pattern CORRECT_MARKER =
+            java.util.regex.Pattern.compile("[\\(\\[]\\s*(\\*|Đ|đ|đúng|dung|correct)\\s*[\\)\\]]|(?<=\\S)\\s*\\*\\s*$",
+                    java.util.regex.Pattern.CASE_INSENSITIVE);
 
     PanelBorderRadius pnlMain, functionBar;
     private GUI.Main mainFrame;
@@ -88,11 +108,9 @@ public class CauHoi extends JPanel implements ActionListener, ItemListener {
         table.setRowHeight(40);
         scrollTable.setViewportView(table);
 
-        // Renderer căn giữa cho các cột thông thường
         DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
         centerRenderer.setHorizontalAlignment(JLabel.CENTER);
 
-        // Thiết lập Renderer cho từng cột
         for (int i = 0; i < table.getColumnCount(); i++) {
             if (i == 1) {
                 table.getColumnModel().getColumn(i).setCellRenderer(new MultiLineTableCellRenderer());
@@ -101,13 +119,12 @@ public class CauHoi extends JPanel implements ActionListener, ItemListener {
             }
         }
 
-        // Độ rộng các cột
-        table.getColumnModel().getColumn(0).setPreferredWidth(60);  // Mã CH
-        table.getColumnModel().getColumn(1).setPreferredWidth(450); // Nội dung
-        table.getColumnModel().getColumn(2).setPreferredWidth(100); // Độ khó
-        table.getColumnModel().getColumn(3).setPreferredWidth(100); // Loại
-        table.getColumnModel().getColumn(4).setPreferredWidth(150); // Môn học
-        table.getColumnModel().getColumn(5).setPreferredWidth(150); // Người tạo
+        table.getColumnModel().getColumn(0).setPreferredWidth(60);
+        table.getColumnModel().getColumn(1).setPreferredWidth(450);
+        table.getColumnModel().getColumn(2).setPreferredWidth(100);
+        table.getColumnModel().getColumn(3).setPreferredWidth(100);
+        table.getColumnModel().getColumn(4).setPreferredWidth(150);
+        table.getColumnModel().getColumn(5).setPreferredWidth(150);
 
         table.setAutoCreateRowSorter(true);
         TableSorter.configureTableColumnSorter(table, 0, (Object o1, Object o2) -> {
@@ -277,7 +294,6 @@ public class CauHoi extends JPanel implements ActionListener, ItemListener {
     }
 
     public void importWord() {
-        // 1. Chọn file
         JFileChooser jf = new JFileChooser();
         jf.setFileFilter(new FileNameExtensionFilter("Word Documents (.docx)", "docx"));
         int result = jf.showOpenDialog(this);
@@ -286,7 +302,6 @@ public class CauHoi extends JPanel implements ActionListener, ItemListener {
         }
         File file = jf.getSelectedFile();
 
-        // 2. Tạo Form chọn cấu hình Import (Môn, Độ khó, Loại)
         JPanel pnlConfig = new JPanel(new GridLayout(3, 2, 10, 10));
         pnlConfig.setBorder(new EmptyBorder(10, 10, 10, 10));
 
@@ -294,7 +309,6 @@ public class CauHoi extends JPanel implements ActionListener, ItemListener {
         JComboBox<DoKhoDTO> cbDoKho = new JComboBox<>(new DefaultComboBoxModel<>(doKhoBUS.getAll().toArray(new DoKhoDTO[0])));
         JComboBox<LoaiCauHoiDTO> cbLoai = new JComboBox<>(new DefaultComboBoxModel<>(loaiCauHoiBUS.getAll().toArray(new LoaiCauHoiDTO[0])));
 
-        // Renderer để hiển thị tên thay vì Object
         cbMonHoc.setRenderer((list, value, index, isSelected, cellHasFocus) -> new JLabel(value.getTenmonhoc()));
         cbDoKho.setRenderer((list, value, index, isSelected, cellHasFocus) -> new JLabel(value.getTendokho()));
         cbLoai.setRenderer((list, value, index, isSelected, cellHasFocus) -> new JLabel(value.getTenloai()));
@@ -306,73 +320,83 @@ public class CauHoi extends JPanel implements ActionListener, ItemListener {
         pnlConfig.add(new JLabel("Chọn loại CH:"));
         pnlConfig.add(cbLoai);
 
-        int configResult = JOptionPane.showConfirmDialog(this, pnlConfig, "Cấu hình thông tin nhập câu hỏi", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
-
+        int configResult = JOptionPane.showConfirmDialog(this, pnlConfig, "Cấu hình thông tin nhập câu hỏi",
+                JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
         if (configResult != JOptionPane.OK_OPTION) {
             return;
         }
 
-        // Lấy giá trị đã chọn từ ComboBox
         int selectedMonHoc = ((MonHocDTO) cbMonHoc.getSelectedItem()).getMamonhoc();
         int selectedDoKho = ((DoKhoDTO) cbDoKho.getSelectedItem()).getMadokho();
         int selectedLoai = ((LoaiCauHoiDTO) cbLoai.getSelectedItem()).getMaloai();
 
-        // 3. Tiến hành đọc file và lưu
         try (FileInputStream fis = new FileInputStream(file); XWPFDocument document = new XWPFDocument(fis)) {
+            XWPFNumbering numbering = document.getNumbering();
             DapAnBUS daBUS = new DapAnBUS();
             CauHoiDTO currentCH = null;
             ArrayList<DapAnDTO> currentListDA = new ArrayList<>();
-            int countSuccess = 0;
+            int countSuccess = 0, countSkipped = 0;
 
             for (XWPFParagraph para : document.getParagraphs()) {
-                String text = para.getText().trim();
-                if (text.isEmpty()) {
-                    continue;
-                }
+                String rawText = para.getText();
+                if (rawText == null) continue;
+                String text = rawText.trim();
+                if (text.isEmpty()) continue;
 
-                org.openxmlformats.schemas.wordprocessingml.x2006.main.CTNumPr numPr = null;
-                if (para.getCTP().getPPr() != null) {
-                    numPr = para.getCTP().getPPr().getNumPr();
-                }
+                String numFmt = getListNumFmt(para, numbering);
+                boolean isNumberedQuestion = "decimal".equalsIgnoreCase(numFmt) || "decimalZero".equalsIgnoreCase(numFmt);
+                boolean isLetteredAnswer = "lowerLetter".equalsIgnoreCase(numFmt) || "upperLetter".equalsIgnoreCase(numFmt);
 
-                boolean isList = (numPr != null && numPr.getNumId() != null && numPr.getNumId().getVal().intValue() > 0);
-                int listLevel = isList && numPr.getIlvl() != null ? numPr.getIlvl().getVal().intValue() : -1;
+                java.util.regex.Matcher keyMatcher = ANSWER_KEY_LINE.matcher(text);
+                java.util.regex.Matcher qMatcher = QUESTION_START.matcher(text);
+                java.util.regex.Matcher aMatcher = ANSWER_START.matcher(text);
 
-                if (isList && listLevel == 0) {
-                    // Lưu câu trước đó nếu có
+                boolean isQuestionStart = isNumberedQuestion || qMatcher.matches();
+                boolean isAnswerStart = isLetteredAnswer || aMatcher.matches();
+
+                if (keyMatcher.find() && currentCH != null && !currentListDA.isEmpty()) {
+                    applyAnswerKey(currentListDA, keyMatcher.group(2));
+                } else if (isQuestionStart) {
                     if (currentCH != null && !currentListDA.isEmpty()) {
                         if (saveToDatabase(currentCH, currentListDA, daBUS)) {
                             countSuccess++;
+                        } else {
+                            countSkipped++;
                         }
                     }
-                    // Tạo câu mới với thông tin đã CHỌN từ Dialog
                     currentCH = new CauHoiDTO();
-                    currentCH.setNoidung(text);
+                    currentCH.setNoidung(cleanQuestionText(text));
                     currentCH.setMamonhoc(selectedMonHoc);
                     currentCH.setMadokho(selectedDoKho);
                     currentCH.setMaloai(selectedLoai);
                     currentCH.setNguoitao(mainFrame.getNguoiDung().getManguoidung());
                     currentCH.setTrangthai(1);
                     currentListDA = new ArrayList<>();
-                } else if (isList && listLevel == 1) {
-                    if (currentCH == null) {
-                        continue;
-                    }
-                    boolean isCorrect = isAnswerCorrect(para);
-                    currentListDA.add(new DapAnDTO(0, 0, text, isCorrect));
-                } else if (!isList && currentCH != null && currentListDA.isEmpty()) {
+                } else if (isAnswerStart && currentCH != null) {
+                    boolean isCorrect = isAnswerCorrect(para, text);
+                    String cleanText = cleanAnswerText(text);
+                    currentListDA.add(new DapAnDTO(0, 0, cleanText, isCorrect));
+                } else if (currentCH != null && currentListDA.isEmpty()) {
                     currentCH.setNoidung(currentCH.getNoidung() + " " + text);
+                } else if (currentCH != null && !currentListDA.isEmpty()) {
+                    DapAnDTO lastDA = currentListDA.get(currentListDA.size() - 1);
+                    lastDA.setNoidungtl(lastDA.getNoidungtl() + " " + text);
                 }
             }
 
-            // Lưu câu cuối
             if (currentCH != null && !currentListDA.isEmpty()) {
                 if (saveToDatabase(currentCH, currentListDA, daBUS)) {
                     countSuccess++;
+                } else {
+                    countSkipped++;
                 }
             }
 
-            JOptionPane.showMessageDialog(this, "Nhập thành công " + countSuccess + " câu hỏi!", "Hoàn tất", JOptionPane.INFORMATION_MESSAGE);
+            String msg = "Nhập thành công " + countSuccess + " câu hỏi!";
+            if (countSkipped > 0) {
+                msg += "\nBỏ qua " + countSkipped + " câu do thiếu nội dung hoặc không có đáp án hợp lệ.";
+            }
+            JOptionPane.showMessageDialog(this, msg, "Hoàn tất", JOptionPane.INFORMATION_MESSAGE);
             loadDataTable(bus.getAll());
 
         } catch (Exception ex) {
@@ -381,33 +405,98 @@ public class CauHoi extends JPanel implements ActionListener, ItemListener {
         }
     }
 
-    private boolean isAnswerCorrect(XWPFParagraph para) {
-        // Trường hợp 1: style Heading1
+    private String getListNumFmt(XWPFParagraph para, XWPFNumbering numbering) {
+        if (numbering == null) {
+            return null;
+        }
+        try {
+            CTPPr ppr = para.getCTP().getPPr();
+            if (ppr == null || !ppr.isSetNumPr()) {
+                return null;
+            }
+            CTNumPr numPr = ppr.getNumPr();
+            if (numPr == null || numPr.getNumId() == null) {
+                return null;
+            }
+            BigInteger numId = numPr.getNumId().getVal();
+            BigInteger ilvl = (numPr.getIlvl() != null) ? numPr.getIlvl().getVal() : BigInteger.ZERO;
+
+            XWPFNum num = numbering.getNum(numId);
+            if (num == null) {
+                return null;
+            }
+            BigInteger abstractNumId = num.getCTNum().getAbstractNumId().getVal();
+            XWPFAbstractNum abstractNum = numbering.getAbstractNum(abstractNumId);
+            if (abstractNum == null) {
+                return null;
+            }
+
+            for (CTLvl lvl : abstractNum.getAbstractNum().getLvlList()) {
+                if (lvl.getIlvl().equals(ilvl) && lvl.getNumFmt() != null) {
+                    return lvl.getNumFmt().getVal().toString();
+                }
+            }
+        } catch (Exception ex) {
+            return null;
+        }
+        return null;
+    }
+
+    private boolean isAnswerCorrect(XWPFParagraph para, String text) {
+        if (CORRECT_MARKER.matcher(text).find()) {
+            return true;
+        }
+
         if ("Heading1".equals(para.getStyle())) {
             return true;
         }
 
-        // Trường hợp 2: kiểm tra in đậm
         List<XWPFRun> runs = para.getRuns();
         if (runs == null || runs.isEmpty()) {
             return false;
         }
 
         boolean hasText = false;
+        boolean allBold = true;
+        boolean hasDistinctColor = false;
+
         for (XWPFRun run : runs) {
             String runText = run.getText(0);
             if (runText != null && !runText.trim().isEmpty()) {
                 hasText = true;
                 if (!run.isBold()) {
-                    return false;
+                    allBold = false;
+                }
+                String color = run.getColor();
+                if (color != null && !color.equalsIgnoreCase("000000") && !color.equalsIgnoreCase("auto")) {
+                    hasDistinctColor = true;
                 }
             }
         }
 
-        return hasText;
+        return hasText && (allBold || hasDistinctColor);
     }
 
-    // Hàm hỗ trợ lưu câu hỏi và danh sách đáp án
+    private String cleanQuestionText(String text) {
+        return text.replaceFirst("^(Câu\\s*)?\\d+[\\.\\)\\:]\\s*", "").trim();
+    }
+
+    private String cleanAnswerText(String text) {
+        String cleaned = text.replaceFirst("^[A-Da-d][\\.\\)]\\s*", "");
+        cleaned = CORRECT_MARKER.matcher(cleaned).replaceAll("");
+        return cleaned.trim();
+    }
+
+    private void applyAnswerKey(ArrayList<DapAnDTO> listDA, String letter) {
+        int index = Character.toUpperCase(letter.charAt(0)) - 'A';
+        if (index < 0 || index >= listDA.size()) {
+            return;
+        }
+        for (int i = 0; i < listDA.size(); i++) {
+            listDA.get(i).setLadapan(i == index);
+        }
+    }
+
     private boolean saveToDatabase(CauHoiDTO ch, ArrayList<DapAnDTO> listDA, DapAnBUS daBUS) {
         if (ch.getNoidung().isEmpty() || listDA.isEmpty()) {
             return false;
@@ -455,7 +544,6 @@ public class CauHoi extends JPanel implements ActionListener, ItemListener {
                             continue;
                         }
 
-                        // Lấy ID mapping
                         int madokho = -1;
                         for (var dk : doKhoBUS.getAll()) {
                             if (dk.getTendokho().equalsIgnoreCase(tenDoKho)) {
@@ -492,15 +580,12 @@ public class CauHoi extends JPanel implements ActionListener, ItemListener {
                             ch.setNguoitao(mainFrame.getNguoiDung().getManguoidung());
                             ch.setTrangthai(1);
 
-                            // Thêm câu hỏi và lấy ID vừa tạo
                             int generatedId = bus.addReturnId(ch);
 
                             if (generatedId != -1) {
                                 String loaiLower = tenLoai.toLowerCase();
 
-                                // XỬ LÝ ĐÁP ÁN THEO TỪNG LOẠI
                                 if (loaiLower.contains("trắc")) {
-                                    // 1. Loại Trắc nghiệm: Đọc A, B, C, D (Cột 4-7) và Key (Cột 8)
                                     String correctChar = formatter.formatCellValue(excelRow.getCell(8)).trim().toUpperCase();
                                     for (int i = 0; i < 4; i++) {
                                         String textDA = formatter.formatCellValue(excelRow.getCell(4 + i)).trim();
@@ -509,15 +594,11 @@ public class CauHoi extends JPanel implements ActionListener, ItemListener {
                                             daBUS.add(new DapAnDTO(0, generatedId, textDA, String.valueOf(label).equals(correctChar)));
                                         }
                                     }
-
                                 } else if (loaiLower.contains("đúng")) {
-                                    // 2. Loại Đúng/Sai: Tự tạo 2 record, check Cột 8 xem cái nào đúng
                                     String correctText = formatter.formatCellValue(excelRow.getCell(8)).trim();
                                     daBUS.add(new DapAnDTO(0, generatedId, "Đúng", correctText.equalsIgnoreCase("Đúng")));
                                     daBUS.add(new DapAnDTO(0, generatedId, "Sai", correctText.equalsIgnoreCase("Sai")));
-
                                 } else if (loaiLower.contains("điền")) {
-                                    // 3. Loại Điền khuyết: Lấy nội dung ở Cột 4 làm đáp án đúng
                                     String fillText = formatter.formatCellValue(excelRow.getCell(4)).trim();
                                     if (!fillText.isEmpty()) {
                                         daBUS.add(new DapAnDTO(0, generatedId, fillText, true));

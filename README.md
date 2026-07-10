@@ -82,7 +82,7 @@
 <img width="1480" height="924" alt="image" src="https://github.com/user-attachments/assets/4bb24130-d427-4cb1-9b3f-9368510dae00" />
 
 <i><b>Phím tắt: </b></i> 
-- Bám `enter` để chuyển sang câu kế tiếp
+- Bấm `enter` để chuyển sang câu kế tiếp
 - Đối với trắc nghiệm bấm `1, 2, 3, 4` tương ứng với câu `A, B, C, D`
 <br>
 

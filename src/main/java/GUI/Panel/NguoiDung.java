@@ -5,6 +5,7 @@ import DAO.NguoiDungDAO;
 import DTO.NguoiDungDTO;
 import GUI.Component.IntegratedSearch;
 import GUI.Component.MainFunction;
+import GUI.Component.PaginatedTable;
 import GUI.Component.PanelBorderRadius;
 import GUI.Component.TableSorter;
 import GUI.Dialog.NguoiDungDialog;
@@ -17,10 +18,11 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.DefaultTableModel;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -31,10 +33,9 @@ public class NguoiDung extends JPanel implements ActionListener, ItemListener {
     private GUI.Main mainFrame;
     JPanel pnlBorder1, pnlBorder2, pnlBorder3, pnlBorder4, contentCenter;
     JTable tableNguoiDung;
-    JScrollPane scrollTableNguoiDung;
+    PaginatedTable paginatedTable;
     MainFunction mainFunction;
     IntegratedSearch search;
-    DefaultTableModel tblModel;
 
     NguoiDungBUS nguoidungBUS = new NguoiDungBUS();
     ArrayList<NguoiDungDTO> listHienTai = nguoidungBUS.getAll();
@@ -52,25 +53,14 @@ public class NguoiDung extends JPanel implements ActionListener, ItemListener {
         this.setLayout(new BorderLayout(0, 0));
         this.setOpaque(true);
 
-        tableNguoiDung = new JTable();
-        scrollTableNguoiDung = new JScrollPane();
+        String[] header = {"Mã người dùng", "Tên đăng nhập", "Họ tên", "Giới tính", "Ngày sinh", "Nhóm quyền", "Trạng thái"};
+        paginatedTable = new PaginatedTable(header);
+        tableNguoiDung = paginatedTable.getTable();
 
-        tblModel = new DefaultTableModel() {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return false;
-            }
-        };
-
-        String[] header = new String[]{"Mã người dùng", "Tên đăng nhập", "Họ tên", "Giới tính", "Ngày sinh", "Nhóm quyền", "Trạng thái"};
-        tblModel.setColumnIdentifiers(header);
-        tableNguoiDung.setModel(tblModel);
-        tableNguoiDung.setFocusable(false);
         tableNguoiDung.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 13));
         tableNguoiDung.getTableHeader().setPreferredSize(new Dimension(0, 40));
-        DefaultTableCellRenderer headerRenderer = (DefaultTableCellRenderer) tableNguoiDung.getTableHeader().getDefaultRenderer();
-        headerRenderer.setHorizontalAlignment(JLabel.CENTER);
-        scrollTableNguoiDung.setViewportView(tableNguoiDung);
+        tableNguoiDung.setFocusable(false);
+        tableNguoiDung.setRowHeight(40);
 
         DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
         centerRenderer.setHorizontalAlignment(JLabel.CENTER);
@@ -78,8 +68,24 @@ public class NguoiDung extends JPanel implements ActionListener, ItemListener {
             tableNguoiDung.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);
         }
 
-        tableNguoiDung.setAutoCreateRowSorter(true);
-        TableSorter.configureTableColumnSorter(tableNguoiDung, 0, TableSorter.INTEGER_COMPARATOR);
+        tableNguoiDung.getColumnModel().getColumn(0).setPreferredWidth(60);
+        tableNguoiDung.getColumnModel().getColumn(1).setPreferredWidth(150);
+        tableNguoiDung.getColumnModel().getColumn(2).setPreferredWidth(200);
+        tableNguoiDung.getColumnModel().getColumn(3).setPreferredWidth(80);
+        tableNguoiDung.getColumnModel().getColumn(4).setPreferredWidth(120);
+        tableNguoiDung.getColumnModel().getColumn(5).setPreferredWidth(120);
+        tableNguoiDung.getColumnModel().getColumn(6).setPreferredWidth(100);
+
+        tableNguoiDung.setAutoCreateRowSorter(false);
+        Comparator<Object>[] comps = new Comparator[7];
+        comps[0] = TableSorter.INTEGER_COMPARATOR;
+        comps[1] = TableSorter.STRING_COMPARATOR;
+        comps[2] = TableSorter.STRING_COMPARATOR;
+        comps[3] = TableSorter.STRING_COMPARATOR;
+        comps[4] = TableSorter.STRING_COMPARATOR;
+        comps[5] = TableSorter.STRING_COMPARATOR;
+        comps[6] = TableSorter.STRING_COMPARATOR;
+        paginatedTable.enableFullDataSorting(comps);
 
         pnlBorder1 = new JPanel();
         pnlBorder1.setPreferredSize(new Dimension(0, 10));
@@ -137,7 +143,7 @@ public class NguoiDung extends JPanel implements ActionListener, ItemListener {
         pnlMain = new PanelBorderRadius();
         pnlMain.setLayout(new BorderLayout());
         pnlMain.setBackground(Color.WHITE);
-        pnlMain.add(scrollTableNguoiDung, BorderLayout.CENTER);
+        pnlMain.add(paginatedTable, BorderLayout.CENTER);
         contentCenter.add(pnlMain, BorderLayout.CENTER);
     }
 
@@ -149,7 +155,8 @@ public class NguoiDung extends JPanel implements ActionListener, ItemListener {
     }
 
     public void loadDataTable(ArrayList<NguoiDungDTO> danhSach) {
-        tblModel.setRowCount(0);
+        this.listHienTai = danhSach;
+        List<Object[]> data = new ArrayList<>();
         for (NguoiDungDTO user : danhSach) {
             String trangThaiText = "";
             int tt = user.getTrangthai();
@@ -159,7 +166,7 @@ public class NguoiDung extends JPanel implements ActionListener, ItemListener {
                 trangThaiText = "Ngưng hoạt động";
             }
 
-            tblModel.addRow(new Object[]{
+            data.add(new Object[]{
                 user.getManguoidung(),
                 user.getUsername(),
                 user.getHoten(),
@@ -169,6 +176,7 @@ public class NguoiDung extends JPanel implements ActionListener, ItemListener {
                 trangThaiText
             });
         }
+        paginatedTable.setData(data);
     }
 
     public void importExcel() {
@@ -247,8 +255,10 @@ public class NguoiDung extends JPanel implements ActionListener, ItemListener {
                 JOptionPane.showMessageDialog(this, "Vui lòng chọn người dùng cần sửa!");
             } else {
                 int modelRow = tableNguoiDung.convertRowIndexToModel(index);
-                int id = (int) tblModel.getValueAt(modelRow, 0);
-                NguoiDungDTO selected = nguoidungBUS.getById(id);
+                if (modelRow >= listHienTai.size()) {
+                    return;
+                }
+                NguoiDungDTO selected = listHienTai.get(modelRow);
                 new NguoiDungDialog(this, owner, "Chỉnh sửa người dùng", true, "update", selected);
             }
         } else if (source == mainFunction.btn.get("detail")) {
@@ -257,8 +267,10 @@ public class NguoiDung extends JPanel implements ActionListener, ItemListener {
                 JOptionPane.showMessageDialog(this, "Vui lòng chọn người dùng cần xem!");
             } else {
                 int modelRow = tableNguoiDung.convertRowIndexToModel(index);
-                int id = (int) tblModel.getValueAt(modelRow, 0);
-                NguoiDungDTO selected = nguoidungBUS.getById(id);
+                if (modelRow >= listHienTai.size()) {
+                    return;
+                }
+                NguoiDungDTO selected = listHienTai.get(modelRow);
                 new NguoiDungDialog(this, owner, "Thông tin chi tiết", true, "view", selected);
             }
         } else if (source == mainFunction.btn.get("delete")) {
@@ -269,8 +281,11 @@ public class NguoiDung extends JPanel implements ActionListener, ItemListener {
                 int confirm = JOptionPane.showConfirmDialog(this, "Bạn có chắc chắn muốn xóa?", "Xác nhận xóa", JOptionPane.YES_NO_OPTION);
                 if (confirm == JOptionPane.YES_OPTION) {
                     int modelRow = tableNguoiDung.convertRowIndexToModel(index);
-                    int id = (int) tblModel.getValueAt(modelRow, 0);
-                    if (nguoidungBUS.delete(id)) {
+                    if (modelRow >= listHienTai.size()) {
+                        return;
+                    }
+                    NguoiDungDTO selected = listHienTai.get(modelRow);
+                    if (nguoidungBUS.delete(selected.getManguoidung())) {
                         JOptionPane.showMessageDialog(this, "Xóa thành công!");
                         listHienTai = nguoidungBUS.getAll();
                         loadDataTable(listHienTai);

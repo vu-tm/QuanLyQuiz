@@ -4,6 +4,7 @@ import BUS.MonHocBUS;
 import DTO.MonHocDTO;
 import GUI.Component.IntegratedSearch;
 import GUI.Component.MainFunction;
+import GUI.Component.PaginatedTable;
 import GUI.Component.PanelBorderRadius;
 import GUI.Component.TableSorter;
 import GUI.Dialog.MonHocDialog;
@@ -15,10 +16,11 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.DefaultTableModel;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -29,10 +31,9 @@ public class MonHoc extends JPanel implements ActionListener, ItemListener {
     private GUI.Main mainFrame;
     JPanel pnlBorder1, pnlBorder2, pnlBorder3, pnlBorder4, contentCenter;
     JTable table;
-    JScrollPane scrollTable;
+    PaginatedTable paginatedTable;
     MainFunction mainFunction;
     IntegratedSearch search;
-    DefaultTableModel tblModel;
 
     MonHocBUS bus = new MonHocBUS();
     ArrayList<MonHocDTO> listHienTai = bus.getAll();
@@ -50,24 +51,14 @@ public class MonHoc extends JPanel implements ActionListener, ItemListener {
         this.setLayout(new BorderLayout(0, 0));
         this.setOpaque(true);
 
-        table = new JTable();
-        scrollTable = new JScrollPane();
-        tblModel = new DefaultTableModel() {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return false;
-            }
-        };
-
         String[] header = {"Mã môn học", "Tên môn học", "Số tín chỉ"};
-        tblModel.setColumnIdentifiers(header);
-        table.setModel(tblModel);
+        paginatedTable = new PaginatedTable(header);
+        table = paginatedTable.getTable();
+
         table.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 13));
         table.getTableHeader().setPreferredSize(new Dimension(0, 40));
-        ((DefaultTableCellRenderer) table.getTableHeader().getDefaultRenderer()).setHorizontalAlignment(JLabel.CENTER);
         table.setFocusable(false);
-        table.setRowHeight(30);
-        scrollTable.setViewportView(table);
+        table.setRowHeight(40);
 
         DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
         centerRenderer.setHorizontalAlignment(JLabel.CENTER);
@@ -75,12 +66,24 @@ public class MonHoc extends JPanel implements ActionListener, ItemListener {
             table.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);
         }
 
-        table.setAutoCreateRowSorter(true);
-        TableSorter.configureTableColumnSorter(table, 0, (Object o1, Object o2) -> {
+        table.getColumnModel().getColumn(0).setPreferredWidth(100);
+        table.getColumnModel().getColumn(1).setPreferredWidth(300);
+        table.getColumnModel().getColumn(2).setPreferredWidth(100);
+
+        table.setAutoCreateRowSorter(false);
+        Comparator<Object>[] comps = new Comparator[3];
+        comps[0] = (Object o1, Object o2) -> {
             int id1 = Integer.parseInt(o1.toString().replace("MH-", ""));
             int id2 = Integer.parseInt(o2.toString().replace("MH-", ""));
             return Integer.compare(id1, id2);
-        });
+        };
+        comps[1] = TableSorter.STRING_COMPARATOR;
+        comps[2] = (Object o1, Object o2) -> {
+            int c1 = Integer.parseInt(o1.toString());
+            int c2 = Integer.parseInt(o2.toString());
+            return Integer.compare(c1, c2);
+        };
+        paginatedTable.enableFullDataSorting(comps);
 
         pnlBorder1 = new JPanel();
         pnlBorder1.setPreferredSize(new Dimension(0, 10));
@@ -139,7 +142,7 @@ public class MonHoc extends JPanel implements ActionListener, ItemListener {
         pnlMain = new PanelBorderRadius();
         pnlMain.setLayout(new BorderLayout());
         pnlMain.setBackground(Color.WHITE);
-        pnlMain.add(scrollTable, BorderLayout.CENTER);
+        pnlMain.add(paginatedTable, BorderLayout.CENTER);
         contentCenter.add(pnlMain, BorderLayout.CENTER);
     }
 
@@ -205,14 +208,16 @@ public class MonHoc extends JPanel implements ActionListener, ItemListener {
     }
 
     public void loadDataTable(ArrayList<MonHocDTO> danhSach) {
-        tblModel.setRowCount(0);
+        this.listHienTai = danhSach;
+        List<Object[]> data = new ArrayList<>();
         for (MonHocDTO mh : danhSach) {
-            tblModel.addRow(new Object[]{
+            data.add(new Object[]{
                 "MH-" + mh.getMamonhoc(),
                 mh.getTenmonhoc(),
                 mh.getSotinchi()
             });
         }
+        paginatedTable.setData(data);
     }
 
     @Override

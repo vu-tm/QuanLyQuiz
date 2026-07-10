@@ -6,6 +6,7 @@ import BUS.MonHocBUS;
 import DTO.LopDTO;
 import GUI.Component.IntegratedSearch;
 import GUI.Component.MainFunction;
+import GUI.Component.PaginatedTable;
 import GUI.Component.PanelBorderRadius;
 import GUI.Component.TableSorter;
 import GUI.Dialog.ChiTietLopDialog;
@@ -16,10 +17,11 @@ import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.DefaultTableModel;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -29,19 +31,17 @@ public class LopHoc extends JPanel implements ActionListener, ItemListener {
     private PanelBorderRadius pnlMain, functionBar;
     private GUI.Main mainFrame;
     private JPanel pnlBorder1, pnlBorder2, pnlBorder3, pnlBorder4, contentCenter;
-    private JTable tableLop;
-    private JScrollPane scrollTable;
+    private JTable table;
+    private PaginatedTable paginatedTable;
     private MainFunction mainFunction;
     private IntegratedSearch search;
-    private DefaultTableModel tblModel;
 
-    private LopBUS lopBUS = new LopBUS();
-    private NguoiDungBUS nguoiDungBUS = new NguoiDungBUS();
-    private MonHocBUS monHocBUS = new MonHocBUS();
+    private final LopBUS lopBUS = new LopBUS();
+    private final NguoiDungBUS nguoiDungBUS = new NguoiDungBUS();
+    private final MonHocBUS monHocBUS = new MonHocBUS();
 
     private ArrayList<LopDTO> listHienTai;
-
-    private Color BackgroundColor = new Color(240, 247, 250);
+    private final Color backgroundColor = new Color(240, 247, 250);
 
     public LopHoc(GUI.Main mainFrame) {
         this.mainFrame = mainFrame;
@@ -51,68 +51,68 @@ public class LopHoc extends JPanel implements ActionListener, ItemListener {
     }
 
     private void initComponent() {
-        this.setBackground(BackgroundColor);
+        this.setBackground(backgroundColor);
         this.setLayout(new BorderLayout(0, 0));
         this.setOpaque(true);
 
-        // TABLE
-        tableLop = new JTable();
-        scrollTable = new JScrollPane();
-        tblModel = new DefaultTableModel() {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return false;
-            }
-        };
-
+        // Khởi tạo PaginatedTable với các tiêu đề cột
         String[] header = {"Mã lớp", "Tên lớp", "Môn học", "Giảng viên", "Sĩ số", "Năm học", "Học kỳ"};
-        tblModel.setColumnIdentifiers(header);
-        tableLop.setModel(tblModel);
-        tableLop.setFocusable(false);
-        tableLop.setRowHeight(30);
-        tableLop.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 13));
-        tableLop.getTableHeader().setPreferredSize(new Dimension(0, 40));
+        paginatedTable = new PaginatedTable(header);
+        table = paginatedTable.getTable();
 
-        // Căn giữa nội dung bảng
+        table.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 13));
+        table.getTableHeader().setPreferredSize(new Dimension(0, 40));
+        table.setFocusable(false);
+        table.setRowHeight(30);
+
+        // Căn giữa tất cả các cột
         DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
         centerRenderer.setHorizontalAlignment(JLabel.CENTER);
-        for (int i = 0; i < tableLop.getColumnCount(); i++) {
-            tableLop.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);
+        for (int i = 0; i < table.getColumnCount(); i++) {
+            table.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);
         }
 
-        tableLop.setAutoCreateRowSorter(true);
-        TableSorter.configureTableColumnSorter(tableLop, 0, (Object o1, Object o2) -> {
+        // Cấu hình sắp xếp toàn bộ dữ liệu
+        @SuppressWarnings("unchecked")
+        Comparator<Object>[] comps = new Comparator[7];
+        comps[0] = (o1, o2) -> {
             int id1 = Integer.parseInt(o1.toString().replace("LH-", ""));
             int id2 = Integer.parseInt(o2.toString().replace("LH-", ""));
             return Integer.compare(id1, id2);
-        });
-        scrollTable.setViewportView(tableLop);
+        };
+        comps[1] = TableSorter.STRING_COMPARATOR;   // Tên lớp
+        comps[2] = TableSorter.STRING_COMPARATOR;   // Môn học
+        comps[3] = TableSorter.STRING_COMPARATOR;   // Giảng viên
+        comps[4] = TableSorter.INTEGER_COMPARATOR;  // Sĩ số
+        comps[5] = TableSorter.STRING_COMPARATOR;   // Năm học (có thể là số nhưng hiển thị chuỗi)
+        comps[6] = TableSorter.STRING_COMPARATOR;   // Học kỳ
+        paginatedTable.enableFullDataSorting(comps);
 
-        // PADDING BORDERS
+        // Các panel viền
         pnlBorder1 = new JPanel();
         pnlBorder1.setPreferredSize(new Dimension(0, 10));
-        pnlBorder1.setBackground(BackgroundColor);
+        pnlBorder1.setBackground(backgroundColor);
         pnlBorder2 = new JPanel();
         pnlBorder2.setPreferredSize(new Dimension(0, 10));
-        pnlBorder2.setBackground(BackgroundColor);
+        pnlBorder2.setBackground(backgroundColor);
         pnlBorder3 = new JPanel();
         pnlBorder3.setPreferredSize(new Dimension(10, 0));
-        pnlBorder3.setBackground(BackgroundColor);
+        pnlBorder3.setBackground(backgroundColor);
         pnlBorder4 = new JPanel();
         pnlBorder4.setPreferredSize(new Dimension(10, 0));
-        pnlBorder4.setBackground(BackgroundColor);
+        pnlBorder4.setBackground(backgroundColor);
 
         this.add(pnlBorder1, BorderLayout.NORTH);
         this.add(pnlBorder2, BorderLayout.SOUTH);
         this.add(pnlBorder3, BorderLayout.EAST);
         this.add(pnlBorder4, BorderLayout.WEST);
 
-        // CONTENT CENTER
+        // Content center
         contentCenter = new JPanel(new BorderLayout(10, 10));
-        contentCenter.setBackground(BackgroundColor);
+        contentCenter.setBackground(backgroundColor);
         this.add(contentCenter, BorderLayout.CENTER);
 
-        // FUNCTION BAR
+        // Function Bar
         functionBar = new PanelBorderRadius();
         functionBar.setPreferredSize(new Dimension(0, 100));
         functionBar.setLayout(new GridLayout(1, 2, 50, 0));
@@ -126,7 +126,7 @@ public class LopHoc extends JPanel implements ActionListener, ItemListener {
         }
         functionBar.add(mainFunction);
 
-        // SEARCH BAR
+        // Search
         search = new IntegratedSearch(new String[]{"Tất cả", "Mã lớp", "Tên lớp", "Giảng viên", "Năm học"});
         search.txtSearchForm.addKeyListener(new KeyAdapter() {
             @Override
@@ -144,16 +144,17 @@ public class LopHoc extends JPanel implements ActionListener, ItemListener {
         functionBar.add(search);
         contentCenter.add(functionBar, BorderLayout.NORTH);
 
-        // MAIN TABLE PANEL
+        // Main panel chứa bảng
         pnlMain = new PanelBorderRadius();
         pnlMain.setLayout(new BorderLayout());
         pnlMain.setBackground(Color.WHITE);
-        pnlMain.add(scrollTable, BorderLayout.CENTER);
+        pnlMain.add(paginatedTable, BorderLayout.CENTER);
         contentCenter.add(pnlMain, BorderLayout.CENTER);
     }
 
     public void loadDataTable(ArrayList<LopDTO> danhSach) {
-        tblModel.setRowCount(0);
+        this.listHienTai = danhSach;
+        List<Object[]> data = new ArrayList<>();
         for (LopDTO lop : danhSach) {
             String tenGV = "Không xác định";
             if (nguoiDungBUS.getById(lop.getGiangvien()) != null) {
@@ -165,7 +166,7 @@ public class LopHoc extends JPanel implements ActionListener, ItemListener {
                 tenMH = monHocBUS.getById(lop.getMamonhoc()).getTenmonhoc();
             }
 
-            tblModel.addRow(new Object[]{
+            data.add(new Object[]{
                 "LH-" + lop.getMalop(),
                 lop.getTenlop(),
                 tenMH,
@@ -175,6 +176,7 @@ public class LopHoc extends JPanel implements ActionListener, ItemListener {
                 lop.getHocky()
             });
         }
+        paginatedTable.setData(data);
     }
 
     public void thucHienTimKiem() {
@@ -192,55 +194,57 @@ public class LopHoc extends JPanel implements ActionListener, ItemListener {
 
         if (source == mainFunction.btn.get("create")) {
             new LopDialog(this, owner, "Thêm lớp học mới", true, "create", null, mainFrame.getNguoiDung());
+            refreshData(); // Tải lại dữ liệu sau khi đóng dialog
 
         } else if (source == mainFunction.btn.get("update")) {
-            int index = tableLop.getSelectedRow();
+            int index = table.getSelectedRow();
             if (index == -1) {
                 JOptionPane.showMessageDialog(this, "Vui lòng chọn lớp học cần sửa!");
-            } else {
-                int modelRow = tableLop.convertRowIndexToModel(index);
-                String maLoStr = tblModel.getValueAt(modelRow, 0).toString();
-                int malop = Integer.parseInt(maLoStr.replace("LH-", ""));
-                LopDTO selected = lopBUS.getById(malop);
-                new LopDialog(this, owner, "Chỉnh sửa lớp học", true, "update", selected, mainFrame.getNguoiDung());
+                return;
             }
+            int modelRow = table.convertRowIndexToModel(index);
+            String maLoStr = table.getModel().getValueAt(modelRow, 0).toString();
+            int malop = Integer.parseInt(maLoStr.replace("LH-", ""));
+            LopDTO selected = lopBUS.getById(malop);
+            new LopDialog(this, owner, "Chỉnh sửa lớp học", true, "update", selected, mainFrame.getNguoiDung());
+            refreshData();
 
         } else if (source == mainFunction.btn.get("detail")) {
-            int index = tableLop.getSelectedRow();
+            int index = table.getSelectedRow();
             if (index == -1) {
                 JOptionPane.showMessageDialog(this, "Vui lòng chọn lớp học để xem chi tiết!");
-            } else {
-                int modelRow = tableLop.convertRowIndexToModel(index);
-                String maLoStr = tblModel.getValueAt(modelRow, 0).toString();
-                int malop = Integer.parseInt(maLoStr.replace("LH-", ""));
-                LopDTO selected = lopBUS.getById(malop);
-                new ChiTietLopDialog(owner, "Chi tiết lớp học", true, selected);
+                return;
             }
+            int modelRow = table.convertRowIndexToModel(index);
+            String maLoStr = table.getModel().getValueAt(modelRow, 0).toString();
+            int malop = Integer.parseInt(maLoStr.replace("LH-", ""));
+            LopDTO selected = lopBUS.getById(malop);
+            new ChiTietLopDialog(owner, "Chi tiết lớp học", true, selected);
 
         } else if (source == mainFunction.btn.get("delete")) {
-            int index = tableLop.getSelectedRow();
+            int index = table.getSelectedRow();
             if (index == -1) {
                 JOptionPane.showMessageDialog(this, "Vui lòng chọn lớp học cần xóa!");
-            } else {
-                int confirm = JOptionPane.showConfirmDialog(this, "Bạn có chắc chắn muốn xóa lớp này?", "Xác nhận", JOptionPane.YES_NO_OPTION);
-                if (confirm == JOptionPane.YES_OPTION) {
-                    int modelRow = tableLop.convertRowIndexToModel(index);
-                    String maLoStr = tblModel.getValueAt(modelRow, 0).toString();
-                    int malop = Integer.parseInt(maLoStr.replace("LH-", ""));
-                    if (lopBUS.delete(malop)) {
-                        JOptionPane.showMessageDialog(this, "Xóa thành công!");
-                        listHienTai = getListTheoRole();
-                        loadDataTable(listHienTai);
-                    }
+                return;
+            }
+            int confirm = JOptionPane.showConfirmDialog(this, "Bạn có chắc chắn muốn xóa lớp này?", "Xác nhận", JOptionPane.YES_NO_OPTION);
+            if (confirm == JOptionPane.YES_OPTION) {
+                int modelRow = table.convertRowIndexToModel(index);
+                String maLoStr = table.getModel().getValueAt(modelRow, 0).toString();
+                int malop = Integer.parseInt(maLoStr.replace("LH-", ""));
+                if (lopBUS.delete(malop)) {
+                    JOptionPane.showMessageDialog(this, "Xóa thành công!");
+                    refreshData();
                 }
             }
         } else if (source == mainFunction.btn.get("import")) {
             importExcel();
         } else if (source == mainFunction.btn.get("export")) {
             try {
-                helper.JTableExporter.exportJTableToExcel(tableLop);
+                helper.JTableExporter.exportJTableToExcel(table);
             } catch (IOException ex) {
                 ex.printStackTrace();
+                JOptionPane.showMessageDialog(this, "Xuất file Excel thất bại!", "Lỗi", JOptionPane.ERROR_MESSAGE);
             }
         }
     }
@@ -249,7 +253,9 @@ public class LopHoc extends JPanel implements ActionListener, ItemListener {
         JFileChooser jf = new JFileChooser();
         int result = jf.showOpenDialog(this);
         if (result == JFileChooser.APPROVE_OPTION) {
-            try (FileInputStream excelFIS = new FileInputStream(jf.getSelectedFile()); BufferedInputStream excelBIS = new BufferedInputStream(excelFIS); XSSFWorkbook excelJTableImport = new XSSFWorkbook(excelBIS)) {
+            try (FileInputStream excelFIS = new FileInputStream(jf.getSelectedFile());
+                 BufferedInputStream excelBIS = new BufferedInputStream(excelFIS);
+                 XSSFWorkbook excelJTableImport = new XSSFWorkbook(excelBIS)) {
 
                 XSSFSheet excelSheet = excelJTableImport.getSheetAt(0);
                 int countSuccess = 0, countError = 0;
@@ -322,7 +328,6 @@ public class LopHoc extends JPanel implements ActionListener, ItemListener {
         } else if (manhomquyen == 3) {
             return lopBUS.getBySinhVien(userId);
         }
-
         return lopBUS.getAll();
     }
 

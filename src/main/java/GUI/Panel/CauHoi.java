@@ -13,6 +13,7 @@ import DTO.LoaiCauHoiDTO;
 import DTO.MonHocDTO;
 import GUI.Component.IntegratedSearch;
 import GUI.Component.MainFunction;
+import GUI.Component.PaginatedTable;
 import GUI.Component.PanelBorderRadius;
 import GUI.Component.TableSorter;
 import GUI.Dialog.CauHoiDialog;
@@ -24,11 +25,12 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
@@ -64,10 +66,9 @@ public class CauHoi extends JPanel implements ActionListener, ItemListener {
     private GUI.Main mainFrame;
     JPanel pnlBorder1, pnlBorder2, pnlBorder3, pnlBorder4, contentCenter;
     JTable table;
-    JScrollPane scrollTable;
+    PaginatedTable paginatedTable;
     MainFunction mainFunction;
     IntegratedSearch search;
-    DefaultTableModel tblModel;
 
     private final NguoiDungBUS ndBUS = new NguoiDungBUS();
     private final CauHoiBUS bus = new CauHoiBUS();
@@ -89,24 +90,14 @@ public class CauHoi extends JPanel implements ActionListener, ItemListener {
         this.setLayout(new BorderLayout(0, 0));
         this.setOpaque(true);
 
-        table = new JTable();
-        scrollTable = new JScrollPane();
-        tblModel = new DefaultTableModel() {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return false;
-            }
-        };
-
         String[] header = {"Mã CH", "Nội dung câu hỏi", "Độ khó", "Loại", "Môn học", "Người tạo"};
-        tblModel.setColumnIdentifiers(header);
-        table.setModel(tblModel);
+        paginatedTable = new PaginatedTable(header);
+        table = paginatedTable.getTable();
 
         table.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 13));
         table.getTableHeader().setPreferredSize(new Dimension(0, 40));
         table.setFocusable(false);
         table.setRowHeight(40);
-        scrollTable.setViewportView(table);
 
         DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
         centerRenderer.setHorizontalAlignment(JLabel.CENTER);
@@ -126,12 +117,19 @@ public class CauHoi extends JPanel implements ActionListener, ItemListener {
         table.getColumnModel().getColumn(4).setPreferredWidth(150);
         table.getColumnModel().getColumn(5).setPreferredWidth(150);
 
-        table.setAutoCreateRowSorter(true);
-        TableSorter.configureTableColumnSorter(table, 0, (Object o1, Object o2) -> {
+        table.setAutoCreateRowSorter(false);
+        Comparator<Object>[] comps = new Comparator[6];
+        comps[0] = (Object o1, Object o2) -> {
             int id1 = Integer.parseInt(o1.toString().replace("CH-", ""));
             int id2 = Integer.parseInt(o2.toString().replace("CH-", ""));
             return Integer.compare(id1, id2);
-        });
+        };
+        comps[1] = TableSorter.STRING_COMPARATOR;
+        comps[2] = TableSorter.STRING_COMPARATOR;
+        comps[3] = TableSorter.STRING_COMPARATOR;
+        comps[4] = TableSorter.STRING_COMPARATOR;
+        comps[5] = TableSorter.STRING_COMPARATOR;
+        paginatedTable.enableFullDataSorting(comps);
 
         pnlBorder1 = new JPanel();
         pnlBorder1.setPreferredSize(new Dimension(0, 10));
@@ -189,7 +187,7 @@ public class CauHoi extends JPanel implements ActionListener, ItemListener {
         pnlMain = new PanelBorderRadius();
         pnlMain.setLayout(new BorderLayout());
         pnlMain.setBackground(Color.WHITE);
-        pnlMain.add(scrollTable, BorderLayout.CENTER);
+        pnlMain.add(paginatedTable, BorderLayout.CENTER);
         contentCenter.add(pnlMain, BorderLayout.CENTER);
 
         table.getColumnModel().getColumn(1).addPropertyChangeListener(evt -> {
@@ -203,6 +201,13 @@ public class CauHoi extends JPanel implements ActionListener, ItemListener {
                 SwingUtilities.invokeLater(this::adjustRowHeights);
             }
         });
+
+        // Quan trọng: PaginatedTable tự thay dữ liệu model khi chuyển trang / đổi
+        // số dòng mỗi trang / sắp xếp (gọi setRowCount(0) rồi addRow bên trong nó),
+        // nên phải lắng nghe trực tiếp trên model để luôn tính lại chiều cao dòng
+        // mỗi khi nội dung bảng thay đổi, thay vì chỉ tính khi loadDataTable() ban đầu.
+        TableModelListener rowHeightListener = e -> SwingUtilities.invokeLater(this::adjustRowHeights);
+        table.getModel().addTableModelListener(rowHeightListener);
     }
 
     class MultiLineTableCellRenderer extends JTextArea implements TableCellRenderer {
@@ -264,9 +269,9 @@ public class CauHoi extends JPanel implements ActionListener, ItemListener {
 
     public void loadDataTable(ArrayList<CauHoiDTO> danhSach) {
         this.listHienTai = danhSach;
-        tblModel.setRowCount(0);
+        List<Object[]> data = new ArrayList<>();
         for (CauHoiDTO ch : danhSach) {
-            tblModel.addRow(new Object[]{
+            data.add(new Object[]{
                 "CH-" + ch.getMacauhoi(),
                 ch.getNoidung(),
                 doKhoBUS.getTenDoKho(ch.getMadokho()),
@@ -275,6 +280,7 @@ public class CauHoi extends JPanel implements ActionListener, ItemListener {
                 ndBUS.getHotenById(ch.getNguoitao())
             });
         }
+        paginatedTable.setData(data);
         SwingUtilities.invokeLater(this::adjustRowHeights);
     }
 

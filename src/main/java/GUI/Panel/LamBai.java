@@ -7,16 +7,18 @@ import BUS.MonHocBUS;
 import DTO.DeThiDTO;
 import DTO.NguoiDungDTO;
 import GUI.Component.MainFunction;
+import GUI.Component.PaginatedTable;
 import GUI.Component.PanelBorderRadius;
 import GUI.Component.TableSorter;
 import GUI.Dialog.LamBaiDialog;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.DefaultTableModel;
 
 public class LamBai extends JPanel implements ActionListener {
 
@@ -24,10 +26,10 @@ public class LamBai extends JPanel implements ActionListener {
     private PanelBorderRadius pnlMain, functionBar;
     private JPanel pnlBorder1, pnlBorder2, pnlBorder3, pnlBorder4, contentCenter;
     private JTable table;
-    private JScrollPane scrollTable;
+    private PaginatedTable paginatedTable;
     private MainFunction mainFunction;
     private JComboBox<String> cbxFilterTrangThai;
-    private DefaultTableModel tblModel;
+    private DefaultTableCellRenderer statusRenderer;
 
     private DeThiBUS deThiBUS = new DeThiBUS();
     private KyThiBUS kyThiBUS = new KyThiBUS();
@@ -51,37 +53,26 @@ public class LamBai extends JPanel implements ActionListener {
         this.setLayout(new BorderLayout(0, 0));
         this.setOpaque(true);
 
-        // 1. Khởi tạo Table
-        table = new JTable();
-        scrollTable = new JScrollPane();
-        tblModel = new DefaultTableModel() {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return false;
-            }
-        };
-
         String[] header = {"Mã đề", "Tên đề thi", "Kỳ thi", "Môn học", "Thời gian", "Số câu", "Trạng thái"};
-        tblModel.setColumnIdentifiers(header);
-        table.setModel(tblModel);
-        table.setFocusable(false);
-        table.setRowHeight(35);
+        paginatedTable = new PaginatedTable(header);
+        table = paginatedTable.getTable();
+
         table.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 13));
         table.getTableHeader().setPreferredSize(new Dimension(0, 40));
+        table.setFocusable(false);
+        table.setRowHeight(40);
 
-        // Renderer căn giữa và TÔ MÀU TRẠNG THÁI
         table.setDefaultRenderer(Object.class, new DefaultTableCellRenderer() {
             @Override
             public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
                 Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
                 setHorizontalAlignment(JLabel.CENTER);
 
-                // Cột trạng thái là cột số 6
                 if (column == 6 && value != null) {
                     String status = value.toString();
                     switch (status) {
                         case "Đang mở":
-                            c.setForeground(new Color(0, 153, 51)); // Xanh lá
+                            c.setForeground(new Color(0, 153, 51));
                             c.setFont(c.getFont().deriveFont(Font.BOLD));
                             break;
                         case "Hết hạn":
@@ -113,11 +104,29 @@ public class LamBai extends JPanel implements ActionListener {
             }
         });
 
-        scrollTable.setViewportView(table);
-        table.setAutoCreateRowSorter(true);
-        TableSorter.configureTableColumnSorter(table, 0, TableSorter.INTEGER_COMPARATOR);
+        table.getColumnModel().getColumn(0).setPreferredWidth(60);
+        table.getColumnModel().getColumn(1).setPreferredWidth(200);
+        table.getColumnModel().getColumn(2).setPreferredWidth(150);
+        table.getColumnModel().getColumn(3).setPreferredWidth(150);
+        table.getColumnModel().getColumn(4).setPreferredWidth(100);
+        table.getColumnModel().getColumn(5).setPreferredWidth(80);
+        table.getColumnModel().getColumn(6).setPreferredWidth(120);
 
-        // 2. Các Panel đệm (Giữ nguyên)
+        table.setAutoCreateRowSorter(false);
+        Comparator<Object>[] comps = new Comparator[7];
+        comps[0] = TableSorter.INTEGER_COMPARATOR;
+        comps[1] = TableSorter.STRING_COMPARATOR;
+        comps[2] = TableSorter.STRING_COMPARATOR;
+        comps[3] = TableSorter.STRING_COMPARATOR;
+        comps[4] = (Object o1, Object o2) -> {
+            int t1 = Integer.parseInt(o1.toString().replace(" phút", ""));
+            int t2 = Integer.parseInt(o2.toString().replace(" phút", ""));
+            return Integer.compare(t1, t2);
+        };
+        comps[5] = TableSorter.INTEGER_COMPARATOR;
+        comps[6] = TableSorter.STRING_COMPARATOR;
+        paginatedTable.enableFullDataSorting(comps);
+
         pnlBorder1 = new JPanel();
         pnlBorder1.setPreferredSize(new Dimension(0, 10));
         pnlBorder1.setBackground(BackgroundColor);
@@ -139,21 +148,18 @@ public class LamBai extends JPanel implements ActionListener {
         contentCenter.setBackground(BackgroundColor);
         this.add(contentCenter, BorderLayout.CENTER);
 
-        // 4. Thanh chức năng (Sửa ô tìm kiếm thành ComboBox)
         functionBar = new PanelBorderRadius();
         functionBar.setPreferredSize(new Dimension(0, 100));
         functionBar.setLayout(new BorderLayout());
         functionBar.setBorder(new EmptyBorder(10, 20, 10, 20));
         functionBar.setBackground(Color.WHITE);
 
-        // Bên trái: Nút vào thi
         String[] action = {"create"};
         mainFunction = new MainFunction(mainFrame.getNguoiDung().getManhomquyen(), "0", action);
         mainFunction.btn.get("create").setText("VÀO THI");
         mainFunction.btn.get("create").addActionListener(this);
         functionBar.add(mainFunction, BorderLayout.WEST);
 
-        // Bên phải: Bộ lọc trạng thái
         JPanel pnlFilter = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 20));
         pnlFilter.setOpaque(false);
         pnlFilter.add(new JLabel("Lọc trạng thái:"));
@@ -169,7 +175,7 @@ public class LamBai extends JPanel implements ActionListener {
         pnlMain = new PanelBorderRadius();
         pnlMain.setLayout(new BorderLayout());
         pnlMain.setBackground(Color.WHITE);
-        pnlMain.add(scrollTable, BorderLayout.CENTER);
+        pnlMain.add(paginatedTable, BorderLayout.CENTER);
         contentCenter.add(pnlMain, BorderLayout.CENTER);
     }
 
@@ -178,10 +184,10 @@ public class LamBai extends JPanel implements ActionListener {
         loadDataTable(listDeThi);
     }
 
-    public void loadDataTable(ArrayList<DeThiDTO> result) {
-        tblModel.setRowCount(0);
-        for (DeThiDTO dt : result) {
-            tblModel.addRow(new Object[]{
+    public void loadDataTable(ArrayList<DeThiDTO> danhSach) {
+        List<Object[]> data = new ArrayList<>();
+        for (DeThiDTO dt : danhSach) {
+            data.add(new Object[]{
                 dt.getMade(),
                 dt.getTende(),
                 kyThiBUS.getTenById(dt.getMakythi()),
@@ -191,9 +197,9 @@ public class LamBai extends JPanel implements ActionListener {
                 calculateTrangThai(dt.getMakythi(), dt.getMade())
             });
         }
+        paginatedTable.setData(data);
     }
 
-    // Logic lọc mới theo ComboBox
     public void thucHienLoc() {
         String selected = (String) cbxFilterTrangThai.getSelectedItem();
         if (selected.equals("Tất cả")) {
@@ -221,7 +227,8 @@ public class LamBai extends JPanel implements ActionListener {
             }
 
             int modelRow = table.convertRowIndexToModel(index);
-            String trangThai = tblModel.getValueAt(modelRow, 6).toString();
+            int made = (int) table.getValueAt(modelRow, 0);
+            String trangThai = table.getValueAt(modelRow, 6).toString();
 
             if (trangThai.equals("Hết hạn")) {
                 JOptionPane.showMessageDialog(this, "Kỳ thi này đã kết thúc, bạn không thể vào thi!", "Thông báo", JOptionPane.WARNING_MESSAGE);
@@ -233,11 +240,9 @@ public class LamBai extends JPanel implements ActionListener {
                 return;
             }
 
-            int made = (int) tblModel.getValueAt(modelRow, 0);
             DeThiDTO selectedDeThi = deThiBUS.getById(made);
             int userId = user.getManguoidung();
 
-            // Kiểm tra đã làm bài chưa
             if (baiThiBUS.checkDaLam(userId, made)) {
                 int confirmLai = JOptionPane.showConfirmDialog(this,
                         "Bạn đã làm bài thi này rồi!\n"
@@ -248,11 +253,10 @@ public class LamBai extends JPanel implements ActionListener {
                         JOptionPane.QUESTION_MESSAGE);
 
                 if (confirmLai != JOptionPane.YES_OPTION) {
-                    return; // Không làm lại thì thoát
+                    return;
                 }
             }
 
-            // Tiếp tục xác nhận vào thi
             int confirm = JOptionPane.showConfirmDialog(this,
                     "Bạn có chắc chắn muốn bắt đầu làm bài: " + selectedDeThi.getTende() + "?\n"
                     + "Thời gian làm bài: " + selectedDeThi.getThoigianthi() + " phút.",
@@ -261,7 +265,7 @@ public class LamBai extends JPanel implements ActionListener {
             if (confirm == JOptionPane.YES_OPTION) {
                 LamBaiDialog dialog = new LamBaiDialog(mainFrame, selectedDeThi, user);
                 dialog.setVisible(true);
-                loadData(); // Tải lại dữ liệu sau khi làm bài
+                loadData();
             }
         }
     }

@@ -6,6 +6,7 @@ import BUS.PhanCongBUS;
 import DTO.PhanCongDTO;
 import GUI.Component.IntegratedSearch;
 import GUI.Component.MainFunction;
+import GUI.Component.PaginatedTable;
 import GUI.Component.PanelBorderRadius;
 import GUI.Component.TableSorter;
 import GUI.Dialog.PhanCongDialog;
@@ -13,10 +14,12 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableCellRenderer;
 import org.apache.poi.xssf.usermodel.*;
 
 public class PhanCong extends JPanel implements ActionListener, ItemListener {
@@ -25,10 +28,9 @@ public class PhanCong extends JPanel implements ActionListener, ItemListener {
     private GUI.Main mainFrame;
     JPanel pnlBorder1, pnlBorder2, pnlBorder3, pnlBorder4, contentCenter;
     JTable table;
-    JScrollPane scrollTable;
+    PaginatedTable paginatedTable;
     MainFunction mainFunction;
     IntegratedSearch search;
-    DefaultTableModel tblModel;
 
     PhanCongBUS bus = new PhanCongBUS();
     MonHocBUS mhBUS = new MonHocBUS();
@@ -48,27 +50,14 @@ public class PhanCong extends JPanel implements ActionListener, ItemListener {
         this.setLayout(new BorderLayout(0, 0));
         this.setOpaque(true);
 
-        table = new JTable();
-        scrollTable = new JScrollPane();
-        tblModel = new DefaultTableModel() {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return false;
-            }
-        };
-
         String[] header = {"Mã giảng viên", "Họ tên", "Mã môn", "Tên môn học"};
-        tblModel.setColumnIdentifiers(header);
-        table.setModel(tblModel);
-        table.setFocusable(false);
-        table.setRowHeight(40);
+        paginatedTable = new PaginatedTable(header);
+        table = paginatedTable.getTable();
 
         table.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 13));
         table.getTableHeader().setPreferredSize(new Dimension(0, 40));
-        DefaultTableCellRenderer headerRenderer = (DefaultTableCellRenderer) table.getTableHeader().getDefaultRenderer();
-        headerRenderer.setHorizontalAlignment(JLabel.CENTER);
-
-        scrollTable.setViewportView(table);
+        table.setFocusable(false);
+        table.setRowHeight(40);
 
         DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
         centerRenderer.setHorizontalAlignment(JLabel.CENTER);
@@ -76,13 +65,26 @@ public class PhanCong extends JPanel implements ActionListener, ItemListener {
             table.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);
         }
 
-        table.setAutoCreateRowSorter(true);
-        TableSorter.configureTableColumnSorter(table, 0, TableSorter.INTEGER_COMPARATOR); // Mã GV là số
-        TableSorter.configureTableColumnSorter(table, 2, (Object o1, Object o2) -> { // Mã môn
+        table.getColumnModel().getColumn(0).setPreferredWidth(120);
+        table.getColumnModel().getColumn(1).setPreferredWidth(200);
+        table.getColumnModel().getColumn(2).setPreferredWidth(100);
+        table.getColumnModel().getColumn(3).setPreferredWidth(200);
+
+        table.setAutoCreateRowSorter(false);
+        Comparator<Object>[] comps = new Comparator[4];
+        comps[0] = (Object o1, Object o2) -> {
+            int id1 = Integer.parseInt(o1.toString());
+            int id2 = Integer.parseInt(o2.toString());
+            return Integer.compare(id1, id2);
+        };
+        comps[1] = TableSorter.STRING_COMPARATOR;
+        comps[2] = (Object o1, Object o2) -> {
             int id1 = Integer.parseInt(o1.toString().replace("MH-", ""));
             int id2 = Integer.parseInt(o2.toString().replace("MH-", ""));
             return Integer.compare(id1, id2);
-        });
+        };
+        comps[3] = TableSorter.STRING_COMPARATOR;
+        paginatedTable.enableFullDataSorting(comps);
 
         pnlBorder1 = new JPanel();
         pnlBorder1.setPreferredSize(new Dimension(0, 10));
@@ -127,6 +129,12 @@ public class PhanCong extends JPanel implements ActionListener, ItemListener {
             }
         });
         search.cbxChoose.addItemListener(this);
+        search.btnReset.addActionListener(e -> {
+            search.txtSearchForm.setText("");
+            search.cbxChoose.setSelectedIndex(0);
+            listHienTai = bus.getAll();
+            loadDataTable(listHienTai);
+        });
         functionBar.add(search);
 
         contentCenter.add(functionBar, BorderLayout.NORTH);
@@ -134,21 +142,22 @@ public class PhanCong extends JPanel implements ActionListener, ItemListener {
         pnlMain = new PanelBorderRadius();
         pnlMain.setLayout(new BorderLayout());
         pnlMain.setBackground(Color.WHITE);
-        pnlMain.add(scrollTable, BorderLayout.CENTER);
+        pnlMain.add(paginatedTable, BorderLayout.CENTER);
         contentCenter.add(pnlMain, BorderLayout.CENTER);
     }
 
-    public void loadDataTable(ArrayList<PhanCongDTO> result) {
-        this.listHienTai = result;
-        tblModel.setRowCount(0);
-        for (PhanCongDTO pc : result) {
-            tblModel.addRow(new Object[]{
+    public void loadDataTable(ArrayList<PhanCongDTO> danhSach) {
+        this.listHienTai = danhSach;
+        List<Object[]> data = new ArrayList<>();
+        for (PhanCongDTO pc : danhSach) {
+            data.add(new Object[]{
                 pc.getManguoidung(),
                 ndBUS.getById(pc.getManguoidung()).getHoten(),
                 "MH-" + pc.getMamonhoc(),
                 mhBUS.getTenById(pc.getMamonhoc())
             });
         }
+        paginatedTable.setData(data);
     }
 
     public void thucHienTimKiem() {
@@ -171,6 +180,9 @@ public class PhanCong extends JPanel implements ActionListener, ItemListener {
             }
 
             int modelRow = table.convertRowIndexToModel(index);
+            if (modelRow >= listHienTai.size()) {
+                return;
+            }
             PhanCongDTO selected = listHienTai.get(modelRow);
 
             if (source == mainFunction.btn.get("update")) {
